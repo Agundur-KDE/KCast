@@ -1,0 +1,22 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Id": "de.agundur.kcast",
+    "Name": "KFritz",
+    "Description": "chromecast videos to a device",
+    "Icon": "call-start",
+    "Authors": [
+      {
+        "Email": "scholz@agundur.de",
+        "Name": "Alec"
+      }
+    ],
+    "Version": "0.1",
+    "License": "GPL",
+    "Website": "https://www.agundur.de",
+    "BugReportUrl": "scholz@agundur.de"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-API": "declarativeappletscript",
+  "X-Plasma-MainScript": "ui/main.qml"
+}
