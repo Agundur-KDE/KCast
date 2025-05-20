@@ -1,78 +1,173 @@
-import Qt.labs.platform 1.1
-import QtQml.Models 2.15
 import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.1
+import org.kde.kirigami as Kirigami
+import org.kde.plasma.components as PlasmaComponents
+import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid 2.0
 
 PlasmoidItem {
+    id: root
+
     property string runMode: ""
+    property bool isSearching: false
 
+    // Funktionen
     function listDevices() {
-        runMode = "list";
-        caster.program = "python3";
-        caster.arguments = [plasmoid.location + "/../scripts/cast.py", "--list"];
-        caster.start();
+        isSearching = true;
+        // Python-Funktion zum Suchen von Geräten aufrufen
+        nativeInterface.listDevices();
+        // Nach 5 Sekunden den Status zurücksetzen, falls es zu lange dauert
+        searchTimer.restart();
     }
 
-    function runCast(action) {
-        runMode = "action";
-        var dev = deviceSelector.currentText;
-        var url = mediaUrl.text;
-        caster.program = "python3";
-        caster.arguments = [plasmoid.location + "/../scripts/cast.py", "--device", dev, "--" + action, "--url", url];
-        caster.start();
+    function runCast(action, url) {
+        // Python-Funktion zum Ausführen von Aktionen aufrufen
+        nativeInterface.runCast(action, url);
     }
 
-    width: 300
-    height: 200
-    Component.onCompleted: listDevices()
+    Plasmoid.status: PlasmaCore.Types.ActiveStatus
+    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
+    Layout.minimumWidth: Kirigami.Units.gridUnit * 5
+    Layout.minimumHeight: Kirigami.Units.gridUnit * 5
+    implicitHeight: 280
+    implicitWidth: 340
+    // Beim Laden automatisch nach Geräten suchen
+    Component.onCompleted: {
+        listDevices();
+    }
 
-    Column {
-        spacing: 8
-        anchors.centerIn: parent
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 16
+        spacing: 12
+
+        // Titel
+        Kirigami.Heading {
+            text: "KCast"
+            level: 2
+            Layout.fillWidth: true
+        }
+
+        // Suchstatus
+        PlasmaComponents.Label {
+            id: statusLabel
+
+            text: isSearching ? "Suche nach Chromecast-Geräten..." : (deviceSelector.count > 0 ? "Bitte Gerät auswählen" : "Keine Geräte gefunden")
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignCenter
+            opacity: 0.7
+        }
 
         // 1) Device-Liste (ComboBox)
-        ComboBox {
-            id: deviceSelector
+        RowLayout {
+            Layout.fillWidth: true
 
-            model: devicesModel
-            textRole: "name"
+            PlasmaComponents.ComboBox {
+                id: deviceSelector
+
+                model: nativeInterface.deviceList
+                textRole: "name"
+                Layout.fillWidth: true
+                onActivated: {
+                    nativeInterface.setSelectedDeviceIndex(currentIndex);
+                }
+                Component.onCompleted: {
+                    if (count > 0) {
+                        currentIndex = 0;
+                        nativeInterface.setSelectedDeviceIndex(0);
+                    }
+                }
+            }
+
+            PlasmaComponents.Button {
+                id: refreshButton
+
+                icon.name: "view-refresh"
+                text: ""
+                onClicked: listDevices()
+            }
+
         }
 
         // 2) URL/File-Eingabe
-        TextField {
+        PlasmaComponents.TextField {
             id: mediaUrl
 
-            placeholderText: "http://… oder /pfad/zu/datei.mp4"
-            width: parent.width
+            placeholderText: "http://... oder /pfad/zu/datei.mp4"
+            Layout.fillWidth: true
         }
 
-        // 3) Buttons
-        Row {
+        // 3) Buttons für die Steuerung
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
             spacing: 8
 
-            Button {
+            PlasmaComponents.Button {
                 text: "Play"
-                onClicked: runCast("play")
+                icon.name: "media-playback-start"
+                enabled: deviceSelector.currentIndex >= 0 && mediaUrl.text.length > 0
+                onClicked: runCast("play", mediaUrl.text)
             }
 
-            Button {
+            PlasmaComponents.Button {
                 text: "Pause"
-                onClicked: runCast("pause")
+                icon.name: "media-playback-pause"
+                enabled: deviceSelector.currentIndex >= 0
+                onClicked: runCast("pause", "")
             }
 
-            Button {
+            PlasmaComponents.Button {
                 text: "Stop"
-                onClicked: runCast("stop")
+                icon.name: "media-playback-stop"
+                enabled: deviceSelector.currentIndex >= 0
+                onClicked: runCast("stop", "")
             }
 
+        }
+
+        // Platzhalter
+        Item {
+            Layout.fillHeight: true
         }
 
     }
 
-    // Model, das Python-Script aufruft und Liste liefert
-    ListModel {
-        id: devicesModel
+    // Timer für den Suchvorgang
+    Timer {
+        id: searchTimer
+
+        interval: 5000
+        running: false
+        onTriggered: {
+            isSearching = false;
+        }
+    }
+
+    // Verbindungen zu Python-Signalen
+    Connections {
+        function onDevicesChanged() {
+            isSearching = false;
+            if (deviceSelector.count > 0) {
+                deviceSelector.currentIndex = 0;
+                nativeInterface.setSelectedDeviceIndex(0);
+            }
+        }
+
+        function onDeviceConnected(name) {
+            statusLabel.text = "Verbunden mit " + name;
+        }
+
+        function onDeviceDisconnected() {
+            statusLabel.text = "Verbindung getrennt";
+        }
+
+        function onPlaybackStatusChanged(status) {
+            statusLabel.text = "Status: " + status;
+        }
+
+        target: nativeInterface
     }
 
 }

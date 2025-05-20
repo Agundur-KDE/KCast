@@ -1,10 +1,11 @@
 {
   "KPackageStructure": "Plasma/Applet",
   "KPlugin": {
+    "Category": "Multimedia",
     "Id": "de.agundur.kcast",
-    "Name": "KFritz",
+    "Name": "KCast",
     "Description": "chromecast videos to a device",
-    "Icon": "call-start",
+    "Icon": "applications-multimedia",
     "Authors": [
       {
         "Email": "scholz@agundur.de",
@@ -18,5 +19,7 @@
   },
   "X-Plasma-API-Minimum-Version": "6.0",
   "X-Plasma-API": "declarativeappletscript",
-  "X-Plasma-MainScript": "ui/main.qml"
+  "X-Plasma-MainScript": "ui/main.qml",
+  "X-Plasma-NativeScriptEngine": "python",
+  "X-Plasma-PythonMainScript": "code/main.py"
 }
