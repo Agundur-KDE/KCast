@@ -29,8 +29,12 @@ PlasmoidItem {
         }
     }
 
-    width: 300
-    height: 520
+    Plasmoid.status: PlasmaCore.Types.ActiveStatus
+    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
+    Layout.minimumWidth: Kirigami.Units.gridUnit * 5
+    Layout.minimumHeight: Kirigami.Units.gridUnit * 5
+    implicitHeight: 280
+    implicitWidth: 340
     Component.onCompleted: refreshDevices()
 
     // Plugin-Instanz
@@ -39,8 +43,49 @@ PlasmoidItem {
     }
 
     ColumnLayout {
-        spacing: 8
-        anchors.centerIn: parent
+        anchors.fill: parent
+        anchors.margins: 16
+        spacing: 12
+
+        // Titel
+        Kirigami.Heading {
+            text: "KCast"
+            level: 2
+            Layout.fillWidth: true
+        }
+
+        PlasmaComponents.Label {
+            text: devices.length > 0 ? "Gerät auswählen:" : "Keine Geräte gefunden"
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        // 1) Device-Liste (ComboBox)
+        RowLayout {
+            Layout.fillWidth: true
+
+            PlasmaComponents.ComboBox {
+                id: deviceSelector
+
+                Layout.fillWidth: true
+                model: devices
+                currentIndex: selectedIndex
+                onActivated: {
+                    selectedIndex = currentIndex;
+                    if (kcast)
+                        kcast.setSelectedDeviceIndex(currentIndex);
+
+                }
+            }
+
+            PlasmaComponents.Button {
+                text: "🔄 Geräte aktualisieren"
+                icon.name: "view-refresh"
+                Layout.alignment: Qt.AlignRight
+                onClicked: refreshDevices
+            }
+
+        }
 
         PlasmaComponents.TextField {
             id: mediaUrl
@@ -81,46 +126,6 @@ PlasmoidItem {
 
         Item {
             Layout.fillHeight: true
-        }
-
-    }
-
-    // Titel
-    Kirigami.Heading {
-        text: "KCast"
-        level: 2
-        Layout.fillWidth: true
-    }
-
-    PlasmaComponents.Label {
-        text: devices.length > 0 ? "Gerät auswählen:" : "Keine Geräte gefunden"
-        Layout.fillWidth: true
-        horizontalAlignment: Text.AlignHCenter
-    }
-
-    // 1) Device-Liste (ComboBox)
-    RowLayout {
-        Layout.fillWidth: true
-
-        PlasmaComponents.ComboBox {
-            id: deviceSelector
-
-            Layout.fillWidth: true
-            model: devices
-            currentIndex: selectedIndex
-            onActivated: {
-                selectedIndex = currentIndex;
-                if (kcast)
-                    kcast.setSelectedDeviceIndex(currentIndex);
-
-            }
-        }
-
-        PlasmaComponents.Button {
-            text: "🔄 Geräte aktualisieren"
-            icon.name: "view-refresh"
-            Layout.alignment: Qt.AlignRight
-            onClicked: refreshDevices
         }
 
     }
