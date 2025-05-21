@@ -1,4 +1,3 @@
-import QtDBus 1.0
 import QtQml 2.15
 import QtQuick 2.15
 import QtQuick.Layouts 1.1
@@ -38,17 +37,9 @@ PlasmoidItem {
     implicitWidth: 340
     // Beim Laden automatisch nach Geräten suchen
     Component.onCompleted: {
-        listDevices();
+        const devices = kcast.deviceList();
+        console.log("📡 Gefundene Geräte:", devices);
     }
-
-    DBusInterface {
-        id: castInterface
-
-        service: "org.kcast.Controller"
-        path: "/org/kcast/Player"
-        iface: "org.kcast.Player"
-    }
-    // Funktionen
 
     ColumnLayout {
         // 2) URL/File-Eingabe
