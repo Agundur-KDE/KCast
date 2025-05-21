@@ -1,10 +1,11 @@
+import QtDBus 1.0
+import QtQml 2.15
 import QtQuick 2.15
 import QtQuick.Layouts 1.1
 import org.kde.kirigami as Kirigami
+import org.kde.kquickcontrolsaddons 2.0
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
-import org.kde.plasma.extras as PlasmaExtras
-import org.kde.plasma.plasmoid 2.0
 
 PlasmoidItem {
     id: root
@@ -12,18 +13,21 @@ PlasmoidItem {
     property string runMode: ""
     property bool isSearching: false
 
-    // Funktionen
     function listDevices() {
+        console.log("searching ....");
         isSearching = true;
-        // Python-Funktion zum Suchen von Geräten aufrufen
-        nativeInterface.listDevices();
-        // Nach 5 Sekunden den Status zurücksetzen, falls es zu lange dauert
+        castInterface.call("listDevices", [], function(devices) {
+            console.log("📡 Geräte:", JSON.stringify(devices));
+            deviceListModel.clear();
+            for (var i = 0; i < devices.length; ++i) {
+                // `devices[i][0]` ist der Name
+                deviceListModel.append({
+                    "name": devices[i][0]
+                });
+            }
+            isSearching = false;
+        });
         searchTimer.restart();
-    }
-
-    function runCast(action, url) {
-        // Python-Funktion zum Ausführen von Aktionen aufrufen
-        nativeInterface.runCast(action, url);
     }
 
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
@@ -37,7 +41,81 @@ PlasmoidItem {
         listDevices();
     }
 
+    DBusInterface {
+        id: castInterface
+
+        service: "org.kcast.Controller"
+        path: "/org/kcast/Player"
+        iface: "org.kcast.Player"
+    }
+    // Funktionen
+
     ColumnLayout {
+        // 2) URL/File-Eingabe
+        //     PlasmaComponents.TextField {
+        //         id: mediaUrl
+        //         placeholderText: "http://... oder /pfad/zu/datei.mp4"
+        //         Layout.fillWidth: true
+        //     }
+        //     // 3) Buttons für die Steuerung
+        //     RowLayout {
+        //         Layout.fillWidth: true
+        //         Layout.alignment: Qt.AlignHCenter
+        //         spacing: 8
+        //         PlasmaComponents.Button {
+        //             text: "Play"
+        //             icon.name: "media-playback-start"
+        //             enabled: deviceSelector.currentIndex >= 0 && mediaUrl.text.length > 0
+        //             onClicked: runCast("play", mediaUrl.text)
+        //         }
+        //         PlasmaComponents.Button {
+        //             text: "Pause"
+        //             icon.name: "media-playback-pause"
+        //             enabled: deviceSelector.currentIndex >= 0
+        //             onClicked: runCast("pause", "")
+        //         }
+        //         PlasmaComponents.Button {
+        //             text: "Stop"
+        //             icon.name: "media-playback-stop"
+        //             enabled: deviceSelector.currentIndex >= 0
+        //             onClicked: runCast("stop", "")
+        //         }
+        //     }
+        //     // Platzhalter
+        //     Item {
+        //         Layout.fillHeight: true
+        //     }
+        // }
+        // // Timer für den Suchvorgang
+        // Timer {
+        //     id: searchTimer
+        //     interval: 5000
+        //     running: false
+        //     onTriggered: {
+        //         isSearching = false;
+        //     }
+        // }
+        // // Verbindungen zu Python-Signalen
+        // Connections {
+        //     function onDevicesChanged() {
+        //         isSearching = false;
+        //         if (deviceSelector.count > 0) {
+        //             deviceSelector.currentIndex = 0;
+        //             nativeInterface.setSelectedDeviceIndex(0);
+        //         }
+        //     }
+        //     function onDeviceConnected(name) {
+        //         statusLabel.text = "Verbunden mit " + name;
+        //     }
+        //     function onDeviceDisconnected() {
+        //         statusLabel.text = "Verbindung getrennt";
+        //     }
+        //     function onPlaybackStatusChanged(status) {
+        //         statusLabel.text = "Status: " + status;
+        //     }
+        //     target: nativeInterface
+        // }
+
         anchors.fill: parent
         anchors.margins: 16
         spacing: 12
@@ -66,17 +144,11 @@ PlasmoidItem {
             PlasmaComponents.ComboBox {
                 id: deviceSelector
 
-                model: nativeInterface.deviceList
+                model: deviceListModel
                 textRole: "name"
                 Layout.fillWidth: true
                 onActivated: {
-                    nativeInterface.setSelectedDeviceIndex(currentIndex);
-                }
-                Component.onCompleted: {
-                    if (count > 0) {
-                        currentIndex = 0;
-                        nativeInterface.setSelectedDeviceIndex(0);
-                    }
+                    listDevices();
                 }
             }
 
@@ -90,84 +162,6 @@ PlasmoidItem {
 
         }
 
-        // 2) URL/File-Eingabe
-        PlasmaComponents.TextField {
-            id: mediaUrl
-
-            placeholderText: "http://... oder /pfad/zu/datei.mp4"
-            Layout.fillWidth: true
-        }
-
-        // 3) Buttons für die Steuerung
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 8
-
-            PlasmaComponents.Button {
-                text: "Play"
-                icon.name: "media-playback-start"
-                enabled: deviceSelector.currentIndex >= 0 && mediaUrl.text.length > 0
-                onClicked: runCast("play", mediaUrl.text)
-            }
-
-            PlasmaComponents.Button {
-                text: "Pause"
-                icon.name: "media-playback-pause"
-                enabled: deviceSelector.currentIndex >= 0
-                onClicked: runCast("pause", "")
-            }
-
-            PlasmaComponents.Button {
-                text: "Stop"
-                icon.name: "media-playback-stop"
-                enabled: deviceSelector.currentIndex >= 0
-                onClicked: runCast("stop", "")
-            }
-
-        }
-
-        // Platzhalter
-        Item {
-            Layout.fillHeight: true
-        }
-
-    }
-
-    // Timer für den Suchvorgang
-    Timer {
-        id: searchTimer
-
-        interval: 5000
-        running: false
-        onTriggered: {
-            isSearching = false;
-        }
-    }
-
-    // Verbindungen zu Python-Signalen
-    Connections {
-        function onDevicesChanged() {
-            isSearching = false;
-            if (deviceSelector.count > 0) {
-                deviceSelector.currentIndex = 0;
-                nativeInterface.setSelectedDeviceIndex(0);
-            }
-        }
-
-        function onDeviceConnected(name) {
-            statusLabel.text = "Verbunden mit " + name;
-        }
-
-        function onDeviceDisconnected() {
-            statusLabel.text = "Verbindung getrennt";
-        }
-
-        function onPlaybackStatusChanged(status) {
-            statusLabel.text = "Status: " + status;
-        }
-
-        target: nativeInterface
     }
 
 }
