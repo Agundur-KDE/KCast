@@ -10,6 +10,7 @@ import org.kde.plasma.plasmoid 2.0
 PlasmoidItem {
     id: root
 
+    // Liste der Geräte
     property var devices: []
     property int selectedIndex: -1
 
@@ -28,21 +29,18 @@ PlasmoidItem {
         }
     }
 
-    Plasmoid.status: PlasmaCore.Types.ActiveStatus
-    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
-    Layout.minimumWidth: Kirigami.Units.gridUnit * 5
-    Layout.minimumHeight: Kirigami.Units.gridUnit * 5
-    implicitHeight: 280
-    implicitWidth: 340
+    width: 300
+    height: 520
+    Component.onCompleted: refreshDevices()
 
+    // Plugin-Instanz
     KCastBridge {
         id: kcast
     }
 
     ColumnLayout {
-        spacing: 12
-        anchors.fill: parent
-        anchors.margins: 16
+        spacing: 8
+        anchors.centerIn: parent
 
         PlasmaComponents.TextField {
             id: mediaUrl
@@ -94,14 +92,10 @@ PlasmoidItem {
         Layout.fillWidth: true
     }
 
-    // Suchstatus
     PlasmaComponents.Label {
-        id: statusLabel
-
-        text: "Geräte"
+        text: devices.length > 0 ? "Gerät auswählen:" : "Keine Geräte gefunden"
         Layout.fillWidth: true
-        horizontalAlignment: Text.AlignCenter
-        opacity: 0.7
+        horizontalAlignment: Text.AlignHCenter
     }
 
     // 1) Device-Liste (ComboBox)
