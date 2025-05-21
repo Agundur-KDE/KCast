@@ -1,34 +1,39 @@
-#include "kcastplugin.h"
+#include "kcastinterface.h"
 
-#include <QDBusConnection>
 #include <QDBusReply>
 #include <QDebug>
+#include <QVariant>
+#include <QVariantList>
 
-KCastBridge::KCastBridge(QObject* parent)
+KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
-    iface = new QDBusInterface(
-        "org.kcast.Controller",
-        "/org/kcast/Player",
-        "org.kcast.Player",
-        QDBusConnection::sessionBus(),
-        this);
+    iface = new QDBusInterface(QStringLiteral("org.kcast.Controller"),
+                               QStringLiteral("/org/kcast/Player"),
+                               QStringLiteral("org.kcast.Player"),
+                               QDBusConnection::sessionBus(),
+                               this);
+
+    if (!iface->isValid()) {
+        qWarning() << "❌ QDBusInterface connection failed:" << iface->lastError().message();
+    }
 }
 
 QStringList KCastBridge::deviceList()
 {
-    QDBusReply<QList<QVariant>> reply = iface->call("listDevices");
+    QDBusReply<QList<QVariant>> reply = iface->call(QStringLiteral("listDevices"));
 
     QStringList names;
 
     if (reply.isValid()) {
-        for (const QVariant& item : reply.value()) {
-            const auto pair = item.toList(); // (name, ip)
-            if (pair.size() > 0)
+        for (const QVariant &item : reply.value()) {
+            const QVariantList pair = item.toList(); // (name, ip)
+            if (!pair.isEmpty()) {
                 names << pair[0].toString();
+            }
         }
     } else {
-        qWarning() << "DBus error:" << reply.error().message();
+        qWarning() << "❌ D-Bus call failed: " << reply.error().message();
     }
 
     return names;
@@ -37,20 +42,20 @@ QStringList KCastBridge::deviceList()
 void KCastBridge::setSelectedDeviceIndex(int index)
 {
     selectedIndex = index;
-    iface->call("setSelectedDeviceIndex", index);
+    iface->call(QStringLiteral("setSelectedDeviceIndex"), QVariant::fromValue(index));
 }
 
-void KCastBridge::play(const QString& url)
+void KCastBridge::play(const QString &url)
 {
-    iface->call("play", url);
+    iface->call(QStringLiteral("play"), QVariant::fromValue(url));
 }
 
 void KCastBridge::pause()
 {
-    iface->call("pause");
+    iface->call(QStringLiteral("pause"));
 }
 
 void KCastBridge::stop()
 {
-    iface->call("stop");
+    iface->call(QStringLiteral("stop"));
 }
