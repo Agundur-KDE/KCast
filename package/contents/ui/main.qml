@@ -15,6 +15,7 @@ PlasmoidItem {
     property int selectedIndex: -1
 
     function refreshDevices() {
+        console.log("refreashing");
         if (!kcast) {
             console.warn("❌ Plugin nicht verfügbar!");
             return ;
@@ -27,6 +28,15 @@ PlasmoidItem {
         } else {
             selectedIndex = -1;
         }
+    }
+
+    function _play() {
+        console.log(mediaUrl.text);
+        if (!kcast) {
+            console.warn("❌ Plugin nicht verfügbar!");
+            return ;
+        }
+        kcast.play(mediaUrl.text);
     }
 
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
@@ -82,7 +92,7 @@ PlasmoidItem {
                 text: "🔄 Geräte aktualisieren"
                 icon.name: "view-refresh"
                 Layout.alignment: Qt.AlignRight
-                onClicked: refreshDevices
+                onClicked: refreshDevices()
             }
 
         }
@@ -104,7 +114,7 @@ PlasmoidItem {
                 text: "Play"
                 icon.name: "media-playback-start"
                 enabled: deviceSelector.currentIndex >= 0 && mediaUrl.text.length > 0
-                onClicked: runCast("play", mediaUrl.text)
+                onClicked: _play()
             }
 
             PlasmaComponents.Button {
