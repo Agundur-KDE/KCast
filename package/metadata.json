@@ -19,7 +19,5 @@
   },
   "X-Plasma-API-Minimum-Version": "6.0",
   "X-Plasma-API": "declarativeappletscript",
-  "X-Plasma-MainScript": "ui/main.qml",
-  "X-Plasma-NativeScriptEngine": "python",
-  "X-Plasma-PythonMainScript": "code/main.py"
+  "X-Plasma-MainScript": "ui/main.qml"
 }

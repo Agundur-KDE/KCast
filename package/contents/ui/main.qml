@@ -1,45 +1,54 @@
-import QtQml 2.15
 import QtQuick 2.15
 import QtQuick.Layouts 1.1
+import de.agundur.kcast 1.0
 import org.kde.kirigami as Kirigami
-import org.kde.kquickcontrolsaddons 2.0
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.extras as PlasmaExtras
+import org.kde.plasma.plasmoid 2.0
 
 PlasmoidItem {
+    // Beim Laden automatisch nach Geräten suchen
+
     id: root
 
-    property string runMode: ""
-    property bool isSearching: false
+    property var devices: []
+    property int selectedIndex: -1
 
-    function listDevices() {
-        console.log("searching ....");
-        isSearching = true;
-        castInterface.call("listDevices", [], function(devices) {
-            console.log("📡 Geräte:", JSON.stringify(devices));
-            deviceListModel.clear();
-            for (var i = 0; i < devices.length; ++i) {
-                // `devices[i][0]` ist der Name
-                deviceListModel.append({
-                    "name": devices[i][0]
-                });
-            }
-            isSearching = false;
-        });
-        searchTimer.restart();
+    function refreshDevices() {
+        devices = kcast.deviceList();
+        console.log("📡 Gefundene Geräte:", devices);
+        if (devices.length > 0) {
+            selectedIndex = 0;
+            plasmoid.nativeInterface.setSelectedDeviceIndex(0);
+        } else {
+            selectedIndex = -1;
+        }
     }
 
+    // Component.onCompleted: {
+    //     console.log("🧪 nativeInterface:", plasmoid.nativeInterface);
+    //     if (plasmoid.nativeInterface)
+    //         refreshDevices();
+    //     else
+    //         console.warn("❌ nativeInterface ist nicht verfügbar!");
+    // }
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     Layout.minimumWidth: Kirigami.Units.gridUnit * 5
     Layout.minimumHeight: Kirigami.Units.gridUnit * 5
     implicitHeight: 280
     implicitWidth: 340
-    // Beim Laden automatisch nach Geräten suchen
-    Component.onCompleted: {
-        const devices = kcast.deviceList();
-        console.log("📡 Gefundene Geräte:", devices);
+
+    KCastBridge {
+        id: kcast
+
+        Component.onCompleted: {
+            const devices = kcast.deviceList();
+            console.log("Geräte:", devices);
+        }
     }
+    //Component.onCompleted: refreshDevices()
 
     ColumnLayout {
         // 2) URL/File-Eingabe
@@ -122,7 +131,7 @@ PlasmoidItem {
         PlasmaComponents.Label {
             id: statusLabel
 
-            text: isSearching ? "Suche nach Chromecast-Geräten..." : (deviceSelector.count > 0 ? "Bitte Gerät auswählen" : "Keine Geräte gefunden")
+            text: "Geräte"
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignCenter
             opacity: 0.7
@@ -135,11 +144,12 @@ PlasmoidItem {
             PlasmaComponents.ComboBox {
                 id: deviceSelector
 
-                model: deviceListModel
-                textRole: "name"
                 Layout.fillWidth: true
+                model: devices // Jetzt ist devices eine einfache Liste
+                currentIndex: selectedIndex
                 onActivated: {
-                    listDevices();
+                    selectedIndex = currentIndex;
+                    kcast.setSelectedDeviceIndex(selectedIndex);
                 }
             }
 
@@ -148,7 +158,7 @@ PlasmoidItem {
 
                 icon.name: "view-refresh"
                 text: ""
-                onClicked: listDevices()
+                onClicked: refreshDevices()
             }
 
         }

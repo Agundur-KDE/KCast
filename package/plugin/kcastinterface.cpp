@@ -1,5 +1,6 @@
 #include "kcastinterface.h"
 
+#include <QDBusArgument>
 #include <QDBusReply>
 #include <QDebug>
 #include <QVariant>
@@ -21,19 +22,29 @@ KCastBridge::KCastBridge(QObject *parent)
 
 QStringList KCastBridge::deviceList()
 {
-    QDBusReply<QList<QVariant>> reply = iface->call(QStringLiteral("listDevices"));
-
     QStringList names;
 
-    if (reply.isValid()) {
-        for (const QVariant &item : reply.value()) {
-            const QVariantList pair = item.toList(); // (name, ip)
-            if (!pair.isEmpty()) {
-                names << pair[0].toString();
+    QDBusMessage reply = iface->call(QStringLiteral("listDevices"));
+
+    if (reply.type() == QDBusMessage::ReplyMessage && !reply.arguments().isEmpty()) {
+        const QVariant arg = reply.arguments().at(0);
+        if (arg.userType() == qMetaTypeId<QDBusArgument>()) {
+            const QDBusArgument dbusArg = arg.value<QDBusArgument>();
+            dbusArg.beginArray();
+            while (!dbusArg.atEnd()) {
+                QString name;
+                QString ip;
+                dbusArg.beginStructure();
+                dbusArg >> name >> ip;
+                dbusArg.endStructure();
+                names << name; // oder names << name + " (" + ip + ")" für Anzeige
             }
+            dbusArg.endArray();
+        } else {
+            qWarning() << "❌ Unexpected D-Bus argument type:" << arg.typeName();
         }
     } else {
-        qWarning() << "❌ D-Bus call failed: " << reply.error().message();
+        qWarning() << "❌ Invalid or empty D-Bus reply";
     }
 
     return names;
