@@ -29,7 +29,12 @@ void BackendLauncher::startBackend()
     process->start();
 
     connect(process, &QProcess::readyRead, this, [this]() {
+        const QString output = QString::fromUtf8(process->readAll());
         qDebug() << "🪵 Python:" << process->readAll();
+
+        if (output.contains("org.kcast.Controller", Qt::CaseInsensitive)) {
+            emit backendReady();
+        }
     });
 
     connect(process, &QProcess::errorOccurred, this, [](QProcess::ProcessError err) {

@@ -46,10 +46,6 @@ class KCastService(dbus.service.Object):
 
 def main():
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-
-
-
-
     session_bus = dbus.SessionBus()
     if session_bus.name_has_owner("org.kcast.Controller"):
         print("🔁 D-Bus bereits aktiv")

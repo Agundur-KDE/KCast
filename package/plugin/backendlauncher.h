@@ -14,6 +14,9 @@ public:
 
     Q_INVOKABLE void startBackend();
 
+Q_SIGNALS:
+    void backendReady();
+
 private:
     QProcess *process;
 };

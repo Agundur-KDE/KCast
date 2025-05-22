@@ -41,6 +41,22 @@ PlasmoidItem {
         kcast.play(mediaUrl.text);
     }
 
+    function _pause() {
+        if (!kcast) {
+            console.warn("❌ Plugin not available!");
+            return ;
+        }
+        kcast.pause();
+    }
+
+    function _stop() {
+        if (!kcast) {
+            console.warn("❌ Plugin not available!");
+            return ;
+        }
+        kcast.stop();
+    }
+
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     Layout.minimumWidth: Kirigami.Units.gridUnit * 5
@@ -49,7 +65,6 @@ PlasmoidItem {
     implicitWidth: 340
     Component.onCompleted: {
         backend.startBackend();
-        refreshDevices();
     }
 
     // Plugin-Instanz
@@ -59,6 +74,8 @@ PlasmoidItem {
 
     BackendLauncher {
         id: backend
+
+        onBackendReady: refreshDevices()
     }
 
     ColumnLayout {
@@ -130,14 +147,14 @@ PlasmoidItem {
                 text: "Pause"
                 icon.name: "media-playback-pause"
                 enabled: deviceSelector.currentIndex >= 0
-                onClicked: runCast("pause", "")
+                onClicked: _pause()
             }
 
             PlasmaComponents.Button {
                 text: "Stop"
                 icon.name: "media-playback-stop"
                 enabled: deviceSelector.currentIndex >= 0
-                onClicked: runCast("stop", "")
+                onClicked: _stop()
             }
 
         }
