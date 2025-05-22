@@ -57,6 +57,10 @@ PlasmoidItem {
         id: kcast
     }
 
+    BackendLauncher {
+        id: backend
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16

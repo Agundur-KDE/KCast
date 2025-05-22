@@ -16,7 +16,7 @@ void BackendLauncher::startBackend()
         return;
     }
 
-    QString path = QUrl(QStringLiteral("file://../code/kcastd.py")).toLocalFile();
+    QString path = QStringLiteral("/usr/share/plasma/plasmoids/de.agundur.kcast/contents/code/kcastd.py");
 
     if (!QFileInfo::exists(path)) {
         qWarning() << "❌ Backend script not found at:" << path;
