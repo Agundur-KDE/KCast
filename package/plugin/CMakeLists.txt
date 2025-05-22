@@ -5,6 +5,7 @@ ecm_add_qml_module(kcastplugin
 )
 target_sources(kcastplugin PRIVATE
     kcastinterface.cpp
+    backendlauncher.cpp
 )
 target_link_libraries(kcastplugin PRIVATE
     Qt6::Core

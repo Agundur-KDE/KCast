@@ -1,3 +1,5 @@
+import QtCore
+import QtQml
 import QtQuick 2.15
 import QtQuick.Layouts 1.1
 import de.agundur.kcast 1.0
@@ -45,7 +47,10 @@ PlasmoidItem {
     Layout.minimumHeight: Kirigami.Units.gridUnit * 5
     implicitHeight: 280
     implicitWidth: 340
-    Component.onCompleted: refreshDevices()
+    Component.onCompleted: {
+        backend.startBackend();
+        refreshDevices();
+    }
 
     // Plugin-Instanz
     KCastBridge {
