@@ -16,14 +16,14 @@ void BackendLauncher::startBackend()
         return;
     }
 
-    QString path = QUrl("file://../code/kcastd.py").toLocalFile();
+    QString path = QUrl(QStringLiteral("file://../code/kcastd.py")).toLocalFile();
 
     if (!QFileInfo::exists(path)) {
         qWarning() << "❌ Backend script not found at:" << path;
         return;
     }
 
-    process->setProgram("python3");
+    process->setProgram(QStringLiteral("python3"));
     process->setArguments({path});
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->start();
