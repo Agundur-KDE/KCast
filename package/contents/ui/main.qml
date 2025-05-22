@@ -17,7 +17,7 @@ PlasmoidItem {
     function refreshDevices() {
         console.log("refreashing");
         if (!kcast) {
-            console.warn("❌ Plugin nicht verfügbar!");
+            console.warn("❌ Plugin not available!");
             return ;
         }
         devices = kcast.deviceList();
@@ -33,7 +33,7 @@ PlasmoidItem {
     function _play() {
         console.log(mediaUrl.text);
         if (!kcast) {
-            console.warn("❌ Plugin nicht verfügbar!");
+            console.warn("❌ Plugin not available!");
             return ;
         }
         kcast.play(mediaUrl.text);
@@ -65,7 +65,7 @@ PlasmoidItem {
         }
 
         PlasmaComponents.Label {
-            text: devices.length > 0 ? "Gerät auswählen:" : "Keine Geräte gefunden"
+            text: devices.length > 0 ? "Select device:" : "No device found"
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
         }
@@ -100,7 +100,7 @@ PlasmoidItem {
         PlasmaComponents.TextField {
             id: mediaUrl
 
-            placeholderText: "http://... oder /pfad/zu/datei.mp4"
+            placeholderText: "http://... oder /path/to/file.mp4"
             Layout.fillWidth: true
         }
         // 3) Buttons für die Steuerung
