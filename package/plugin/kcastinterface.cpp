@@ -16,7 +16,7 @@ KCastBridge::KCastBridge(QObject *parent)
                                this);
 
     if (!iface->isValid()) {
-        qWarning() << "❌ QDBusInterface connection failed:" << iface->lastError().message();
+        qWarning() << "Warning:  QDBusInterface connection failed:" << iface->lastError().message();
     }
 }
 

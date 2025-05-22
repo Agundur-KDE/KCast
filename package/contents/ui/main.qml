@@ -75,7 +75,10 @@ PlasmoidItem {
     BackendLauncher {
         id: backend
 
-        onBackendReady: refreshDevices()
+        onBackendReady: {
+            console.log("✅ BACKEND READY SIGNAL ERHALTEN");
+            refreshDevices();
+        }
     }
 
     ColumnLayout {
@@ -115,7 +118,7 @@ PlasmoidItem {
             }
 
             PlasmaComponents.Button {
-                text: "🔄 Geräte aktualisieren"
+                text: "🔄 search devices"
                 icon.name: "view-refresh"
                 Layout.alignment: Qt.AlignRight
                 onClicked: refreshDevices()
@@ -126,7 +129,7 @@ PlasmoidItem {
         PlasmaComponents.TextField {
             id: mediaUrl
 
-            placeholderText: "http://... oder /path/to/file.mp4"
+            placeholderText: "http://... or /path/to/file.mp4"
             Layout.fillWidth: true
         }
         // 3) Buttons für die Steuerung

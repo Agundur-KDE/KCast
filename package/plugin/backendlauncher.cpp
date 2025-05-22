@@ -1,6 +1,8 @@
 #include "backendlauncher.h"
+#include <QCoreApplication>
 #include <QDebug>
 #include <QFileInfo>
+#include <QStringLiteral>
 #include <QUrl>
 
 BackendLauncher::BackendLauncher(QObject *parent)
@@ -24,16 +26,15 @@ void BackendLauncher::startBackend()
     }
 
     process->setProgram(QStringLiteral("python3"));
-    process->setArguments({path});
+    process->setArguments({QStringLiteral("-u"), path});
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->start();
 
     connect(process, &QProcess::readyRead, this, [this]() {
         const QString output = QString::fromUtf8(process->readAll());
-        qDebug() << "🪵 Python:" << process->readAll();
 
-        if (output.contains("org.kcast.Controller", Qt::CaseInsensitive)) {
-            emit backendReady();
+        if (output.contains(QStringLiteral("READY"), Qt::CaseInsensitive)) {
+            Q_EMIT backendReady();
         }
     });
 
