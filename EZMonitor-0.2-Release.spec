@@ -1,7 +1,7 @@
-Name: paketname
-Version: 1.0
+Name: EZMonitor
+Version: 0.2
 Release: 1%{?dist}
-Summary: Kurze Beschreibung des Pakets
+Summary: EZMonitor is a KDE (Plasma 6) Plasmoid to connect to a apsystems EZ1 Microinverter and show the power each solar panel is producing.
 
 License: GPL
 Source0: %{name}-%{version}.tar.gz
@@ -10,20 +10,17 @@ BuildRequires: gcc
 Requires: ...
 
 %description
-  Eine ausführlichere Beschreibung des Pakets.
+  EZMonitor is a KDE (Plasma 6) Plasmoid to connect to a apsystems EZ1 Microinverter and show the power each solar panel is producing.
+  Enable the local API of your APsystems EZ1-M and add the plasmoid to your desktop and enjoy.
 
-%prep
-  %setup -q
 
 %build
-  %configure
-  make %{?dist:_dist}
+  mkdir build && cd build
+  cmake ..
+  make
 
 %install
-  rm -rf %{build_root}
-  make install DESTDIR=%{build_root}
+  make install
 
 %files
-  %dir %{_bindir}
-  %{_bindir}/%{name}
-  %doc %{docroot}/...
+  %dir %{package}
