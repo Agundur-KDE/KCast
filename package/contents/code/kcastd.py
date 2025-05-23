@@ -78,8 +78,8 @@ class KCastService(dbus.service.Object):
 
             self.start_http_server(directory)
             # url = f"http://192.168.178.21:8000/{filename}"
-            #ip = get_local_ip()
-            url = f"http://192.168.178.21:8000/{filename}"
+            ip = KCastService.get_local_ip()
+            url = f"http://{ip}:8000/{filename}"
             print("🔁 Lokale Datei umgewandelt zu:", url)
 
         cast = self.chromecasts[self.selected_index]
