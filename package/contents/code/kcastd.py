@@ -12,7 +12,6 @@ import sys
 import socket
 
 
-
 class KCastService(dbus.service.Object):
     def __init__(self, bus, path="/org/kcast/Player"):
         super().__init__(bus, path)
@@ -26,8 +25,7 @@ class KCastService(dbus.service.Object):
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            # Verbindung ins Internet nur zur Ermittlung der lokalen Adresse
-            s.connect(("8.8.8.8", 80))  # Google DNS als Dummy-Ziel
+            s.connect(("8.8.8.8", 80))  # Google DNS
             return s.getsockname()[0]
         except Exception:
             return "127.0.0.1"
@@ -37,14 +35,14 @@ class KCastService(dbus.service.Object):
 
     def start_http_server(self, directory, port=8000):
         if hasattr(self, "_http_server_thread"):
-            return  # Schon aktiv
+            return
 
         os.chdir(directory)
 
         def serve():
             handler = SimpleHTTPRequestHandler
             server = HTTPServer(("0.0.0.0", port), handler)
-            print(f"🌐 Lokaler HTTP-Server aktiv: http://192.168.178.21:{port}")
+            print(f"🌐 Lokaler HTTP-Server aktiv: http://0.0.0.0:{port}")
             server.serve_forever()
 
         self._http_server_thread = threading.Thread(target=serve, daemon=True)
