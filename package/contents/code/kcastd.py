@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-
+import os
+import threading
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse
 import dbus
 import dbus.service
 import dbus.mainloop.glib
 from gi.repository import GLib
 import pychromecast
 import sys
+import socket
+
 
 
 class KCastService(dbus.service.Object):
@@ -15,6 +20,36 @@ class KCastService(dbus.service.Object):
         self.selected_index = 0
         self.mc = None
         self.current_position = 0
+
+
+    def get_local_ip():
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Verbindung ins Internet nur zur Ermittlung der lokalen Adresse
+            s.connect(("8.8.8.8", 80))  # Google DNS als Dummy-Ziel
+            return s.getsockname()[0]
+        except Exception:
+            return "127.0.0.1"
+        finally:
+            s.close()
+
+
+    def start_http_server(self, directory, port=8000):
+        if hasattr(self, "_http_server_thread"):
+            return  # Schon aktiv
+
+        os.chdir(directory)
+
+        def serve():
+            handler = SimpleHTTPRequestHandler
+            server = HTTPServer(("0.0.0.0", port), handler)
+            print(f"🌐 Lokaler HTTP-Server aktiv: http://192.168.178.21:{port}")
+            server.serve_forever()
+
+        self._http_server_thread = threading.Thread(target=serve, daemon=True)
+        self._http_server_thread.start()
+
 
     @dbus.service.method("org.kcast.Player",
                          in_signature='', out_signature='a(ss)')
@@ -29,13 +64,31 @@ class KCastService(dbus.service.Object):
 
     @dbus.service.method("org.kcast.Player", in_signature='s')
     def play(self, url):
+
+        if url.startswith("file://"):
+            parsed = urlparse(url)
+            local_path = os.path.abspath(os.path.join("/", parsed.path.lstrip("/")))
+            directory = os.path.dirname(local_path)
+            filename = os.path.basename(local_path)
+
+
+            if not os.path.isfile(local_path):
+                print("❌ Datei existiert nicht:", local_path)
+                return
+
+            self.start_http_server(directory)
+            # url = f"http://192.168.178.21:8000/{filename}"
+            #ip = get_local_ip()
+            url = f"http://192.168.178.21:8000/{filename}"
+            print("🔁 Lokale Datei umgewandelt zu:", url)
+
         cast = self.chromecasts[self.selected_index]
         cast.wait()
         self.mc = cast.media_controller
         self.mc.play_media(url, "video/mp4")
         self.mc.block_until_active()
         self.mc.play()
-        print("▶️ Wiedergabe gestartet.")
+
 
     @dbus.service.method("org.kcast.Player")
     def pause(self):
