@@ -98,7 +98,6 @@ PlasmoidItem {
         anchors.fill: parent
         preventStealing: true
         onDrop: (event) => {
-            console.log(event.mimeData.urls);
             var url = "";
             if (event.mimeData.hasUrls && event.mimeData.urls.length > 0)
                 url = event.mimeData.urls[0];
