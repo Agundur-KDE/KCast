@@ -15,6 +15,9 @@ PlasmoidItem {
     // Liste der Geräte
     property var devices: []
     property int selectedIndex: -1
+    property bool canPlay: false
+    property bool isPlaying: false
+    property bool isPaused: false
 
     function refreshDevices() {
         console.log("refreashing");
@@ -55,6 +58,14 @@ PlasmoidItem {
             return ;
         }
         kcast.stop();
+    }
+
+    function _resume() {
+        if (!kcast) {
+            console.warn("❌ Plugin not available!");
+            return ;
+        }
+        kcast.resume();
     }
 
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
@@ -129,10 +140,17 @@ PlasmoidItem {
         PlasmaComponents.TextField {
             id: mediaUrl
 
-            placeholderText: "http://... or /path/to/file.mp4"
             Layout.fillWidth: true
+            placeholderText: "http://... or /path/to/file.mp4"
+            onTextChanged: {
+                const valid = text.length > 5 && text.endsWith(".mp4");
+                canPlay = valid;
+                if (!valid) {
+                    isPlaying = false;
+                    isPaused = false;
+                }
+            }
         }
-        // 3) Buttons für die Steuerung
 
         RowLayout {
             Layout.fillWidth: true
@@ -142,22 +160,38 @@ PlasmoidItem {
             PlasmaComponents.Button {
                 text: "Play"
                 icon.name: "media-playback-start"
-                enabled: deviceSelector.currentIndex >= 0 && mediaUrl.text.length > 0
-                onClicked: _play()
+                enabled: canPlay && !isPlaying
+                onClicked: {
+                    _play();
+                    isPlaying = true;
+                    isPaused = false;
+                }
             }
 
             PlasmaComponents.Button {
                 text: "Pause"
                 icon.name: "media-playback-pause"
-                enabled: deviceSelector.currentIndex >= 0
-                onClicked: _pause()
+                enabled: isPlaying
+                onClicked: {
+                    if (isPaused) {
+                        _resume();
+                        isPaused = false;
+                    } else {
+                        _pause();
+                        isPaused = true;
+                    }
+                }
             }
 
             PlasmaComponents.Button {
                 text: "Stop"
+                enabled: isPlaying
                 icon.name: "media-playback-stop"
-                enabled: deviceSelector.currentIndex >= 0
-                onClicked: _stop()
+                onClicked: {
+                    _stop();
+                    isPlaying = false;
+                    isPaused = false;
+                }
             }
 
         }

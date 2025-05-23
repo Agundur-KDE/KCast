@@ -70,3 +70,8 @@ void KCastBridge::stop()
 {
     iface->call(QStringLiteral("stop"));
 }
+
+void KCastBridge::resume()
+{
+    iface->call(QStringLiteral("resume"));
+}

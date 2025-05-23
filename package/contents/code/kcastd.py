@@ -5,6 +5,7 @@ import dbus.service
 import dbus.mainloop.glib
 from gi.repository import GLib
 import pychromecast
+import sys
 
 
 class KCastService(dbus.service.Object):
@@ -12,13 +13,14 @@ class KCastService(dbus.service.Object):
         super().__init__(bus, path)
         self.chromecasts = []
         self.selected_index = 0
+        self.mc = None
+        self.current_position = 0
 
     @dbus.service.method("org.kcast.Player",
-                    in_signature='', out_signature='a(ss)')
+                         in_signature='', out_signature='a(ss)')
     def listDevices(self):
         self.chromecasts, _ = pychromecast.get_chromecasts()
         return [(cast.name, "") for cast in self.chromecasts]
-
 
     @dbus.service.method("org.kcast.Player", in_signature='i')
     def setSelectedDeviceIndex(self, index):
@@ -29,19 +31,32 @@ class KCastService(dbus.service.Object):
     def play(self, url):
         cast = self.chromecasts[self.selected_index]
         cast.wait()
-        mc = cast.media_controller
-        mc.play_media(url, "video/mp4")
-        mc.block_until_active()
-        mc.play()
+        self.mc = cast.media_controller
+        self.mc.play_media(url, "video/mp4")
+        self.mc.block_until_active()
+        self.mc.play()
         print("▶️ Wiedergabe gestartet.")
 
     @dbus.service.method("org.kcast.Player")
     def pause(self):
-        self.chromecasts[self.selected_index].media_controller.pause()
+        if self.mc:
+            self.current_position = self.mc.status.current_time or 0
+            print(f"⏸ Pause bei {self.current_position:.2f} Sekunden")
+            self.mc.pause()
 
     @dbus.service.method("org.kcast.Player")
     def stop(self):
-        self.chromecasts[self.selected_index].media_controller.stop()
+        if self.mc:
+            print("⏹ Wiedergabe gestoppt.")
+            self.mc.stop()
+            self.current_position = 0
+
+    @dbus.service.method("org.kcast.Player")
+    def resume(self):
+        if self.mc:
+            print(f"▶️ Resume ab {self.current_position:.2f} Sekunden")
+            self.mc.play()
+            self.mc.seek(self.current_position)
 
 
 def main():

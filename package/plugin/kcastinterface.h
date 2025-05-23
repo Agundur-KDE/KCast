@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE void play(const QString &url);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void stop();
+    Q_INVOKABLE void resume();
 
 private:
     QDBusInterface *iface = nullptr;
