@@ -39,7 +39,7 @@ To run KCast successfully, the following software must be installed:
 
 KCast is based on:
 
-- [pychromecast] (https://github.com/home-assistant-libs/pychromecast)
+- [pychromecast](https://github.com/home-assistant-libs/pychromecast)
 
 - [Python 3](https://www.python.org/)
 
@@ -57,14 +57,15 @@ Networking & Firewall:
 To allow via firewalld:
 _______________________
 
-sudo firewall-cmd --permanent --add-service=mdns
-sudo firewall-cmd --permanent --add-port=8000/tcp
-sudo firewall-cmd --reload
+- sudo firewall-cmd --permanent --add-service=mdns
+- sudo firewall-cmd --permanent --add-port=8000/tcp
+- sudo firewall-cmd --reload
 
 
 ## Usage
-– Switch on a chromecast enabled device in your locale network.
-– drop a MP4 file from Dolphin and/or Web-Browser on it an hit "play"
+
+- Switch on a chromecast enabled device in your locale network.
+- drop a MP4 file from Dolphin and/or Web-Browser on it an hit "play"
 
 ## Support
 Open an issue in git ...
