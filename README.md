@@ -1,10 +1,7 @@
 
-# KCast
-
-
 <div align="center">
   <h1>KCast</h1>
-  <a href="https://store.kde.org/p/2290729">
+  <a href="https://kde.org/de/">
   <img src="https://img.shields.io/badge/KDE_Plasma-6.1+-blue?style=flat&logo=kde" alt="KCast">
 </a>
  <a href="https://www.gnu.org/licenses/gpl-3.0.html">
@@ -19,10 +16,6 @@
 </a></div>
 
 
-
-
-## Name
-KCast
 
 ## Description
 **KCast** is a KDE Plasma 6 widget that lets you cast `.mp4` video files to Chromecast devices in your local network.
