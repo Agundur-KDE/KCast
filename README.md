@@ -43,7 +43,7 @@ KCast is based on:
 
 - [Python 3](https://www.python.org/)
 
-- Avahi Daemon – for local network device discovery (mDNS) (systemctl status avahi-daemon
+- Avahi Daemon – for local network device discovery (mDNS) (systemctl status avahi-daemon)
 
 Networking & Firewall:
 
