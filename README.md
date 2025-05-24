@@ -58,7 +58,7 @@ To allow via firewalld:
 _______________________
 
 - sudo firewall-cmd --permanent --add-service=mdns
-- sudo firewall-cmd --permanent --add-port=8000/tcp
+- sudo firewall-cmd --permanent --add-port=8009/tcp
 - sudo firewall-cmd --reload
 
 
