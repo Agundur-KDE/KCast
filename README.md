@@ -51,7 +51,7 @@ or
 
 download kcast.plasmoid and install with: 
 
-– kpackagetool6 -t Plasma/Applet -i kcast-v0.1.0.plasmoid
+$ kpackagetool6 -t Plasma/Applet -i kcast.plasmoid
 
 ## 🧠 Dependencies
 
