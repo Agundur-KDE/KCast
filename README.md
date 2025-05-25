@@ -36,6 +36,8 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 
 ## Installation
+
+
 mkdir build && cd build
 
 cmake ..
@@ -43,6 +45,13 @@ cmake ..
 make
 
 make install (as root)
+
+
+or
+
+download kcast.plasmoid and install with: 
+
+– kpackagetool6 -t Plasma/Applet -i kcast-v0.1.0.plasmoid
 
 ## 🧠 Dependencies
 
@@ -73,6 +82,7 @@ _______________________
 - sudo firewall-cmd --permanent --add-service=mdns
 - sudo firewall-cmd --permanent --add-port=8009/tcp
 - sudo firewall-cmd --reload
+
 
 
 ## Usage
