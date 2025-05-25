@@ -1,0 +1,7 @@
+module de.agundur.kcast
+linktarget kcastplugin
+optional plugin kcastplugin
+classname de_agundur_kcastPlugin
+typeinfo kcastplugin.qmltypes
+prefer :/qt/qml/de/agundur/kcast/
+
