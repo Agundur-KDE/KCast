@@ -49,9 +49,9 @@ make install (as root)
 
 or
 
-download kcast.plasmoid and install with: 
+download kcast-complete.tar.gz
 
-$ kpackagetool6 -t Plasma/Applet -i kcast.plasmoid
+$ sudo tar -xf kcast-complete.tar.gz -C /
 
 ## 🧠 Dependencies
 
