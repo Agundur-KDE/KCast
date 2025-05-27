@@ -3,6 +3,9 @@
   "KPlugin": {
     "Category": "Multimedia",
     "Id": "de.agundur.kcast",
+    "ServiceTypes": [
+      "Plasma/Applet"
+    ],
     "Name": "KCast",
     "Description": "chromecast videos to a device",
     "Icon": "applications-multimedia",
