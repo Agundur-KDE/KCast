@@ -2,11 +2,14 @@
 #define KCASTINTERFACE_H
 
 #include <QObject>
+#include <QQmlEngine>
 #include <QStringList>
 
 class KCastBridge : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+
 public:
     explicit KCastBridge(QObject *parent = nullptr);
 

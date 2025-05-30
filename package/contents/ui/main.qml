@@ -82,11 +82,6 @@ PlasmoidItem {
 
     // Plugin-Instanz
     KCastBridge {
-        // onKCastBridgeReady: {
-        //     console.log("✅ KCastBridge READY SIGNAL ERHALTEN");
-        //     scanDevices();
-        // }
-
         id: kcast
     }
 
