@@ -26,7 +26,7 @@ PlasmoidItem {
             console.warn("❌ Plugin not available!");
             return ;
         }
-        devices = kcast.deviceList();
+        devices = kcast.scanDevicesWithCatt();
         console.log("📡 Gefundene Geräte:", devices);
         if (devices.length > 0) {
             selectedIndex = 0;
@@ -69,6 +69,9 @@ PlasmoidItem {
         kcast.resume();
     }
 
+    Component.onCompleted: {
+        refreshDevices();
+    }
     Plasmoid.title: i18n("KCast")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
@@ -79,12 +82,12 @@ PlasmoidItem {
 
     // Plugin-Instanz
     KCastBridge {
-        id: kcast
+        // onKCastBridgeReady: {
+        //     console.log("✅ KCastBridge READY SIGNAL ERHALTEN");
+        //     scanDevices();
+        // }
 
-        onKCastBridgeReady: {
-            console.log("✅ KCastBridge READY SIGNAL ERHALTEN");
-            scanDevices();
-        }
+        id: kcast
     }
 
     DragDrop.DropArea {
@@ -139,18 +142,13 @@ PlasmoidItem {
                             kcast.setSelectedDeviceIndex(currentIndex);
 
                     }
-
-                    delegate: ItemDelegate {
-                        text: modelData
-                    }
-
                 }
 
                 PlasmaComponents.Button {
                     text: "search devices"
                     icon.name: "view-refresh"
                     Layout.alignment: Qt.AlignRight
-                    onClicked: kcast.scanDevices()
+                    onClicked: kcast.scanDevicesWithCatt()
                 }
 
             }
