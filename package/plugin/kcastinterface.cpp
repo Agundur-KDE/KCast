@@ -1,77 +1,37 @@
 #include "kcastinterface.h"
-
-#include <QDBusArgument>
-#include <QDBusReply>
 #include <QDebug>
-#include <QVariant>
-#include <QVariantList>
+#include <QProcess>
+#include <QString>
+#include <QStringList>
 
 KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
-    iface = new QDBusInterface(QStringLiteral("org.kcast.Controller"),
-                               QStringLiteral("/org/kcast/Player"),
-                               QStringLiteral("org.kcast.Player"),
-                               QDBusConnection::sessionBus(),
-                               this);
-
-    if (!iface->isValid()) {
-        qWarning() << "Warning:  QDBusInterface connection failed:" << iface->lastError().message();
-    }
 }
 
-QStringList KCastBridge::deviceList()
+QStringList KCastBridge::scanDevicesWithCatt()
 {
-    QStringList names;
+    QProcess process;
+    process.start(QStringLiteral("catt"), QStringList() << QStringLiteral("scan"));
+    if (!process.waitForFinished(5000)) {
+        qWarning() << "❌ catt process did not finish in time";
+        return {};
+    }
 
-    QDBusMessage reply = iface->call(QStringLiteral("listDevices"));
+    QString output = QString::fromUtf8(process.readAllStandardOutput());
+    if (output.trimmed().isEmpty()) {
+        qWarning() << "⚠ catt returned empty output";
+        return {};
+    }
+    QStringList lines = output.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    QStringList result;
 
-    if (reply.type() == QDBusMessage::ReplyMessage && !reply.arguments().isEmpty()) {
-        const QVariant arg = reply.arguments().at(0);
-        if (arg.userType() == qMetaTypeId<QDBusArgument>()) {
-            const QDBusArgument dbusArg = arg.value<QDBusArgument>();
-            dbusArg.beginArray();
-            while (!dbusArg.atEnd()) {
-                QString name;
-                QString ip;
-                dbusArg.beginStructure();
-                dbusArg >> name >> ip;
-                dbusArg.endStructure();
-                names << name; // oder names << name + " (" + ip + ")" für Anzeige
-            }
-            dbusArg.endArray();
-        } else {
-            qWarning() << "❌ Unexpected D-Bus argument type:" << arg.typeName();
+    for (const QString &line : lines) {
+        if (line.contains(QStringLiteral("|"))) {
+            QString name = line.section(QStringLiteral("|"), 0, 0).trimmed();
+            result << name;
         }
-    } else {
-        qWarning() << "❌ Invalid or empty D-Bus reply";
     }
 
-    return names;
-}
-
-void KCastBridge::setSelectedDeviceIndex(int index)
-{
-    selectedIndex = index;
-    iface->call(QStringLiteral("setSelectedDeviceIndex"), QVariant::fromValue(index));
-}
-
-void KCastBridge::play(const QString &url)
-{
-    iface->call(QStringLiteral("play"), QVariant::fromValue(url));
-}
-
-void KCastBridge::pause()
-{
-    iface->call(QStringLiteral("pause"));
-}
-
-void KCastBridge::stop()
-{
-    iface->call(QStringLiteral("stop"));
-}
-
-void KCastBridge::resume()
-{
-    iface->call(QStringLiteral("resume"));
+    return result;
 }

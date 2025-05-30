@@ -76,21 +76,14 @@ PlasmoidItem {
     Layout.minimumHeight: Kirigami.Units.gridUnit * 5
     implicitHeight: 280
     implicitWidth: 340
-    Component.onCompleted: {
-        backend.startBackend();
-    }
 
     // Plugin-Instanz
     KCastBridge {
         id: kcast
-    }
 
-    BackendLauncher {
-        id: backend
-
-        onBackendReady: {
-            console.log("✅ BACKEND READY SIGNAL ERHALTEN");
-            refreshDevices();
+        onKCastBridgeReady: {
+            console.log("✅ KCastBridge READY SIGNAL ERHALTEN");
+            scanDevices();
         }
     }
 
@@ -140,19 +133,24 @@ PlasmoidItem {
                     Layout.fillWidth: true
                     model: devices
                     currentIndex: selectedIndex
-                    onActivated: {
+                    onCurrentIndexChanged: {
                         selectedIndex = currentIndex;
-                        if (kcast)
+                        if (typeof kcast !== "undefined")
                             kcast.setSelectedDeviceIndex(currentIndex);
 
                     }
+
+                    delegate: ItemDelegate {
+                        text: modelData
+                    }
+
                 }
 
                 PlasmaComponents.Button {
-                    text: "🔄 search devices"
+                    text: "search devices"
                     icon.name: "view-refresh"
                     Layout.alignment: Qt.AlignRight
-                    onClicked: refreshDevices()
+                    onClicked: kcast.scanDevices()
                 }
 
             }
