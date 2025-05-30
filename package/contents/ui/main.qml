@@ -42,7 +42,7 @@ PlasmoidItem {
             console.warn("❌ Plugin not available!");
             return ;
         }
-        kcast.play(mediaUrl.text);
+        kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
     }
 
     function _pause() {
@@ -50,7 +50,7 @@ PlasmoidItem {
             console.warn("❌ Plugin not available!");
             return ;
         }
-        kcast.pause();
+        kcast.pauseMedia();
     }
 
     function _stop() {
@@ -58,15 +58,7 @@ PlasmoidItem {
             console.warn("❌ Plugin not available!");
             return ;
         }
-        kcast.stop();
-    }
-
-    function _resume() {
-        if (!kcast) {
-            console.warn("❌ Plugin not available!");
-            return ;
-        }
-        kcast.resume();
+        kcast.stopMedia();
     }
 
     Component.onCompleted: {
@@ -180,14 +172,20 @@ PlasmoidItem {
                 }
 
                 PlasmaComponents.Button {
-                    text: "Pause"
+                    property bool isPaused: false
+
+                    text: isPaused ? "⏵ Resume" : "⏸ Pause"
                     icon.name: "media-playback-pause"
                     enabled: isPlaying
                     onClicked: {
                         if (isPaused) {
-                            _resume();
+                            text:
+                            "⏵ Resume";
+                            _pause();
                             isPaused = false;
                         } else {
+                            text:
+                            "⏸ Pause";
                             _pause();
                             isPaused = true;
                         }

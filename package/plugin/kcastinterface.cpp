@@ -47,6 +47,38 @@ KCastBridge::KCastBridge(QObject *parent)
     qInstallMessageHandler(customMessageHandler);
 }
 
+void KCastBridge::playMedia(const QString &device, const QString &url)
+{
+    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("cast") << url);
+    if (!ok) {
+        qWarning() << QString::fromUtf8("❌ Failed to start catt cast");
+    }
+}
+
+void KCastBridge::pauseMedia(const QString &device)
+{
+    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("pause"));
+    if (!ok) {
+        qWarning() << QString::fromUtf8("❌ Failed to start catt pause");
+    }
+}
+
+void KCastBridge::resumeMedia(const QString &device)
+{
+    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("play_toggle"));
+    if (!ok) {
+        qWarning() << QString::fromUtf8("❌ Failed to start catt play_toggle");
+    }
+}
+
+void KCastBridge::stopMedia(const QString &device)
+{
+    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("stop"));
+    if (!ok) {
+        qWarning() << QString::fromUtf8("❌ Failed to start catt stop");
+    }
+}
+
 QStringList KCastBridge::scanDevicesWithCatt()
 {
     QStringList devices;
