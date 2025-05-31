@@ -24,12 +24,10 @@ PlasmoidItem {
         console.log("refreashing");
         devices = kcast.scanDevicesWithCatt();
         console.log("📡 Gefundene Geräte:", devices);
-        if (devices.length > 0) {
+        if (devices.length > 0)
             selectedIndex = 0;
-            kcast.setSelectedDeviceIndex(0);
-        } else {
+        else
             selectedIndex = -1;
-        }
     }
 
     function _play() {
