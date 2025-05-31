@@ -129,8 +129,9 @@ if(X11_FOUND)
 endif()
 
 
-install(DIRECTORY ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
-
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
 
 add_subdirectory(plugin)
 # plasma_install_package(package de.agundur.kcast)
