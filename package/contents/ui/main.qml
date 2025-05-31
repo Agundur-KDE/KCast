@@ -38,30 +38,26 @@ PlasmoidItem {
 
     function _play() {
         console.log(mediaUrl.text);
-        if (!kcast) {
-            console.warn("❌ Plugin not available!");
-            return ;
-        }
         kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
     }
 
     function _pause() {
-        if (!kcast) {
-            console.warn("❌ Plugin not available!");
-            return ;
-        }
-        kcast.pauseMedia();
+        kcast.pauseMedia(deviceSelector.currentText);
+    }
+
+    function _resume() {
+        kcast.resumeMedia(deviceSelector.currentText);
     }
 
     function _stop() {
+        kcast.stopMedia(deviceSelector.currentText);
+    }
+
+    Component.onCompleted: {
         if (!kcast) {
             console.warn("❌ Plugin not available!");
             return ;
         }
-        kcast.stopMedia();
-    }
-
-    Component.onCompleted: {
         refreshDevices();
     }
     Plasmoid.title: i18n("KCast")
@@ -171,23 +167,26 @@ PlasmoidItem {
                     }
                 }
 
-                PlasmaComponents.Button {
+                    id: pauseButton
+
                     property bool isPaused: false
 
-                    text: isPaused ? "⏵ Resume" : "⏸ Pause"
+                    text: isPaused ? "Resume" : "Pause"
                     icon.name: "media-playback-pause"
                     enabled: isPlaying
                     onClicked: {
                         if (isPaused) {
                             text:
-                            "⏵ Resume";
-                            _pause();
+                            "Resume";
+                            _resume();
                             isPaused = false;
+                            pauseButton.icon.name = "media-playback-pause";
                         } else {
                             text:
-                            "⏸ Pause";
+                            "Pause";
                             _pause();
                             isPaused = true;
+                            pauseButton.icon.name = "media-playback-start";
                         }
                     }
                 }
