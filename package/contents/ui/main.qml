@@ -23,9 +23,10 @@ PlasmoidItem {
     function refreshDevices() {
         console.log("refreashing");
         devices = kcast.scanDevicesWithCatt();
-        console.log("📡 Gefundene Geräte:", devices);
-        deviceSelector.model = devices;
-        deviceSelector.enabled = (devices.length > 0);
+        if (devices.length > 0)
+            selectedIndex = 0;
+        else
+            selectedIndex = -1;
     }
 
     function _play() {
@@ -121,10 +122,7 @@ PlasmoidItem {
                     id: deviceSelector
 
                     Layout.fillWidth: true
-                    displayText: currentIndex === -1 ? "Please Choose..." : currentText
-                    model: []
-                    textRole: "name" // scanDevicesWithCatt() liefert eine QStringList
-                    enabled: model.length > 0
+                    model: devices
                 }
 
                 PlasmaComponents.Button {
@@ -132,7 +130,7 @@ PlasmoidItem {
                     icon.name: "view-refresh"
                     Layout.alignment: Qt.AlignRight
                     onClicked: {
-                        kcast.scanDevicesWithCatt();
+                        refreshDevices();
                     }
                 }
 
