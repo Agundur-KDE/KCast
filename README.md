@@ -1,6 +1,6 @@
 
 <div align="center">
-  <h1>KCast</h1>
+  <h1>KCast</h1> **Version:** 0.2.0
   <a href="https://kde.org/de/">
   <img src="https://img.shields.io/badge/KDE_Plasma-6.1+-blue?style=flat&logo=kde" alt="KCast">
 </a>
@@ -18,8 +18,10 @@
 
 
 ## Description
-**KCast** is a KDE Plasma 6 widget that lets you cast `.mp4` video files to Chromecast devices in your local network.
+**KCast** is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a  Chromecast devices in your local network.
 It supports device discovery, local media playback via an embedded HTTP server, and drag-and-drop integration with browsers and file managers like Dolphin.
+
+**Caution!** starting with version 0.2.0 we need [catt](https://github.com/skorokithakis/catt) installed.
 
 
 ## 📦 Features
@@ -61,11 +63,15 @@ To run KCast successfully, the following software must be installed:
 
 KCast is based on:
 
-- [pychromecast](https://github.com/home-assistant-libs/pychromecast)
+- [catt](https://github.com/skorokithakis/catt)
+
+  $ pipx install catt
 
 - [Python 3](https://www.python.org/)
 
 - Avahi Daemon – for local network device discovery (mDNS) (systemctl status avahi-daemon)
+
+
 
 Networking & Firewall:
 
@@ -83,12 +89,12 @@ _______________________
 - sudo firewall-cmd --permanent --add-port=8009/tcp
 - sudo firewall-cmd --reload
 
-
+- For the casting of local files to work you need to allow in the port range 45000-47000 over tcp.
 
 ## Usage
 
 - Switch on a chromecast enabled device in your locale network.
-- drop a MP4 file from Dolphin and/or Web-Browser on it an hit "play"
+- drop a video file from Dolphin and/or Web-Browser on it an hit "play"
 
 ## Support
 Open an issue in git ...
