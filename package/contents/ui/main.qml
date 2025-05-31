@@ -126,13 +126,6 @@ PlasmoidItem {
 
                     Layout.fillWidth: true
                     model: devices
-                    currentIndex: selectedIndex
-                    onCurrentIndexChanged: {
-                        selectedIndex = currentIndex;
-                        if (typeof kcast !== "undefined")
-                            kcast.setSelectedDeviceIndex(currentIndex);
-
-                    }
                 }
 
                 PlasmaComponents.Button {
@@ -169,6 +162,12 @@ PlasmoidItem {
                     icon.name: "media-playback-start"
                     enabled: canPlay && !isPlaying
                     onClicked: {
+                        var raw = mediaUrl.text;
+                        var cleaned = raw;
+                        if (raw.startsWith("file://")) {
+                            cleaned = raw.replace(/^file:\/\//, "");
+                            mediaUrl.text = cleaned;
+                        }
                         _play();
                         isPlaying = true;
                         isPaused = false;
