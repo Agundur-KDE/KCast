@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(plasma-desktop)
+project(KCastPlasmoid LANGUAGES CXX)
 
-set(PROJECT_VERSION "6.3.80")
+set(PROJECT_VERSION "0.2.0")
 
 set(PROJECT_DEP_VERSION "6.2.90")
 set(QT_MIN_VERSION "6.7.0")
@@ -34,7 +34,7 @@ include(KDEGitCommitHooks)
 include(ECMQmlModule)
 include(ECMConfiguredInstall)
 
-option(BUILD_DOC "Whether to build the documentation" ON)
+option(BUILD_DOC "Whether to build the documentation" OFF)
 option(BUILD_KCM_MOUSE_KWIN_WAYLAND "Build the Mouse KCM's KWin+Wayland backend" ON)
 option(BUILD_KCM_MOUSE_X11 "Build the Mouse KCM's X11 backend" ON)
 option(BUILD_KCM_TOUCHPAD_KWIN_WAYLAND "Build the Touchpad KCM's KWin+Wayland backend" ON)
@@ -44,12 +44,10 @@ option(BUILD_KCM_TABLET "Build the Tablet KCM" ON)
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Quick
     QuickWidgets
-    DBus
     Widgets
     Svg
     Concurrent
     Core5Compat
-    Sql # kcms/activities
 )
 
 if (Qt6Gui_VERSION VERSION_GREATER_EQUAL "6.10.0")
@@ -66,7 +64,6 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Config
     I18n
     KCMUtils
-    NewStuff
     Notifications
     NotifyConfig
     Attica
@@ -74,7 +71,6 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     GlobalAccel
     CoreAddons # KSharedDataCache required by KImageCache, KStringHandler required by FolderModel
     GuiAddons # KImageCache
-    DBusAddons
     Config
     WidgetsAddons
     Codecs
@@ -95,13 +91,6 @@ if(BUILD_TESTING)
     include(ECMAddTests)
 endif()
 
-if(BUILD_DOC)
-    find_package(KF6DocTools ${KF6_MIN_VERSION})
-    set_package_properties(KF6DocTools PROPERTIES
-        DESCRIPTION "Tools to generate documentation"
-        TYPE REQUIRED
-    )
-endif()
 
 find_package(KF6Kirigami ${KF6_MIN_VERSION} CONFIG)
 set_package_properties(KF6Kirigami PROPERTIES
@@ -140,7 +129,7 @@ if(X11_FOUND)
 endif()
 
 
-install(DIRECTORY package/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
+install(DIRECTORY ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
 
 
 add_subdirectory(plugin)
