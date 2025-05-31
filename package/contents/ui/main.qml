@@ -167,6 +167,7 @@ PlasmoidItem {
                     }
                 }
 
+                PlasmaComponents.Button {
                     id: pauseButton
 
                     property bool isPaused: false
