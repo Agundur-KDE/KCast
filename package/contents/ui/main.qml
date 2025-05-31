@@ -141,12 +141,6 @@ PlasmoidItem {
                 Layout.fillWidth: true
                 placeholderText: "http://... or /path/to/file.mp4"
                 onTextChanged: {
-                    const valid = text.length > 5 && text.endsWith(".mp4");
-                    canPlay = valid;
-                    if (!valid) {
-                        isPlaying = false;
-                        isPaused = false;
-                    }
                 }
             }
 
@@ -158,7 +152,7 @@ PlasmoidItem {
                 PlasmaComponents.Button {
                     text: "Play"
                     icon.name: "media-playback-start"
-                    enabled: canPlay && !isPlaying
+                    enabled: !isPlaying
                     onClicked: {
                         var raw = mediaUrl.text;
                         var cleaned = raw;
