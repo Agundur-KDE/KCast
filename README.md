@@ -97,7 +97,10 @@ _______________________
 - drop a video file from Dolphin and/or Web-Browser on it an hit "play"
 
 ## Support
-Open an issue in git ...
+
+- tail -f ~/.local/share/kcast.log
+
+- Open an issue in git ...
 
 [KCast Issues](https://www.opencode.net/agundur/kcast/-/issues)
 
