@@ -1,6 +1,6 @@
 ecm_add_qml_module(kcastplugin
     URI de.agundur.kcast
-    VERSION 1.0
+    VERSION 0.2.0
     GENERATE_PLUGIN_SOURCE
 )
 target_sources(kcastplugin PRIVATE
