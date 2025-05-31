@@ -39,6 +39,7 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 ## Installation
 
+**system wide installation**
 
 mkdir build && cd build
 
@@ -46,14 +47,20 @@ cmake ..
 
 make
 
-make install (as root)
+make install (as root) 
 
 
 or
 
-download kcast-complete.tar.gz
 
-$ sudo tar -xf kcast-complete.tar.gz -C /
+**current user only**
+
+
+cd package
+
+$ kpackagetool6 -t Plasma/Applet  -i .
+
+
 
 ## 🧠 Dependencies
 
