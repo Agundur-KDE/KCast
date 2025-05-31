@@ -22,10 +22,6 @@ PlasmoidItem {
 
     function refreshDevices() {
         console.log("refreashing");
-        if (!kcast) {
-            console.warn("❌ Plugin not available!");
-            return ;
-        }
         devices = kcast.scanDevicesWithCatt();
         console.log("📡 Gefundene Geräte:", devices);
         if (devices.length > 0) {
@@ -56,6 +52,10 @@ PlasmoidItem {
     Component.onCompleted: {
         if (!kcast) {
             console.warn("❌ Plugin not available!");
+            return ;
+        }
+        if (!kcast.isCattInstalled()) {
+            console.warn("⚠ Bitte installiere 'catt' zuerst!");
             return ;
         }
         refreshDevices();
@@ -96,11 +96,19 @@ PlasmoidItem {
             anchors.margins: 16
             spacing: 12
 
-            // Titel
-            Kirigami.Heading {
-                text: "KCast"
-                level: 2
-                Layout.fillWidth: true
+            RowLayout {
+                // Text {
+                //     font.pointSize: Kirigami.FontSize.Smallest
+                //     text: root.cattExists ? "catt found ✔" : "catt not found ✘"
+                //     color: root.cattExists ? "green" : "red"
+                // }
+
+                Kirigami.Heading {
+                    text: "KCast"
+                    level: 2
+                    Layout.fillWidth: true
+                }
+
             }
 
             PlasmaComponents.Label {

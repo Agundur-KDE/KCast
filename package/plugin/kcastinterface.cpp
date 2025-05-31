@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStringLiteral>
@@ -76,6 +77,20 @@ void KCastBridge::stopMedia(const QString &device)
     bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("stop"));
     if (!ok) {
         qWarning() << QString::fromUtf8("❌ Failed to start catt stop");
+    }
+}
+
+bool KCastBridge::isCattInstalled() const
+{
+    // QStandardPaths::findExecutable sucht in den PATH-Umgebungsvariablen
+    // und gibt den absoluten Pfad zurück, oder einen leeren QString, wenn es nicht gefunden wurde.
+    QString exePath = QStandardPaths::findExecutable(QLatin1String("catt"));
+    if (exePath.isEmpty()) {
+        qWarning() << QStringLiteral("⚠ catt nicht gefunden (findExecutable liefert leerer String)");
+        return false;
+    } else {
+        qDebug() << QStringLiteral("✅ catt gefunden unter:") << exePath;
+        return true;
     }
 }
 

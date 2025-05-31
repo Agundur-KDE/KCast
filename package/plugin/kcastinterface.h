@@ -18,6 +18,7 @@ public:
     Q_INVOKABLE void pauseMedia(const QString &device);
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
+    Q_INVOKABLE bool isCattInstalled() const;
 };
 
 #endif // KCASTINTERFACE_H
