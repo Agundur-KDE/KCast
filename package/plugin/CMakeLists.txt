@@ -9,7 +9,7 @@ find_package(ECM 5.0 REQUIRED NO_MODULE)
 # Hiermit wird die QML‐Plugin‐Registrierungsdatei erzeugt:
 ecm_add_qml_module(kcastplugin
     URI de.agundur.kcast
-    VERSION 0.2.0
+    VERSION 2.0
     GENERATE_PLUGIN_SOURCE
 )
 

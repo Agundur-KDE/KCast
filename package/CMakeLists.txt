@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(KCastPlasmoid LANGUAGES CXX)
 
-set(PROJECT_VERSION "0.2.0")
+set(PROJECT_VERSION "2.0")
 
 set(PROJECT_DEP_VERSION "6.2.90")
 set(QT_MIN_VERSION "6.7.0")
