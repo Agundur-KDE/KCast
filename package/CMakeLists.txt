@@ -128,8 +128,22 @@ if(X11_FOUND)
   set(HAVE_X11 1)
 endif()
 
+# 1) metadata.json und alle übrigen Contents (außer Plugin-.so) wie gehabt kopieren
+install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contents/
+  DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/contents
+  PATTERN "CMakeLists.txt" EXCLUDE
+  PATTERN "build"        EXCLUDE
+  PATTERN "*.o"          EXCLUDE
+  # Hier nicht mehr "*.so" ausschließen, weil wir die libkcastplugin.so separat behandeln
+)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/contents/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/contents PATTERN "CMakeLists.txt" EXCLUDE PATTERN "build" EXCLUDE PATTERN "*.o" EXCLUDE PATTERN "*.so" EXCLUDE)
+# 2) Das unter ecm_add_qml_module erzeugte Plugin-Verzeichnis (qmldir + .so) an den QML-Pfad kopieren:
+install(
+  DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/de/agundur/kcast"
+  DESTINATION "${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/contents/qml"
+)
+
 
 
 add_subdirectory(plugin)
