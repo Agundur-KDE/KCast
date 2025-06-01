@@ -2,7 +2,7 @@ import QtCore
 import QtQml
 import QtQuick 2.15
 import QtQuick.Layouts 1.1
-import de.agundur.kcast 1.0
+import de.agundur.kcast 0.2
 import org.kde.draganddrop 2.0 as DragDrop
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
