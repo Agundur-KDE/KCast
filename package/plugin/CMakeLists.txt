@@ -27,3 +27,8 @@ target_link_libraries(kcastplugin PRIVATE
 
 # Modul fertigstellen
 ecm_finalize_qml_module(kcastplugin)
+
+install(
+  DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/de/agundur/kcast"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/contents/qml"
+)
