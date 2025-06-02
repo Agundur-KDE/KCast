@@ -10,10 +10,21 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
 BuildRequires:  extra-cmake-modules
-BuildRequires:  kf6-rpm-macros
-BuildRequires:  qt6-qtbase-devel
-BuildRequires:  qt6-qtdeclarative-devel
-BuildRequires:  plasma6-framework-devel
+BuildRequires:  qt6-base-devel
+BuildRequires:  qt6-declarative-devel
+BuildRequires:  qt6-tools-devel
+BuildRequires:  kf6-kcoreaddons-devel
+BuildRequires:  kf6-kpackage-devel
+BuildRequires:  kf6-ki18n-devel
+BuildRequires:  pkgconfig(libbrotlidec)
+BuildRequires:  pkgconfig(libcurl)
+BuildRequires:  pkgconfig(libffi)
+BuildRequires:  pkgconfig(libsystemd)
+BuildRequires:  pkgconfig(libnghttp2)
+BuildRequires:  pkgconfig(libidn2)
+BuildRequires:  pkgconfig(libpsl)
+BuildRequires:  pkgconfig(libssh)
+
 
 Requires:       plasma6-workspace
 
@@ -24,17 +35,16 @@ KCast Version: 0.2.0 is a KDE Plasma 6 widget that lets you cast video files or 
 %autosetup -n %{name}-%{version}
 
 %build
-%cmake_kf6
+%cmake package
 %cmake_build
 
 %install
 %cmake_install
 
 %files
-%license LICENSE
+# %license LICENSE
 %doc README.md
-%{_kf6_qmldir}/de/agundur/kcast/
-%{_kf6_datadir}/plasma/plasmoids/de.agundur.kcast/
+/usr/lib64/qt6/qml/de/agundur/kcast/
+/usr/share/plasma/plasmoids/de.agundur.kcast/
 
-%changelog
-Mon Jun 02 2025 Alec <scholz@agundur.de> - 0.2.0
+%changelog * Mon Jun 02 2025 Alec <scholz@agundur.de> - 0.2.0
