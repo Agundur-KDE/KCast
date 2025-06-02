@@ -44,12 +44,12 @@ option(BUILD_KCM_TABLET "Build the Tablet KCM" ON)
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Quick
     QuickWidgets
-    DBus
+    # DBus
     Widgets
-    Svg
+    # Svg
     Concurrent
     Core5Compat
-    Sql # kcms/activities
+    # Sql # kcms/activities
 )
 
 if (Qt6Gui_VERSION VERSION_GREATER_EQUAL "6.10.0")
@@ -66,22 +66,22 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Config
     I18n
     KCMUtils
-    NewStuff
+    # NewStuff
     Notifications
     NotifyConfig
-    Attica
-    Runner
+    # Attica
+    # Runner
     GlobalAccel
     CoreAddons # KSharedDataCache required by KImageCache, KStringHandler required by FolderModel
     GuiAddons # KImageCache
-    DBusAddons
+    # DBusAddons
     Config
     WidgetsAddons
     Codecs
     Package
     IconThemes
     XmlGui
-    Svg
+    # Svg
 )
 
 find_package(Plasma5Support ${PROJECT_DEP_VERSION} REQUIRED)
