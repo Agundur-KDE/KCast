@@ -50,6 +50,17 @@ make
 make install (as root) 
 
 
+or
+
+
+**current user only**
+
+
+cd package
+
+$ kpackagetool6 -t Plasma/Applet  -i .
+
+
 
 ## 🧠 Dependencies
 
