@@ -59,6 +59,14 @@ KCast Version: 0.2.0 is a KDE Plasma 6 widget that lets you cast video files or 
 %dir %{_qt6_qmldir}/de
 %dir %{_qt6_qmldir}/de/agundur
 %{_qt6_qmldir}/de/agundur/kcast/
-
-
+%dir %{_datadir}/plasma/plasmoids/de.agundur.kcast
+%dir %{_datadir}/plasma/plasmoids/de.agundur.kcast/contents
+%dir %{_datadir}/plasma/plasmoids/de.agundur.kcast/contents/ui
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/metadata.json
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/contents/ui/main.qml
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/CMakeLists.txt
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/plugin/CMakeLists.txt
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/plugin/kcastinterface.cpp
+%{_datadir}/plasma/plasmoids/de.agundur.kcast/plugin/kcastinterface.h
+%dir %{_datadir}/plasma/plasmoids/de.agundur.kcast/plugin
 %changelog * Mon Jun 02 2025 Alec <scholz@agundur.de> - 0.2.0
