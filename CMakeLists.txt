@@ -34,12 +34,10 @@ include(KDEGitCommitHooks)
 include(ECMQmlModule)
 include(ECMConfiguredInstall)
 
-option(BUILD_DOC "Whether to build the documentation" ON)
-option(BUILD_KCM_MOUSE_KWIN_WAYLAND "Build the Mouse KCM's KWin+Wayland backend" ON)
+
 option(BUILD_KCM_MOUSE_X11 "Build the Mouse KCM's X11 backend" ON)
-option(BUILD_KCM_TOUCHPAD_KWIN_WAYLAND "Build the Touchpad KCM's KWin+Wayland backend" ON)
-option(BUILD_KCM_TOUCHPAD_X11 "Build the Touchpad KCM's X11 backend" ON)
-option(BUILD_KCM_TABLET "Build the Tablet KCM" ON)
+
+
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Quick
@@ -57,9 +55,7 @@ if (Qt6Gui_VERSION VERSION_GREATER_EQUAL "6.10.0")
     find_package(Qt6GuiPrivate ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE)
 endif()
 
-if(BUILD_KCM_TABLET)
-    find_package(Qt6WaylandClient ${QT_MIN_VERSION} CONFIG REQUIRED)
-endif()
+
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     Auth
@@ -91,18 +87,7 @@ find_package(PlasmaQuick ${PROJECT_DEP_VERSION} REQUIRED)
 find_package(PlasmaActivities ${PROJECT_DEP_VERSION} REQUIRED)
 find_package(PlasmaActivitiesStats ${PROJECT_DEP_VERSION} REQUIRED)
 
-if(BUILD_TESTING)
-    find_package(Qt6Test ${QT_MIN_VERSION} CONFIG REQUIRED)
-    include(ECMAddTests)
-endif()
 
-if(BUILD_DOC)
-    find_package(KF6DocTools ${KF6_MIN_VERSION})
-    set_package_properties(KF6DocTools PROPERTIES
-        DESCRIPTION "Tools to generate documentation"
-        TYPE REQUIRED
-    )
-endif()
 
 find_package(KF6Kirigami ${KF6_MIN_VERSION} CONFIG)
 set_package_properties(KF6Kirigami PROPERTIES
