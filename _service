@@ -1,0 +1,16 @@
+<services>
+  <service name="obs_scm">
+    <param name="scm">git</param>
+    <param name="url">https://www.opencode.net/agundur/kcast.git</param>
+    <param name="scm">git</param>
+    <param name="revision">main</param>
+     <param name="versionformat">0.2.0</param>
+  </service>
+  <service name="tar" mode="buildtime"/>
+  <service name="recompress" mode="buildtime">
+    <param name="compression">gz</param>
+     <param name="file">kcast-0.2.0.tar</param>
+
+  </service>
+  <service name="set_version" mode="buildtime"/>
+<service name="download_url"><param name="host">www.opencode.net</param><param name="protocol">https</param><param name="path">/agundur/kcast.git</param></service></services>
