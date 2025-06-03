@@ -82,10 +82,10 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
 )
 
 
-find_package(Plasma ${PROJECT_DEP_VERSION} REQUIRED)
-find_package(PlasmaQuick ${PROJECT_DEP_VERSION} REQUIRED)
-find_package(PlasmaActivities ${PROJECT_DEP_VERSION} REQUIRED)
-find_package(PlasmaActivitiesStats ${PROJECT_DEP_VERSION} REQUIRED)
+# find_package(Plasma ${PROJECT_DEP_VERSION} REQUIRED)
+#find_package(PlasmaQuick ${PROJECT_DEP_VERSION} REQUIRED)
+#find_package(PlasmaActivities ${PROJECT_DEP_VERSION} REQUIRED)
+#find_package(PlasmaActivitiesStats ${PROJECT_DEP_VERSION} REQUIRED)
 
 
 
