@@ -14,21 +14,25 @@ Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
-BuildRequires:  extra-cmake-modules
+
 
 %if 0%{?fedora}
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtdeclarative-devel
 BuildRequires: qt6-qtquickcontrols2-devel
+BuildRequires: qt6-qttools-devel
+BuildRequires: fedora-logos
+BuildRequires: OpenCL-ICD-Loader
+BuildRequires: pinentry-qt
+BuildRequires: wget1-wget
+BuildRequires: extra-cmake-modules
 %else
 BuildRequires: qt6-base-devel
 BuildRequires: qt6-declarative-devel
 BuildRequires: kf6-extra-cmake-modules
+BuildRequires: qt6-tools-devel
 %endif
 
-BuildRequires:  qt6-base-devel
-BuildRequires:  qt6-declarative-devel
-BuildRequires:  qt6-tools-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kpackage-devel
 BuildRequires:  kf6-ki18n-devel
