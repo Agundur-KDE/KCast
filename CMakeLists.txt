@@ -47,8 +47,8 @@ find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     # DBus
     Widgets
     # Svg
-    Concurrent
-    Core5Compat
+    #Concurrent
+    #Core5Compat
     # Sql # kcms/activities
 
 )
