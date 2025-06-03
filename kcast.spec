@@ -16,6 +16,16 @@ BuildRequires:  qt6-tools-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kpackage-devel
 BuildRequires:  kf6-ki18n-devel
+BuildRequires: cmake(KF6Config)
+BuildRequires: cmake(KF6KCMUtils)
+BuildRequires: cmake(KF6Notifications)
+BuildRequires: cmake(KF6NotifyConfig)
+BuildRequires: cmake(KF6GlobalAccel)
+BuildRequires: cmake(KF6GuiAddons)
+BuildRequires: cmake(KF6WidgetsAddons)
+BuildRequires: cmake(KF6IconThemes)
+BuildRequires: cmake(KF6Codecs)
+BuildRequires: cmake(KF6XmlGui)
 BuildRequires:  pkgconfig(libbrotlidec)
 BuildRequires:  pkgconfig(libcurl)
 BuildRequires:  pkgconfig(libffi)

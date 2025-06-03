@@ -58,8 +58,8 @@ endif()
 
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
-    Auth
-    Crash
+   # Auth
+    #Crash
     Config
     I18n
     KCMUtils
