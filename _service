@@ -1,5 +1,6 @@
 <services>
   <service name="obs_scm">
+
     <param name="scm">git</param>
     <param name="url">https://www.opencode.net/agundur/kcast.git</param>
     <param name="revision">main</param>
