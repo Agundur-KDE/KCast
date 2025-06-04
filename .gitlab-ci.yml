@@ -7,7 +7,11 @@ build_tarball:
     - cd build
     - cmake ..
     - make
-    - tar czf ../kcast.tar.gz *
+    - cd ..
+    - tar czf kcast-runtime.tar.gz build/usr/lib64/qt6/qml/de/agundur/kcast/plugin/libkcastplugin.so \
+                                    build/usr/share/plasma/plasmoids/de.agundur.kcast/metadata.json \
+                                    build/usr/share/plasma/plasmoids/de.agundur.kcast/contents/ui
   artifacts:
     paths:
-      - kcast.tar.gz
+      - kcast-runtime.tar.gz
+    expire_in: 1 week
