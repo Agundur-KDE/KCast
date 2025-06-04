@@ -68,7 +68,6 @@ sudo zypper ref
 sudo zypper in kcast
 
 
-
 ## 🧠 Dependencies
 
 To run KCast successfully, the following software must be installed:
