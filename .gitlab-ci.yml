@@ -1,15 +1,31 @@
+stages:
+  - build
+
+variables:
+  BUILD_DIR: build
+  ARTIFACT_NAME: kcast-runtime.tar.gz
+  ARTIFACT_PATH: dist
+
 build_tarball:
   stage: build
   tags:
     - shell
   script:
-    - echo "📂 Arbeitsverzeichnis (pwd):"
-    - pwd
-    - echo "📁 Projektstruktur (ls -l):"
-    - ls -l
-    - echo "🔍 Tiefere Struktur:"
-    - find . -type d
-    - echo "📦 Suche nach QML:"
-    - find . -name main.qml
-    - echo "🧪 Test ob UI-Verzeichnis existiert:"
-    - ls -lh package/contents/ui || (echo "❌ UI directory not found!" && exit 1)
+    - echo "🔧 Konfiguration starten"
+    - cmake -S . -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release
+    - echo "⚙️ Baue Projekt"
+    - cmake --build $BUILD_DIR --parallel
+    - echo "📦 Erstelle Tarball"
+    - mkdir -p $ARTIFACT_PATH
+    - ls -lh $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so not found!" && exit 1)
+    - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
+    - ls -lh package/contents/ui || (echo "❌ UI-Verzeichnis fehlt!" && exit 1)
+    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
+        $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
+        package/metadata.json \
+        package/contents/ui
+  artifacts:
+    name: "$ARTIFACT_NAME"
+    paths:
+      - "$ARTIFACT_PATH/$ARTIFACT_NAME"
+    expire_in: 1 week
