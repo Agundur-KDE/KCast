@@ -13,28 +13,24 @@ build_tarball:
   only:
     - tags
   script:
-    # Zeige Verzeichnisstruktur zur Fehlersuche
     - echo "📂 Arbeitsverzeichnis: $(pwd)"
-    - echo "📁 Projektstruktur:" && ls -l
-    - echo "🔍 Suche nach QML-Dateien:" && find . -name "*.qml"
+    - echo "📁 Projektstruktur:"
+    - ls -l
+    - echo "🔍 Suche nach QML-Dateien:"
+    - find . -name "*.qml"
 
-    # Build-Verzeichnis anlegen
     - cmake -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release
     - cmake --build $BUILD_DIR --parallel
 
-    # Vor dem Packen prüfen, ob Dateien existieren
     - ls -lh $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so not found!" && exit 1)
     - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
     - ls -lh package/contents/ui || (echo "❌ UI-Verzeichnis fehlt!" && exit 1)
 
-    # Tarball erstellen
     - mkdir -p $ARTIFACT_PATH
-    - |
-      tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
+    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
         $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
         package/metadata.json \
         package/contents/ui
-
   artifacts:
     paths:
       - dist/kcast-runtime.tar.gz
