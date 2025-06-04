@@ -1,17 +1,16 @@
 build_tarball:
-  stage: build
-  tags:
-    - shell
   script:
-    - mkdir -p build
+    - mkdir build
     - cd build
     - cmake ..
-    - make
+    - make -j$(nproc)
     - cd ..
-    - tar czf kcast-runtime.tar.gz build/usr/lib64/qt6/qml/de/agundur/kcast/plugin/libkcastplugin.so \
-                                    build/usr/share/plasma/plasmoids/de.agundur.kcast/metadata.json \
-                                    build/usr/share/plasma/plasmoids/de.agundur.kcast/contents/ui
+    - tar czf kcast-runtime.tar.gz \
+        build/bin/de/agundur/kcast/libkcastplugin.so \
+        package/metadata.json \
+        package/ui
   artifacts:
     paths:
       - kcast-runtime.tar.gz
-    expire_in: 1 week
+  tags:
+    - shell
