@@ -1,25 +1,15 @@
-stages:
-  - build
-
 build_tarball:
   stage: build
   tags:
     - shell
   script:
-    - mkdir -p build
-    - cmake -B build -S .
-    - cmake --build build --parallel
-    # Optional: Ausgabe prüfen
-    - ls -lh build/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so not found!" && exit 1)
-    - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
-    - ls -lh package/ui || (echo "❌ UI directory not found!" && exit 1)
-    # Archiv erzeugen
-    - mkdir -p dist
-    - tar czf dist/kcast-runtime.tar.gz \
-        build/bin/de/agundur/kcast/libkcastplugin.so \
-        package/metadata.json \
-        package/ui
-  artifacts:
-    paths:
-      - dist/kcast-runtime.tar.gz
-    expire_in: 1 day
+    - echo "📂 Arbeitsverzeichnis (pwd):"
+    - pwd
+    - echo "📁 Projektstruktur (ls -l):"
+    - ls -l
+    - echo "🔍 Tiefere Struktur:"
+    - find . -type d
+    - echo "📦 Suche nach QML:"
+    - find . -name main.qml
+    - echo "🧪 Test ob UI-Verzeichnis existiert:"
+    - ls -lh package/contents/ui || (echo "❌ UI directory not found!" && exit 1)
