@@ -1,0 +1,25 @@
+stages:
+  - build
+
+variables:
+  ARTIFACT_NAME: "kcast-runtime"
+
+build_tarball:
+  stage: build
+  image: opensuse/tumbleweed
+  before_script:
+    - zypper -n install cmake extra-cmake-modules gcc-c++ make git
+  script:
+    - mkdir build && cd build
+    - cmake ..
+    - make -j$(nproc)
+    - cd ..
+    - mkdir runtime
+    - cp build/plugin/libkcastplugin.so runtime/
+    - cp -r plasmoid/contents runtime/
+    - cp plasmoid/metadata.json runtime/
+    - tar -czf $ARTIFACT_NAME.tar.gz -C runtime .
+  artifacts:
+    paths:
+      - $ARTIFACT_NAME.tar.gz
+    expire_in: 7 days
