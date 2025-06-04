@@ -2,31 +2,39 @@ stages:
   - build
 
 variables:
-  BUILD_DIR: build
-  ARTIFACT_PATH: dist
-  ARTIFACT_NAME: kcast-runtime.tar.gz
+  BUILD_DIR: "build"
+  ARTIFACT_PATH: "dist"
+  ARTIFACT_NAME: "kcast-runtime.tar.gz"
 
+# Nur auf Tags triggern
 build_tarball:
   stage: build
-  tags: ["shell"]  # dein Runner-Tag
   only:
     - tags
+  tags:
+    - shell
   script:
-
-    - cmake -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release
-    - cmake --build $BUILD_DIR --parallel
-    - echo "📁 Überprüfe Artefakt-Komponenten"
-    - test -f $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so
-    - test -f package/metadata.json
-    - test -d package/contents/ui
+    - echo "📁 Projektstruktur (ls -l)"
+    - ls -l
+    - echo "🔧 Erstelle Build-Verzeichnis:"
+    - mkdir -p "${BUILD_DIR}"
+    - echo "🛠️ Starte CMake-Konfiguration"
+    - cmake -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
+    - echo "⚙️ Baue Projekt"
+    - cmake --build "${BUILD_DIR}" --parallel
+    - echo "🧪 Prüfe Build-Ergebnisse"
+    - ls -lh "${BUILD_DIR}/bin/de/agundur/kcast/libkcastplugin.so" || (echo "❌ .so not found!" && exit 1)
+    - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
+    - ls -lh package/contents/ui || (echo "❌ UI-Verzeichnis fehlt!" && exit 1)
     - echo "📦 Erstelle Tarball"
-    - mkdir -p $ARTIFACT_PATH
-    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
-        $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
+    - mkdir -p "${ARTIFACT_PATH}"
+    - tar czf "${ARTIFACT_PATH}/${ARTIFACT_NAME}" \
+        "${BUILD_DIR}/bin/de/agundur/kcast/libkcastplugin.so" \
         package/metadata.json \
         package/contents/ui
+    - echo "✅ Fertig gebaut: ${ARTIFACT_PATH}/${ARTIFACT_NAME}"
+
   artifacts:
-    name: "$ARTIFACT_NAME"
     paths:
-      - $ARTIFACT_PATH/$ARTIFACT_NAME
+      - "${ARTIFACT_PATH}/${ARTIFACT_NAME}"
     expire_in: 1 week
