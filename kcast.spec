@@ -15,7 +15,6 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
 
-
 %if 0%{?fedora}
 BuildRequires: qt6-qtbase-devel
 BuildRequires: qt6-qtdeclarative-devel
@@ -32,7 +31,6 @@ BuildRequires: qt6-declarative-devel
 BuildRequires: kf6-extra-cmake-modules
 BuildRequires: qt6-tools-devel
 %endif
-
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kpackage-devel
 BuildRequires:  kf6-ki18n-devel
@@ -56,7 +54,8 @@ BuildRequires:  pkgconfig(libpsl)
 BuildRequires:  pkgconfig(libssh)
 
 
-Requires:       plasma6-workspace
+Requires: plasma6-workspace
+Requires: catt
 
 %description
 KCast Version: 0.2.0 is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a  Chromecast devices in your local network
