@@ -20,10 +20,7 @@ build_tarball:
     - ls -lh $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so not found!" && exit 1)
     - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
     - ls -lh package/contents/ui || (echo "❌ UI-Verzeichnis fehlt!" && exit 1)
-    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
-        $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
-        package/metadata.json \
-        package/contents/ui
+    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so package/metadata.json package/contents/ui
   artifacts:
     name: "$ARTIFACT_NAME"
     paths:
