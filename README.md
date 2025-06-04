@@ -66,7 +66,7 @@ sudo zypper ref
 
 # Install KCast
 sudo zypper in kcast
-
+```
 
 ## 🧠 Dependencies
 
