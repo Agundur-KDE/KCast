@@ -4,7 +4,7 @@ stages:
 build_tarball:
   stage: build
   script:
-    - echo "📂 Arbeitsverzeichnis: $(pwd)"
+
     - echo "📁 Projektstruktur:"
     - ls -l
     - echo "🔍 Suche nach QML-Dateien:"
