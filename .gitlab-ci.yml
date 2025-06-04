@@ -1,6 +1,5 @@
-workflow:
-  rules:
-    - if: '$CI_COMMIT_TAG'  # nur bei Git-Tags ausführen
+stages:
+  - build
 
 variables:
   BUILD_DIR: build
@@ -8,32 +7,35 @@ variables:
   ARTIFACT_NAME: kcast-runtime.tar.gz
 
 build_tarball:
+  stage: build
   tags:
     - shell
+  only:
+    - tags
   script:
-    - echo "📁 Arbeitsverzeichnis: $PWD"
-    - echo "📦 Setze Buildverzeichnis: $BUILD_DIR"
+    # Zeige Verzeichnisstruktur zur Fehlersuche
+    - echo "📂 Arbeitsverzeichnis: $(pwd)"
+    - echo "📁 Projektstruktur:" && ls -l
+    - echo "🔍 Suche nach QML-Dateien:" && find . -name "*.qml"
+
+    # Build-Verzeichnis anlegen
     - cmake -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release
     - cmake --build $BUILD_DIR --parallel
-    - echo "✅ Build abgeschlossen"
 
-    # Tests: Existenz prüfen
-    - ls -lh $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so fehlt!" && exit 1)
-    - ls -lh package/metadata.json || (echo "❌ metadata.json fehlt!" && exit 1)
+    # Vor dem Packen prüfen, ob Dateien existieren
+    - ls -lh $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so || (echo "❌ .so not found!" && exit 1)
+    - ls -lh package/metadata.json || (echo "❌ metadata.json not found!" && exit 1)
     - ls -lh package/contents/ui || (echo "❌ UI-Verzeichnis fehlt!" && exit 1)
 
-    # Tarball bauen
+    # Tarball erstellen
     - mkdir -p $ARTIFACT_PATH
-    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so package/metadata.json package/contents/ui
-
-
-    - echo "📦 Tarball erstellt: $ARTIFACT_PATH/$ARTIFACT_NAME"
+    - |
+      tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
+        $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
+        package/metadata.json \
+        package/contents/ui
 
   artifacts:
     paths:
       - dist/kcast-runtime.tar.gz
-    expire_in: 1 week
-    name: "$CI_PROJECT_NAME-$CI_COMMIT_TAG"
-
-  rules:
-    - if: '$CI_COMMIT_TAG'
+    expire_in: 7 days
