@@ -12,7 +12,8 @@ build_tarball:
   only:
     - tags
   script:
-    - echo "🔧 Erstelle Build-Verzeichnis: $BUILD_DIR"
+    - echo "🔧 Erstelle Build-Verzeichnis:"
+    - echo "$BUILD_DIR"
     - cmake -B $BUILD_DIR -DCMAKE_BUILD_TYPE=Release
     - cmake --build $BUILD_DIR --parallel
     - echo "📁 Überprüfe Artefakt-Komponenten"
