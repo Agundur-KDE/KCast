@@ -6,7 +6,7 @@ build_tarball:
     - make -j$(nproc)
     - cd ..
     - tar czf kcast-runtime.tar.gz \
-        build/bin/de/agundur/kcast/libkcastplugin.so \
+        bin/de/agundur/kcast/libkcastplugin.so \
         package/metadata.json \
         package/ui
   artifacts:
