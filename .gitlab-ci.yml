@@ -5,8 +5,9 @@ build_tarball:
     - cmake ..
     - make -j$(nproc)
     - cd ..
-    - tar czf kcast-runtime.tar.gz \
-        bin/de/agundur/kcast/libkcastplugin.so \
+    - mkdir -p dist
+    - tar czf dist/kcast-runtime.tar.gz \
+        build/bin/de/agundur/kcast/libkcastplugin.so \
         package/metadata.json \
         package/ui
   artifacts:
