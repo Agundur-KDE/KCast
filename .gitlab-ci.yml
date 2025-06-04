@@ -24,10 +24,8 @@ build_tarball:
 
     # Tarball bauen
     - mkdir -p $ARTIFACT_PATH
-    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME \
-        $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so \
-        package/metadata.json \
-        package/contents/ui
+    - tar czf $ARTIFACT_PATH/$ARTIFACT_NAME $BUILD_DIR/bin/de/agundur/kcast/libkcastplugin.so package/metadata.json package/contents/ui
+
 
     - echo "📦 Tarball erstellt: $ARTIFACT_PATH/$ARTIFACT_NAME"
 
