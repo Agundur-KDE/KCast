@@ -50,6 +50,24 @@ make
 make install (as root) 
 
 
+## 🛠️ Installing KCast via the openSUSE Build Service Repository
+
+For openSUSE Tumbleweed (and compatible systems):
+
+```bash
+# Add the repository
+sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/openSUSE_Tumbleweed/home:Agundur.repo
+
+# Automatically import GPG key (required once)
+sudo zypper --gpg-auto-import-keys ref
+
+# Refresh repository metadata
+sudo zypper ref
+
+# Install KCast
+sudo zypper in kcast
+
+
 
 ## 🧠 Dependencies
 
