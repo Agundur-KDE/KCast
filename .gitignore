@@ -1,3 +1,5 @@
 build
 .clang-format
 promoting.txt
+installer.sh
+kcast-runtime.tar.gz
