@@ -67,6 +67,35 @@ sudo zypper ref
 sudo zypper in kcast
 ```
 
+## KCast Runtime Installer
+
+This archive contains everything needed to install the **KCast Plasmoid** and its corresponding **QML plugin** on a KDE Plasma system.
+
+# 📦 Content
+
+The package [kcast-installer-package.tar.gz](https://www.opencode.net/agundur/kcast/-/blob/main/kcast-installer-package.tar.gz?ref_type=heads) includes:
+
+- `kcast-runtime.tar.gz`: Contains the compiled `.so`, `qmldir`, and QML files
+- `installer.sh`: Installs everything into the appropriate user directories
+
+# ✅ Requirements
+
+- KDE Plasma 6.x
+- Qt 6.x runtime
+- Tar, Bash, and basic command-line tools
+
+> 📝 Needs testing on Fedora Silverblue, Bazzite
+
+# 🚀 Installation
+
+```bash
+tar xzf kcast-installer-package.tar.gz
+
+./installer.sh
+
+```
+
+
 ## 🧠 Dependencies
 
 To run KCast successfully, the following software must be installed:
