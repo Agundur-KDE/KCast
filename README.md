@@ -51,6 +51,8 @@ make install (as root)
 
 ## 🛠️ Installing KCast via the openSUSE Build Service Repository
 
+[![build result](https://build.opensuse.org/projects/home:Agundur/packages/kcast/badge.svg?type=default)](https://build.opensuse.org/package/show/home:Agundur/kcast)
+
 For openSUSE Tumbleweed (and compatible systems):
 
 ```bash
