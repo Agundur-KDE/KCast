@@ -1,6 +1,8 @@
 import QtCore
 import QtQml
 import QtQuick 2.15
+import QtQuick.Controls 6.5
+import QtQuick.Controls.Fusion
 import QtQuick.Layouts 1.1
 import de.agundur.kcast 1.0
 import org.kde.draganddrop 2.0 as DragDrop
@@ -136,13 +138,53 @@ PlasmoidItem {
 
             }
 
-            PlasmaComponents.TextField {
+            TextField {
                 id: mediaUrl
 
                 Layout.fillWidth: true
                 placeholderText: "http://... or /path/to/file.mp4"
                 onTextChanged: {
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+                    onPressed: {
+                        if (mouse.button === Qt.RightButton)
+                            menu.popup();
+
+                    }
+
+                    Menu {
+                        id: menu
+
+                        MenuItem {
+                            text: "copy"
+                            enabled: mediaUrl.selectedText.length > 0
+                            onTriggered: mediaUrl.copy()
+                        }
+
+                        MenuItem {
+                            text: "paste"
+                            enabled: Qt.application.clipboard.hasText
+                            onTriggered: mediaUrl.paste()
+                        }
+
+                        MenuItem {
+                            text: "cut"
+                            enabled: mediaUrl.selectedText.length > 0
+                            onTriggered: mediaUrl.cut()
+                        }
+
+                        MenuItem {
+                            text: "select all"
+                            onTriggered: mediaUrl.selectAll()
+                        }
+
+                    }
+
+                }
+
             }
 
             RowLayout {
