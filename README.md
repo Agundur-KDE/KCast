@@ -142,6 +142,18 @@ _______________________
 - Switch on a chromecast enabled device in your locale network.
 - drop a video file from Dolphin and/or Web-Browser on it an hit "play"
 
+
+
+## Tested Hardware
+
+KCast has been tested successfully with the JMGO N1S Pro 4K Triple Laser Projector.
+This projector supports high-quality Chromecast streaming and works reliably with KCast.
+
+    🛒 [Buy on Amazon](https://amzn.to/43SSX1U) (Affiliate link)
+
+Using this link helps support the development of KCast at no additional cost to you.
+
+
 ## Support
 
 - tail -f ~/.local/share/kcast.log
