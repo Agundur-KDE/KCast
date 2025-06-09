@@ -146,11 +146,11 @@ _______________________
 
 ## Tested Hardware
 
-KCast has been tested successfully with the JMGO N1S Pro 4K Triple Laser Projector.
+KCast has been tested successfully with the 
+
+🛒[JMGO N1S Pro 4K Triple Laser Projector](https://amzn.to/43SSX1U) (Affiliate link).
+
 This projector supports high-quality Chromecast streaming and works reliably with KCast.
-
-    🛒 [Buy on Amazon](https://amzn.to/43SSX1U) (Affiliate link)
-
 Using this link helps support the development of KCast at no additional cost to you.
 
 
