@@ -13,8 +13,7 @@
   </a>
   <a href="https://store.kde.org/p/2290729">
   <img src="https://img.shields.io/badge/KDE%20Plasma-1D99F3?logo=kdeplasma&logoColor=fff" alt="kdeplasma">
-  
-  <script src="https://liberapay.com/Agundur/widgets/button.js"></script>
+
 <noscript><a href="https://liberapay.com/Agundur/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
 </a></div>
 
