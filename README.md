@@ -14,6 +14,7 @@
   <a href="https://store.kde.org/p/2290729">
   <img src="https://img.shields.io/badge/KDE%20Plasma-1D99F3?logo=kdeplasma&logoColor=fff" alt="kdeplasma">
   
+  <script src="https://liberapay.com/Agundur/widgets/button.js"></script>
 <noscript><a href="https://liberapay.com/Agundur/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
 </a></div>
 
@@ -24,6 +25,9 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 **Caution!** starting with version 0.2.0 we need [catt](https://github.com/skorokithakis/catt) installed.
 
+## 🏠 Homepage
+
+📦 [https://github.com/Agundur-KDE/KCast](https://github.com/Agundur-KDE/KCast)
 
 ## 📦 Features
 
@@ -159,6 +163,8 @@ Using this link helps support the development of KCast at no additional cost to 
 
 - Open an issue in git ...
 
+[KCast Issues](https://github.com/Agundur-KDE/KCast/issues)
+
 
 ## Roadmap
 
@@ -168,6 +174,8 @@ Using this link helps support the development of KCast at no additional cost to 
 
 ## Contributing
 accepting contributions ...
+
+[KCast](hhttps://github.com/Agundur-KDE/KCast)
 
 
 ## Authors and acknowledgment
