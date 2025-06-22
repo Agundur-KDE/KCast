@@ -13,6 +13,9 @@ import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid 2.0
 
 PlasmoidItem {
+    // if (Plasmoid.location === PlasmaCore.Types.Floating || Plasmoid.location === PlasmaCore.Types.Desktop)
+    //     return cfg_viewMode === "Compact" ? compactRepresentation : fullRepresentation;
+
     id: root
 
     // Liste der Geräte
@@ -66,9 +69,6 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
     preferredRepresentation: {
-        if (Plasmoid.location === PlasmaCore.Types.Floating || Plasmoid.location === PlasmaCore.Types.Desktop)
-            return cfg_viewMode === "Compact" ? compactRepresentation : fullRepresentation;
-
         return compactRepresentation;
     }
 
