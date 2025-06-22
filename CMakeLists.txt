@@ -34,10 +34,7 @@ include(KDEGitCommitHooks)
 include(ECMQmlModule)
 include(ECMConfiguredInstall)
 
-
 option(BUILD_KCM_MOUSE_X11 "Build the Mouse KCM's X11 backend" ON)
-
-
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Quick
@@ -54,7 +51,6 @@ find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
 if (Qt6Gui_VERSION VERSION_GREATER_EQUAL "6.10.0")
     find_package(Qt6GuiPrivate ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE)
 endif()
-
 
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
@@ -82,13 +78,6 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
 )
 
 
-# find_package(Plasma ${PROJECT_DEP_VERSION} REQUIRED)
-#find_package(PlasmaQuick ${PROJECT_DEP_VERSION} REQUIRED)
-#find_package(PlasmaActivities ${PROJECT_DEP_VERSION} REQUIRED)
-#find_package(PlasmaActivitiesStats ${PROJECT_DEP_VERSION} REQUIRED)
-
-
-
 find_package(KF6Kirigami ${KF6_MIN_VERSION} CONFIG)
 set_package_properties(KF6Kirigami PROPERTIES
     DESCRIPTION "A QtQuick based components set"
@@ -111,8 +100,6 @@ set_package_properties(KF6QQC2DesktopStyle PROPERTIES
     TYPE RUNTIME
 )
 
-
-
 find_package(X11)
 set_package_properties(X11 PROPERTIES
     DESCRIPTION "X11 libraries"
@@ -124,6 +111,17 @@ set_package_properties(X11 PROPERTIES
 if(X11_FOUND)
   set(HAVE_X11 1)
 endif()
+
+
+install(DIRECTORY contents/
+    DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/
+    FILES_MATCHING PATTERN "*.qml"
+                   PATTERN "*.svg"
+                   PATTERN "*.js"
+                   PATTERN "*.json"
+                   PATTERN "*.png"
+)
+
 
 add_subdirectory(package)
 
