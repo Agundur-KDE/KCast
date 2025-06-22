@@ -91,16 +91,32 @@ PlasmoidItem {
         }
 
         ColumnLayout {
+            // spacing: 12
+
             anchors.fill: parent
             anchors.margins: 16
-            spacing: 12
 
             RowLayout {
-                // Text {
-                //     font.pointSize: Kirigami.FontSize.Smallest
-                //     text: root.cattExists ? "catt found ✔" : "catt not found ✘"
-                //     color: root.cattExists ? "green" : "red"
-                // }
+                Item {
+                    id: logoWrapper
+
+                    width: 64
+                    height: 64
+                    ToolTip.visible: kcastIcon.containsMouse
+                    ToolTip.delay: 500
+                    ToolTip.text: "KCast"
+
+                    Image {
+                        id: kcastIcon
+
+                        anchors.centerIn: parent
+                        source: Qt.resolvedUrl("../icons/kcast_icon_64x64.png")
+                        width: 64
+                        height: 64
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                }
 
                 Kirigami.Heading {
                     text: "KCast"
