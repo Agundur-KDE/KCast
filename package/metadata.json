@@ -7,18 +7,18 @@
       "Plasma/Applet"
     ],
     "Name": "KCast",
+    "Icon": "kcast_icon",
     "Description": "chromecast videos to a device",
-    "Icon": "applications-multimedia",
     "Authors": [
       {
-        "Email": "scholz@agundur.de",
+        "Email": "info@agundur.de",
         "Name": "Alec"
       }
     ],
     "Version": "2.0",
     "License": "GPL",
     "Website": "https://www.agundur.de",
-    "BugReportUrl": "scholz@agundur.de"
+    "BugReportUrl": "info@agundur.de"
   },
   "X-Plasma-API-Minimum-Version": "6.0",
   "X-Plasma-API": "declarativeappletscript",
