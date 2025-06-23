@@ -82,8 +82,37 @@ PlasmoidItem {
         id: full
     }
 
-    compactRepresentation: CompactRepresentation {
+    compactRepresentation: Item {
         id: compact
+
+        Component.onCompleted: {
+            console.log('start');
+        }
+        // Wichtig für Panel-Integration
+        Layout.minimumWidth: Kirigami.Units.iconSizes.sizeForLabels
+        Layout.minimumHeight: Kirigami.Units.iconSizes.sizeForLabels
+
+        // Klickfläche (auch für Panels!)
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: {
+                console.log('before');
+                expanded = !expanded;
+                console.log('after');
+            }
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        // Dein Logo
+        Image {
+            source: Qt.resolvedUrl("../icons/kcast_icon_32x32.png")
+            width: Kirigami.Units.iconSizes.sizeForLabels
+            height: Kirigami.Units.iconSizes.sizeForLabels
+            anchors.centerIn: parent
+            fillMode: Image.PreserveAspectFit
+        }
+
     }
 
 }
