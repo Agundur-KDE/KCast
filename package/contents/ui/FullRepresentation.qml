@@ -53,6 +53,9 @@ DropArea {
     // property bool canPlay: false
     property bool isPlaying: false
 
+    implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
+    implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 12
