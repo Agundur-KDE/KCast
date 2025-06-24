@@ -7,7 +7,7 @@
       "Plasma/Applet"
     ],
     "Name": "KCast",
-    "Icon": "kcast_icon",
+    "Icon": "kcast-symbolic",
     "Description": "chromecast videos to a device",
     "Authors": [
       {

@@ -21,6 +21,10 @@ PlasmoidItem {
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
 
+    PlasmaCore.IconItem {
+        source: "kcast-symbolic"
+    }
+
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {
         id: full
@@ -42,15 +46,17 @@ PlasmoidItem {
             anchors.fill: parent
             onClicked: {
                 expanded = !expanded;
+                cursorShape:
+                Qt.PointingHandCursor;
             }
         }
 
-        Image {
-            source: Qt.resolvedUrl("../icons/kcast_icon_64x64.png")
-            width: preferredWidth
-            height: preferredHeight
-            anchors.centerIn: parent
-            fillMode: Image.PreserveAspectFit
+        PlasmaCore.IconItem {
+            anchors.fill: parent
+            source: "kcast-symbolic"
+            usesPlasmaTheme: true
+            implicitWidth: PlasmaCore.Units.iconSizes.panel
+            implicitHeight: PlasmaCore.Units.iconSizes.panel
         }
 
     }
