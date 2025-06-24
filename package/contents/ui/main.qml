@@ -1,30 +1,32 @@
-import QtCore
-import QtQml
-import QtQuick 2.15
-import QtQuick.Controls 6.5
-import QtQuick.Controls.Fusion
-import QtQuick.Layouts 1.1
-import org.kde.draganddrop 2.0 as DragDrop
+import QtQuick
+import QtQuick.Controls 6.7
+import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
-import org.kde.plasma.extras as PlasmaExtras
-import org.kde.plasma.plasmoid 2.0
+import org.kde.plasma.plasmoid
 
 PlasmoidItem {
     id: root
 
+    preferredRepresentation: {
+        const edge = Plasmoid.location;
+        if (edge === PlasmaCore.Types.TopEdge || edge === PlasmaCore.Types.BottomEdge || edge === PlasmaCore.Types.LeftEdge || edge === PlasmaCore.Types.RightEdge)
+            return compactRepresentation;
+
+        return compactRepresentation;
+    }
     Plasmoid.title: i18n("KCast")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
-    preferredRepresentation: {
-        return compactRepresentation;
-    }
 
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {
         id: full
+
+        implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
+        implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
     }
 
     compactRepresentation: MouseArea {
@@ -40,8 +42,6 @@ PlasmoidItem {
         hoverEnabled: true
 
         MouseArea {
-            // cursorShape: Qt.PointingHandCursor
-
             anchors.fill: parent
             onClicked: {
                 expanded = !expanded;
