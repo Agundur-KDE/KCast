@@ -17,13 +17,6 @@ PlasmoidItem {
     // Liste der Geräte
     // Plugin-Instanz
     // Dein Logo
-    // Image {
-    //     source: Qt.resolvedUrl("../icons/kcast_icon_32x32.png")
-    //     width: Kirigami.Units.iconSizes.sizeForLabels
-    //     height: Kirigami.Units.iconSizes.sizeForLabels
-    //     anchors.centerIn: parent
-    //     fillMode: Image.PreserveAspectFit
-    // }
 
     id: root
 
@@ -42,27 +35,60 @@ PlasmoidItem {
         id: full
     }
 
-    compactRepresentation: Item {
+    compactRepresentation: MouseArea {
         id: compact
 
-        Component.onCompleted: {
-            console.log('start');
-        }
-        // Wichtig für Panel-Integration
-        Layout.minimumWidth: Kirigami.Units.iconSizes.sizeForLabels
-        Layout.minimumHeight: Kirigami.Units.iconSizes.sizeForLabels
+        // Taken from DigitalClock to ensure uniform sizing when next to each other
+        readonly property bool tooSmall: Plasmoid.formFactor === PlasmaCore.Types.Horizontal && Math.round(2 * (compactRoot.height / 5)) <= Kirigami.Theme.smallFont.pixelSize
+        readonly property bool shouldHaveIcon: Plasmoid.formFactor === PlasmaCore.Types.Vertical || Plasmoid.icon !== ""
+        readonly property bool shouldHaveLabel: Plasmoid.formFactor !== PlasmaCore.Types.Vertical && Plasmoid.configuration.menuLabel !== ""
+        readonly property int iconSize: Kirigami.Units.iconSizes.large
+        readonly property var sizing: {
+            const displayedIcon = imageFallback.visible ? imageFallback : (buttonIcon.valid ? buttonIcon : buttonIconFallback);
+            let impWidth = 0;
+            if (shouldHaveIcon)
+                impWidth += displayedIcon.width;
 
-        // Klickfläche (auch für Panels!)
-        MouseArea {
-            // cursorShape: Qt.PointingHandCursor
+            if (shouldHaveLabel)
+                impWidth += labelTextField.contentWidth + labelTextField.Layout.leftMargin + labelTextField.Layout.rightMargin;
 
-            anchors.fill: parent
-            // hoverEnabled: true
-            onClicked: {
-                console.log('before');
-                expanded = !expanded;
-                console.log('after');
+            const impHeight = displayedIcon.height > 0 ? displayedIcon.height : iconSize;
+            // at least square, but can be wider/taller
+            if (kickoff.inPanel) {
+                // horizontal
+
+                if (kickoff.vertical)
+                    return {
+                    "preferredWidth": iconSize,
+                    "preferredHeight": impHeight
+                };
+                else
+                    return {
+                    "preferredWidth": impWidth,
+                    "preferredHeight": iconSize
+                };
+            } else {
+                return {
+                    "preferredWidth": impWidth,
+                    "preferredHeight": Kirigami.Units.iconSizes.small
+                };
             }
+        }
+
+        implicitWidth: iconSize
+        implicitHeight: iconSize
+        Layout.preferredWidth: sizing.preferredWidth
+        Layout.preferredHeight: sizing.preferredHeight
+        Layout.minimumWidth: Layout.preferredWidth
+        Layout.minimumHeight: Layout.preferredHeight
+        hoverEnabled: true
+
+        Image {
+            source: Qt.resolvedUrl("../icons/kcast_icon_32x32.png")
+            width: impWidth
+            height: impHeight
+            anchors.centerIn: parent
+            fillMode: Image.PreserveAspectFit
         }
 
     }
