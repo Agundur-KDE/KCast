@@ -13,48 +13,53 @@ import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid 2.0
 
 DropArea {
-    // property bool isPaused: false
-    // function refreshDevices() {
-    //     console.log("refreashing");
-    //     devices = kcast.scanDevicesWithCatt();
-    // }
-    // function _play() {
-    //     console.log(mediaUrl.text);
-    //     kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
-    // }
-    // function _pause() {
-    //     kcast.pauseMedia(deviceSelector.currentText);
-    // }
-    // function _resume() {
-    //     kcast.resumeMedia(deviceSelector.currentText);
-    // }
-    // function _stop() {
-    //     kcast.stopMedia(deviceSelector.currentText);
-    // }
-    // Component.onCompleted: {
-    //     if (!kcast) {
-    //         console.warn("❌ Plugin not available!");
-    //         return ;
-    //     }
-    //     if (!kcast.isCattInstalled()) {
-    //         console.warn("⚠ Bitte installiere 'catt' zuerst!");
-    //         return ;
-    //     }
-    //     refreshDevices();
-    // }
-    // KCastBridge {
-    //     id: kcast
-    // }
-
-    // Layout.minimumWidth: deviceList.implicitWidth + 100
-    // Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
-    // property int selectedIndex: -1
-    // property var devices: []
-    // property bool canPlay: false
+    property bool isPaused: false
+    property int selectedIndex: -1
+    property var devices: []
+    property bool canPlay: false
     property bool isPlaying: false
 
+    function refreshDevices() {
+        console.log("refreashing");
+        devices = kcast.scanDevicesWithCatt();
+    }
+
+    function _play() {
+        console.log(mediaUrl.text);
+        kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
+    }
+
+    function _pause() {
+        kcast.pauseMedia(deviceSelector.currentText);
+    }
+
+    function _resume() {
+        kcast.resumeMedia(deviceSelector.currentText);
+    }
+
+    function _stop() {
+        kcast.stopMedia(deviceSelector.currentText);
+    }
+
+    Component.onCompleted: {
+        if (!kcast) {
+            console.warn("❌ Plugin not available!");
+            return ;
+        }
+        if (!kcast.isCattInstalled()) {
+            console.warn("⚠ Bitte installiere 'catt' zuerst!");
+            return ;
+        }
+        refreshDevices();
+    }
+    Layout.minimumWidth: deviceList.implicitWidth + 100
+    Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
+    KCastBridge {
+        id: kcast
+    }
 
     ColumnLayout {
         anchors.fill: parent
