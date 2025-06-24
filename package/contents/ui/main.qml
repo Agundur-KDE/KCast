@@ -14,7 +14,7 @@ PlasmoidItem {
         if (edge === PlasmaCore.Types.TopEdge || edge === PlasmaCore.Types.BottomEdge || edge === PlasmaCore.Types.LeftEdge || edge === PlasmaCore.Types.RightEdge)
             return compactRepresentation;
 
-        return compactRepresentation;
+        return FullRepresentation;
     }
     Plasmoid.title: i18n("KCast")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
@@ -24,9 +24,6 @@ PlasmoidItem {
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {
         id: full
-
-        implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
-        implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
     }
 
     compactRepresentation: MouseArea {
