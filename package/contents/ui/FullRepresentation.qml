@@ -13,8 +13,45 @@ import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasmoid 2.0
 
 DropArea {
+    // property bool isPaused: false
+    // function refreshDevices() {
+    //     console.log("refreashing");
+    //     devices = kcast.scanDevicesWithCatt();
+    // }
+    // function _play() {
+    //     console.log(mediaUrl.text);
+    //     kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
+    // }
+    // function _pause() {
+    //     kcast.pauseMedia(deviceSelector.currentText);
+    // }
+    // function _resume() {
+    //     kcast.resumeMedia(deviceSelector.currentText);
+    // }
+    // function _stop() {
+    //     kcast.stopMedia(deviceSelector.currentText);
+    // }
+    // Component.onCompleted: {
+    //     if (!kcast) {
+    //         console.warn("❌ Plugin not available!");
+    //         return ;
+    //     }
+    //     if (!kcast.isCattInstalled()) {
+    //         console.warn("⚠ Bitte installiere 'catt' zuerst!");
+    //         return ;
+    //     }
+    //     refreshDevices();
+    // }
+    // KCastBridge {
+    //     id: kcast
+    // }
+
     // Layout.minimumWidth: deviceList.implicitWidth + 100
     // Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
+    // property int selectedIndex: -1
+    // property var devices: []
+    // property bool canPlay: false
+    property bool isPlaying: false
 
     ColumnLayout {
         anchors.fill: parent
@@ -59,6 +96,13 @@ DropArea {
 
         // 1) Device-Liste (ComboBox)
         RowLayout {
+            // Component.onCompleted: {
+            //     if (devices.length > 0)
+            //         selectedIndex = 0;
+            //     else
+            //         selectedIndex = -1;
+            // }
+
             id: deviceList
 
             Layout.fillWidth: true
