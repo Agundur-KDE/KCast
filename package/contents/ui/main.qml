@@ -14,7 +14,7 @@ PlasmoidItem {
         if (edge === PlasmaCore.Types.TopEdge || edge === PlasmaCore.Types.BottomEdge || edge === PlasmaCore.Types.LeftEdge || edge === PlasmaCore.Types.RightEdge)
             return compactRepresentation;
 
-        return FullRepresentation;
+        return compactRepresentation;
     }
     Plasmoid.title: i18n("KCast")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
