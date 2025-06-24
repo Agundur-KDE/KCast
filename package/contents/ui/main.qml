@@ -14,16 +14,12 @@ PlasmoidItem {
         if (edge === PlasmaCore.Types.TopEdge || edge === PlasmaCore.Types.BottomEdge || edge === PlasmaCore.Types.LeftEdge || edge === PlasmaCore.Types.RightEdge)
             return compactRepresentation;
 
-        return compactRepresentation;
+        return fullRepresentation;
     }
     Plasmoid.title: i18n("KCast")
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
-
-    PlasmaCore.IconItem {
-        source: "kcast-symbolic"
-    }
 
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {
@@ -33,8 +29,9 @@ PlasmoidItem {
     compactRepresentation: MouseArea {
         id: compact
 
-        readonly property int preferredWidth: compact.inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
-        readonly property int preferredHeight: compact.inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
+        readonly property bool inPanel: [PlasmaCore.Types.TopEdge, PlasmaCore.Types.RightEdge, PlasmaCore.Types.BottomEdge, PlasmaCore.Types.LeftEdge].includes(Plasmoid.location)
+        readonly property int preferredWidth: inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
+        readonly property int preferredHeight: inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
 
         implicitWidth: preferredWidth
         implicitHeight: preferredHeight
@@ -51,12 +48,12 @@ PlasmoidItem {
             }
         }
 
-        PlasmaCore.IconItem {
-            anchors.fill: parent
-            source: "kcast-symbolic"
-            usesPlasmaTheme: true
-            implicitWidth: PlasmaCore.Units.iconSizes.panel
-            implicitHeight: PlasmaCore.Units.iconSizes.panel
+        Kirigami.Icon {
+            // source: "kcast-symbolic"
+            source: Plasmoid.icon
+            width: preferredWidth
+            height: preferredHeight
+            anchors.centerIn: parent
         }
 
     }

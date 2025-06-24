@@ -7,7 +7,7 @@
       "Plasma/Applet"
     ],
     "Name": "KCast",
-    "Icon": "kcast-symbolic",
+    "Icon": "beamerframe",
     "Description": "chromecast videos to a device",
     "Authors": [
       {
