@@ -1,7 +1,7 @@
 
 <div align="center">
 
-<img src="/package/contents/icons/Logo.png" width="40" alt="KCast Logo" /> 
+<img src="/package/contents/icons/Logo.png" width="80" alt="KCast Logo" /> 
   <h1>KCast</h1> <p><strong>Version: 0.2.0</strong></p>
   <a href="https://kde.org/de/">
   <img src="https://img.shields.io/badge/KDE_Plasma-6.1+-blue?style=flat&logo=kde" alt="KCast">
