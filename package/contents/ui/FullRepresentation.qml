@@ -48,24 +48,29 @@ DropArea {
         }
         refreshDevices();
     }
-    onDrop: (event) => {
-        var url = "";
-        if (event.mimeData.hasUrls && event.mimeData.urls.length > 0)
-            url = event.mimeData.urls[0];
-        else if (event.mimeData.hasText)
-            url = event.mimeData.text;
-        if (url !== "") {
-            console.log("📥 URL erkannt:", url);
-            mediaUrl.text = url;
-        } else {
-            console.log("⚠️ Keine gültige URL im Drop enthalten.");
-            event.accept(Qt.IgnoreAction);
-        }
-    }
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
+    DragDrop.DropArea {
+        anchors.fill: parent
+        preventStealing: true
+        onDrop: (event) => {
+            var url = "";
+            if (event.mimeData.hasUrls && event.mimeData.urls.length > 0)
+                url = event.mimeData.urls[0];
+            else if (event.mimeData.hasText)
+                url = event.mimeData.text;
+            if (url !== "") {
+                console.log("📥 URL erkannt:", url);
+                mediaUrl.text = url;
+            } else {
+                console.log("⚠️ Keine gültige URL im Drop enthalten.");
+                event.accept(Qt.IgnoreAction);
+            }
+        }
+    }
 
     KCastBridge {
         id: kcast
