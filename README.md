@@ -37,7 +37,7 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 
 ## Visuals
-![KCast Plasmoid](KCast.png)
+![KCast Plasmoid](KCast2.png)
 ![KCast Plasmoid config](KCast_ready.png)
 
 
@@ -80,7 +80,7 @@ This archive contains everything needed to install the **KCast Plasmoid** and it
 
 # 📦 Content
 
-The package [kcast-installer-package.tar.gz](https://www.opencode.net/agundur/kcast/-/blob/main/kcast-installer-package.tar.gz?ref_type=heads) includes:
+The package [kcast-installer-package.tar.gz](https://github.com/Agundur-KDE/KCast/blob/0bf6487cc080849a661de4ef5ee7049a539cf03b/kcast-installer-package.tar.gz) includes:
 
 - `kcast-runtime.tar.gz`: Contains the compiled `.so`, `qmldir`, and QML files
 - `installer.sh`: Installs everything into the appropriate user directories
@@ -158,7 +158,7 @@ Using this link helps support the development of KCast at no additional cost to 
 
 ## Support
 
-- tail -f ~/.local/share/kcast.log
+
 
 - Open an issue in git ...
 
