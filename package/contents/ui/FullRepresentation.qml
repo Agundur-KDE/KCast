@@ -12,7 +12,7 @@ DropArea {
     property bool isPaused: false
     property int selectedIndex: -1
     property var devices: []
-    property bool canPlay: false
+    readonly property bool canPlay: devices.length > 0 && typeof mediaUrl.text === "string" && mediaUrl.text.length > 0
     property bool isPlaying: false
 
     function refreshDevices() {
@@ -206,7 +206,7 @@ DropArea {
             PlasmaComponents.Button {
                 text: "Play"
                 icon.name: "media-playback-start"
-                enabled: !isPlaying
+                enabled: !isPlaying && canPlay
                 onClicked: {
                     var raw = mediaUrl.text;
                     var cleaned = raw;
