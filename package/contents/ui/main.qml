@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
+import org.kde.draganddrop 2.0 as DragDrop
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
@@ -39,8 +40,20 @@ PlasmoidItem {
         Layout.preferredHeight: preferredHeight
         hoverEnabled: true
 
+        DropArea {
+            id: compactDrop
+
+            z: 1
+            anchors.fill: parent
+            onEntered: {
+                console.log("🟢 Drag detected – öffne FullView");
+                expanded = true;
+            }
+        }
+
         MouseArea {
             anchors.fill: parent
+            z: 0
             onClicked: {
                 expanded = !expanded;
                 cursorShape:
