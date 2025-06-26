@@ -17,29 +17,29 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QStr
     //     logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
     // }
 
-    QTextStream out(&logFile);
+    // QTextStream out(&logFile);
+    /*
+        QString prefix;
+        switch (type) {
+        case QtDebugMsg:
+            prefix = QStringLiteral("[DEBUG]");
+            break;
+        case QtWarningMsg:
+            prefix = QStringLiteral("[WARN] ");
+            break;
+        case QtCriticalMsg:
+            prefix = QStringLiteral("[CRIT] ");
+            break;
+        case QtFatalMsg:
+            prefix = QStringLiteral("[FATAL]");
+            break;
+        case QtInfoMsg:
+            prefix = QStringLiteral("[INFO] ");
+            break;
+        }
 
-    QString prefix;
-    switch (type) {
-    case QtDebugMsg:
-        prefix = QStringLiteral("[DEBUG]");
-        break;
-    case QtWarningMsg:
-        prefix = QStringLiteral("[WARN] ");
-        break;
-    case QtCriticalMsg:
-        prefix = QStringLiteral("[CRIT] ");
-        break;
-    case QtFatalMsg:
-        prefix = QStringLiteral("[FATAL]");
-        break;
-    case QtInfoMsg:
-        prefix = QStringLiteral("[INFO] ");
-        break;
-    }
-
-    out << QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh:mm:ss.zzz")) << " " << prefix << " " << msg << '\n';
-    out.flush();
+        out << QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh:mm:ss.zzz")) << " " << prefix << " " << msg << '\n';
+        out.flush();*/
 }
 
 KCastBridge::KCastBridge(QObject *parent)
