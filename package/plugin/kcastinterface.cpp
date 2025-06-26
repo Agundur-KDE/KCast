@@ -12,10 +12,10 @@
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
-    static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
-    if (!logFile.isOpen()) {
-        logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    }
+    // static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
+    // if (!logFile.isOpen()) {
+    //     logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    // }
 
     QTextStream out(&logFile);
 
