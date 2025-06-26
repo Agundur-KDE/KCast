@@ -12,40 +12,40 @@
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
-    // static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
-    // if (!logFile.isOpen()) {
-    //     logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    // }
+    static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
+    if (!logFile.isOpen()) {
+        logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
+    }
 
-    // QTextStream out(&logFile);
-    /*
-        QString prefix;
-        switch (type) {
-        case QtDebugMsg:
-            prefix = QStringLiteral("[DEBUG]");
-            break;
-        case QtWarningMsg:
-            prefix = QStringLiteral("[WARN] ");
-            break;
-        case QtCriticalMsg:
-            prefix = QStringLiteral("[CRIT] ");
-            break;
-        case QtFatalMsg:
-            prefix = QStringLiteral("[FATAL]");
-            break;
-        case QtInfoMsg:
-            prefix = QStringLiteral("[INFO] ");
-            break;
-        }
+    QTextStream out(&logFile);
 
-        out << QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh:mm:ss.zzz")) << " " << prefix << " " << msg << '\n';
-        out.flush();*/
+    QString prefix;
+    switch (type) {
+    case QtDebugMsg:
+        prefix = QStringLiteral("[DEBUG]");
+        break;
+    case QtWarningMsg:
+        prefix = QStringLiteral("[WARN] ");
+        break;
+    case QtCriticalMsg:
+        prefix = QStringLiteral("[CRIT] ");
+        break;
+    case QtFatalMsg:
+        prefix = QStringLiteral("[FATAL]");
+        break;
+    case QtInfoMsg:
+        prefix = QStringLiteral("[INFO] ");
+        break;
+    }
+
+    out << QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh:mm:ss.zzz")) << " " << prefix << " " << msg << '\n';
+    out.flush();
 }
 
 KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
-    qInstallMessageHandler(customMessageHandler);
+    // qInstallMessageHandler(customMessageHandler);
 }
 
 void KCastBridge::playMedia(const QString &device, const QString &url)
