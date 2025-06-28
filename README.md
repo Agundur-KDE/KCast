@@ -157,6 +157,8 @@ KCast has been tested successfully with the
 This projector supports high-quality Chromecast streaming and works reliably with KCast.
 Using this link helps support the development of KCast at no additional cost to you.
 
+🛒[Samsung HW-Q935GD 9.1.4-Kanal Q-Soundbar](https://amzn.to/4enDRX7) (Affiliate link).
+
 
 ## Support
 
