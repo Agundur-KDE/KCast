@@ -1,7 +1,6 @@
-import QtQuick
+import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
-import org.kde.draganddrop 2.0 as DragDrop
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
@@ -9,6 +8,8 @@ import org.kde.plasma.plasmoid
 
 PlasmoidItem {
     id: root
+
+    property bool keepOpenDuringDrop: false
 
     preferredRepresentation: {
         const edge = Plasmoid.location;
@@ -30,25 +31,16 @@ PlasmoidItem {
     compactRepresentation: MouseArea {
         id: compact
 
-        readonly property bool inPanel: [PlasmaCore.Types.TopEdge, PlasmaCore.Types.RightEdge, PlasmaCore.Types.BottomEdge, PlasmaCore.Types.LeftEdge].includes(Plasmoid.location)
-        readonly property int preferredWidth: inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
-        readonly property int preferredHeight: inPanel ? Kirigami.Units.iconSizes.sizeForLabels : Kirigami.Units.iconSizes.huge
-
-        implicitWidth: preferredWidth
-        implicitHeight: preferredHeight
-        Layout.preferredWidth: preferredWidth
-        Layout.preferredHeight: preferredHeight
-        hoverEnabled: true
-
         DropArea {
             id: compactDrop
 
             z: 1
             anchors.fill: parent
             onEntered: (drag) => {
-                if (drag.hasUrls)
+                if (drag.hasUrls) {
+                    root.keepOpenDuringDrop = true;
                     expanded = !expanded;
-
+                }
             }
         }
 
@@ -63,11 +55,8 @@ PlasmoidItem {
         }
 
         Kirigami.Icon {
-            // source: "kcast-symbolic"
             source: Plasmoid.icon
-            width: preferredWidth
-            height: preferredHeight
-            anchors.centerIn: parent
+            anchors.fill: parent
         }
 
     }

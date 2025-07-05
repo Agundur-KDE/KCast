@@ -5,17 +5,16 @@
  *
  */
 
-import QtQuick
+import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
 import de.agundur.kcast 1.0
-import org.kde.draganddrop 2.0 as DragDrop
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 
-DropArea {
+Item {
     property bool isPaused: false
     property int selectedIndex: -1
     property var devices: []
@@ -60,22 +59,30 @@ DropArea {
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
 
-    DragDrop.DropArea {
+    DropArea {
+        // Optional: Timeout oder sofort schließen
+
         anchors.fill: parent
-        preventStealing: true
-        onDrop: (event) => {
+        onDropped: function(drop) {
             var url = "";
-            if (event.mimeData.hasUrls && event.mimeData.urls.length > 0)
-                url = event.mimeData.urls[0];
-            else if (event.mimeData.hasText)
-                url = event.mimeData.text;
+            if (drop.hasUrls && drop.urls.length > 0)
+                url = drop.urls[0];
+            else if (drop.hasText)
+                url = drop.text;
             if (url !== "") {
                 console.log("📥 URL erkannt:", url);
                 mediaUrl.text = url;
             } else {
                 console.log("⚠️ Keine gültige URL im Drop enthalten.");
-                event.accept(Qt.IgnoreAction);
+                drop.accept(Qt.IgnoreAction);
             }
+        }
+        onExited: {
+            if (root.keepOpenDuringDrop)
+                Qt.callLater(() => {
+                root.plasmoidItem.expanded = false;
+            });
+
         }
     }
 
