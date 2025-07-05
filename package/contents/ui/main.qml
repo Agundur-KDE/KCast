@@ -45,9 +45,10 @@ PlasmoidItem {
 
             z: 1
             anchors.fill: parent
-            onEntered: {
-                console.log("🟢 Drag detected – öffne FullView");
-                expanded = true;
+            onEntered: (drag) => {
+                if (drag.hasUrls)
+                    expanded = !expanded;
+
             }
         }
 
