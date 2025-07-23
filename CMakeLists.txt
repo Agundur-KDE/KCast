@@ -114,6 +114,14 @@ endif()
 
 ki18n_install(po)
 
+install(CODE "
+  message(STATUS \"Renaming installed kcast.mo to plasma_applet_de.agundur.kcast.mo...\")
+  file(RENAME
+    \"\${CMAKE_INSTALL_PREFIX}/share/locale/de/LC_MESSAGES/kcast.mo\"
+    \"\${CMAKE_INSTALL_PREFIX}/share/locale/de/LC_MESSAGES/plasma_applet_de.agundur.kcast.mo\"
+  )
+")
+
 install(DIRECTORY contents/
     DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/
     FILES_MATCHING PATTERN "*.qml"
@@ -123,7 +131,7 @@ install(DIRECTORY contents/
                    PATTERN "*.png"
 )
 
-
+add_subdirectory(po)
 add_subdirectory(package)
 
 install(DIRECTORY package/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
