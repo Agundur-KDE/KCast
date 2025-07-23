@@ -5,6 +5,7 @@
  *
  */
 
+import Qt.labs.platform as Platform
 import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
@@ -91,6 +92,8 @@ Item {
     }
 
     ColumnLayout {
+        // Platzhalter
+
         anchors.fill: parent
         spacing: 12
         anchors.margins: Kirigami.Units.largeSpacing
@@ -161,51 +164,64 @@ Item {
 
         }
 
-        TextField {
-            id: mediaUrl
+        RowLayout {
+            TextField {
+                id: mediaUrl
 
-            Layout.fillWidth: true
-            placeholderText: "http://... or /path/to/file.mp4"
-            onTextChanged: {
+                Layout.fillWidth: true
+                placeholderText: "http://... or /path/to/file.mp4"
+                onTextChanged: {
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.RightButton
+                    onPressed: {
+                        if (mouse.button === Qt.RightButton)
+                            menu.popup();
+
+                    }
+
+                    Menu {
+                        id: menu
+
+                        MenuItem {
+                            text: "copy"
+                            enabled: mediaUrl.selectedText.length > 0
+                            onTriggered: mediaUrl.copy()
+                        }
+
+                        MenuItem {
+                            text: "paste"
+                            // enabled: Qt.application.clipboard.hasText
+                            onTriggered: mediaUrl.paste()
+                        }
+
+                        MenuItem {
+                            text: "cut"
+                            enabled: mediaUrl.selectedText.length > 0
+                            onTriggered: mediaUrl.cut()
+                        }
+
+                        MenuItem {
+                            text: "select all"
+                            onTriggered: mediaUrl.selectAll()
+                        }
+
+                    }
+
+                }
+
             }
 
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.RightButton
-                onPressed: {
-                    if (mouse.button === Qt.RightButton)
-                        menu.popup();
-
+            PlasmaComponents.Button {
+                text: "open"
+                icon.name: "folder-video"
+                Layout.alignment: Qt.AlignRight
+                onClicked: {
+                    // console.log("Testaktion ausgelöst");
+                    fileDialog.open();
                 }
-
-                Menu {
-                    id: menu
-
-                    MenuItem {
-                        text: "copy"
-                        enabled: mediaUrl.selectedText.length > 0
-                        onTriggered: mediaUrl.copy()
-                    }
-
-                    MenuItem {
-                        text: "paste"
-                        // enabled: Qt.application.clipboard.hasText
-                        onTriggered: mediaUrl.paste()
-                    }
-
-                    MenuItem {
-                        text: "cut"
-                        enabled: mediaUrl.selectedText.length > 0
-                        onTriggered: mediaUrl.cut()
-                    }
-
-                    MenuItem {
-                        text: "select all"
-                        onTriggered: mediaUrl.selectAll()
-                    }
-
-                }
-
             }
 
         }
@@ -271,7 +287,16 @@ Item {
             }
 
         }
-        // Platzhalter
+
+        Platform.FileDialog {
+            id: fileDialog
+
+            title: "Open file"
+            nameFilters: ["Media (*.mp4 *.mkv *.webm *.mp3)", "Alle Dateien (*)"]
+            onAccepted: {
+                mediaUrl.text = file;
+            }
+        }
 
         Item {
             Layout.fillHeight: true

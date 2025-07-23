@@ -1,7 +1,9 @@
 import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
+import org.kde.activities as Activities
 import org.kde.kirigami as Kirigami
+import org.kde.plasma.activityswitcher as ActivitySwitcher
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
@@ -22,6 +24,13 @@ PlasmoidItem {
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
+    Plasmoid.contextualActions: [
+        PlasmaCore.Action {
+            icon.name: "folder-video"
+            text: "Mediendatei öffnen"
+            onTriggered: console.log("Aktion ausgelöst")
+        }
+    ]
 
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {
