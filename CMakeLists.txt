@@ -131,7 +131,7 @@ install(DIRECTORY contents/
                    PATTERN "*.png"
 )
 
-add_subdirectory(po)
+
 add_subdirectory(package)
 
 install(DIRECTORY package/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
