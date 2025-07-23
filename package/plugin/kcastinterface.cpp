@@ -52,7 +52,7 @@ void KCastBridge::playMedia(const QString &device, const QString &url)
 {
     bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("cast") << url);
     if (!ok) {
-        qWarning() << QString::fromUtf8("❌ Failed to start catt cast");
+        qWarning() << QString::fromUtf8("Failed to start catt cast");
     }
 }
 
@@ -60,7 +60,7 @@ void KCastBridge::pauseMedia(const QString &device)
 {
     bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("pause"));
     if (!ok) {
-        qWarning() << QString::fromUtf8("❌ Failed to start catt pause");
+        qWarning() << QString::fromUtf8("Failed to start catt pause");
     }
 }
 
@@ -68,7 +68,7 @@ void KCastBridge::resumeMedia(const QString &device)
 {
     bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("play_toggle"));
     if (!ok) {
-        qWarning() << QString::fromUtf8("❌ Failed to start catt play_toggle");
+        qWarning() << QString::fromUtf8("Failed to start catt play_toggle");
     }
 }
 
@@ -76,7 +76,7 @@ void KCastBridge::stopMedia(const QString &device)
 {
     bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("stop"));
     if (!ok) {
-        qWarning() << QString::fromUtf8("❌ Failed to start catt stop");
+        qWarning() << QString::fromUtf8("Failed to start catt stop");
     }
 }
 
@@ -86,10 +86,10 @@ bool KCastBridge::isCattInstalled() const
     // und gibt den absoluten Pfad zurück, oder einen leeren QString, wenn es nicht gefunden wurde.
     QString exePath = QStandardPaths::findExecutable(QLatin1String("catt"));
     if (exePath.isEmpty()) {
-        qWarning() << QStringLiteral("⚠ catt nicht gefunden (findExecutable liefert leerer String)");
+        qWarning() << QStringLiteral("catt executable not found)");
         return false;
     } else {
-        qDebug() << QStringLiteral("✅ catt gefunden unter:") << exePath;
+        qDebug() << QStringLiteral("catt found:") << exePath;
         return true;
     }
 }
@@ -103,17 +103,17 @@ QStringList KCastBridge::scanDevicesWithCatt()
 
     process.start();
     if (!process.waitForStarted(3000)) {
-        qWarning() << "❌ catt process did not start properly" << devices;
+        qWarning() << "catt process did not start properly" << devices;
         return devices;
     }
 
     if (!process.waitForFinished(8000)) {
-        qWarning() << "❌ catt process did not finish in time" << devices;
+        qWarning() << "catt process did not finish in time" << devices;
         return devices;
     }
 
     QString output = QString::fromUtf8(process.readAllStandardOutput());
-    qDebug() << "📥 catt output:" << output;
+    qDebug() << "catt output:" << output;
 
     const QStringList lines = output.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
     for (const QString &line : lines) {
@@ -123,6 +123,6 @@ QStringList KCastBridge::scanDevicesWithCatt()
         }
     }
 
-    qDebug() << "📡 Gefundene Geräte:" << devices;
+    qDebug() << "Devices found:" << devices;
     return devices;
 }
