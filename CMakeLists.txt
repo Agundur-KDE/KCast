@@ -112,6 +112,7 @@ if(X11_FOUND)
   set(HAVE_X11 1)
 endif()
 
+ki18n_install(po)
 
 install(DIRECTORY contents/
     DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/

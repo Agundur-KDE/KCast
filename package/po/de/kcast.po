@@ -1,0 +1,106 @@
+# German translations for PACKAGE package.
+# Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# alec <info@agundur.de>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-23 13:46+0200\n"
+"PO-Revision-Date: 2025-07-23 13:48+0200\n"
+"Last-Translator: alec <info@agundur.de>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: contents/ui/configNetwork.qml:25
+msgid "Search"
+msgstr "Suche"
+
+#: contents/ui/configNetwork.qml:27
+msgid "Devices"
+msgstr "Geräte"
+
+#: contents/ui/configNetwork.qml:48
+msgid "Default"
+msgstr "Standard"
+
+#: contents/ui/FullRepresentation.qml:27
+msgid "refreashing"
+msgstr "aktualisiere"
+
+#: contents/ui/FullRepresentation.qml:50
+msgid "Plugin not available!"
+msgstr "Plugin ist nicht verfügbar"
+
+#: contents/ui/FullRepresentation.qml:54
+msgid "You need to install 'catt' first!"
+msgstr "catt muss installiert sein"
+
+#: contents/ui/FullRepresentation.qml:78
+msgid "URL detected: %1"
+msgstr "URL erkannt: %1"
+
+#: contents/ui/FullRepresentation.qml:81
+msgid "Not a valid url"
+msgstr "Keine gültige url"
+
+#: contents/ui/FullRepresentation.qml:128 contents/ui/main.qml:23
+msgid "KCast"
+msgstr "KCast"
+
+#: contents/ui/FullRepresentation.qml:136
+msgid "Select device:"
+msgstr "Gerät wählen:"
+
+#: contents/ui/FullRepresentation.qml:136
+msgid "No device found"
+msgstr "Kein Gerät gefunden"
+
+#: contents/ui/FullRepresentation.qml:161
+msgid "search devices"
+msgstr "Suche nach Geräten"
+
+#: contents/ui/FullRepresentation.qml:176
+msgid "http://... or /path/to/file.mp4"
+msgstr "http://... oder /Pfad/zur/Datei.mp4"
+
+#: contents/ui/FullRepresentation.qml:193
+msgid "copy"
+msgstr "Kopieren"
+
+#: contents/ui/FullRepresentation.qml:199
+msgid "paste"
+msgstr "Einfügen"
+
+#: contents/ui/FullRepresentation.qml:205
+msgid "cut"
+msgstr "Ausschneiden"
+
+#: contents/ui/FullRepresentation.qml:211
+msgid "select all"
+msgstr "Alles auswählen"
+
+#: contents/ui/FullRepresentation.qml:222
+msgid "open"
+msgstr "Öffnen"
+
+#: contents/ui/FullRepresentation.qml:240
+msgid "Play"
+msgstr "Abspielen"
+
+#: contents/ui/FullRepresentation.qml:261
+msgid "Resume"
+msgstr "Weiter"
+
+#: contents/ui/FullRepresentation.qml:261
+msgid "Pause"
+msgstr "Pause"
+
+#: contents/ui/FullRepresentation.qml:297
+msgid "Open file"
+msgstr "Datei öffnen"
