@@ -10,7 +10,7 @@ import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
 import de.agundur.kcast 1.0
-import org.kde.kirigami as Kirigami
+import org.kde.kirigami 2.20 as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
@@ -55,6 +55,7 @@ Item {
             return ;
         }
         console.log(defaultDevice);
+        console.log(Plasmoid.configuration.DefaultDevice);
         if (defaultDevice)
             devices = [defaultDevice];
         else

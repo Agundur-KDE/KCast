@@ -48,12 +48,19 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Default") + " :"
             Layout.fillWidth: true
             model: availableDevices
-            onCurrentIndexChanged: {
-                selectedDevice = deviceCombo.currentText;
-                cfg_DefaultDevice = selectedDevice; // nur wenn alias korrekt
-            }
             Component.onCompleted: {
-                deviceCombo.currentIndex = availableDevices.indexOf(selectedDevice);
+                const idx = availableDevices.indexOf(cfg_DefaultDevice);
+                if (idx !== -1)
+                    defaultDeviceCombo.currentIndex = idx;
+                else
+                    // Optional: auf "keine Auswahl" setzen
+                    defaultDeviceCombo.currentIndex = -1;
+            }
+            // Wenn Auswahl geändert wird, speichere neuen Wert in kcfg_ → "Anwenden" wird aktiv
+            onCurrentIndexChanged: {
+                if (currentIndex >= 0)
+                    cfg_DefaultDevice = availableDevices[currentIndex];
+
             }
         }
 
