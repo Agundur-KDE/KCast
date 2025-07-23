@@ -24,12 +24,6 @@ PlasmoidItem {
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     toolTipMainText: Plasmoid.title
-    Plasmoid.contextualActions: [
-        PlasmaCore.Action {
-            icon.name: "folder-video"
-            text: i18n("open files")
-        }
-    ]
 
     // Darstellungen binden das zentrale Modell
     fullRepresentation: FullRepresentation {

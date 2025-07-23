@@ -54,8 +54,6 @@ Item {
             console.warn(i18n("You need to install 'catt' first!"));
             return ;
         }
-        console.log(defaultDevice);
-        console.log(Plasmoid.configuration.DefaultDevice);
         if (defaultDevice)
             devices = [defaultDevice];
         else

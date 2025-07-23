@@ -4,5 +4,6 @@
   <group name="Network">
     <entry name="DefaultDevice" type="String">
       <default>192.168.178.50 - JMGO N1S Pro 4K - JMGO K92A</default>
+    </entry>
   </group>
 </kcfg>

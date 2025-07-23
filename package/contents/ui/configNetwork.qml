@@ -17,7 +17,7 @@ import org.kde.kquickcontrols 2.0 as KQC
 
 KCM.SimpleKCM {
     property string cfg_DefaultDevice
-    property var availableDevices: []
+    property var availableDevices: [cfg_DefaultDevice]
     property string selectedDevice: cfg_DefaultDevice
 
     Kirigami.FormLayout {
@@ -49,11 +49,12 @@ KCM.SimpleKCM {
             Layout.fillWidth: true
             model: availableDevices
             Component.onCompleted: {
+                // Optional: auf "keine Auswahl" setzen
+
                 const idx = availableDevices.indexOf(cfg_DefaultDevice);
                 if (idx !== -1)
                     defaultDeviceCombo.currentIndex = idx;
                 else
-                    // Optional: auf "keine Auswahl" setzen
                     defaultDeviceCombo.currentIndex = -1;
             }
             // Wenn Auswahl geändert wird, speichere neuen Wert in kcfg_ → "Anwenden" wird aktiv
