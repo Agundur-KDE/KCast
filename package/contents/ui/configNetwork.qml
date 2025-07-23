@@ -43,19 +43,19 @@ KCM.SimpleKCM {
         }
 
         QtControls.ComboBox {
+            // Optional: auf "keine Auswahl" setzen
+
             id: deviceCombo
 
             Kirigami.FormData.label: i18n("Default") + " :"
             Layout.fillWidth: true
             model: availableDevices
             Component.onCompleted: {
-                // Optional: auf "keine Auswahl" setzen
-
                 const idx = availableDevices.indexOf(cfg_DefaultDevice);
                 if (idx !== -1)
-                    defaultDeviceCombo.currentIndex = idx;
+                    deviceCombo.currentIndex = idx;
                 else
-                    defaultDeviceCombo.currentIndex = -1;
+                    deviceCombo.currentIndex = -1;
             }
             // Wenn Auswahl geändert wird, speichere neuen Wert in kcfg_ → "Anwenden" wird aktiv
             onCurrentIndexChanged: {
