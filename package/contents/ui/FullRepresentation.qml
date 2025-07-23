@@ -16,6 +16,7 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 
 Item {
+    property string defaultDevice: Plasmoid.configuration.DefaultDevice
     property bool isPaused: false
     property int selectedIndex: -1
     property var devices: []
@@ -23,7 +24,7 @@ Item {
     property bool isPlaying: false
 
     function refreshDevices() {
-        console.log("refreashing");
+        console.log(i18n("refreashing"));
         devices = kcast.scanDevicesWithCatt();
     }
 
@@ -46,14 +47,18 @@ Item {
 
     Component.onCompleted: {
         if (!kcast) {
-            console.warn("❌ Plugin not available!");
+            console.warn(i18n("Plugin not available!"));
             return ;
         }
         if (!kcast.isCattInstalled()) {
-            console.warn("⚠ Bitte installiere 'catt' zuerst!");
+            console.warn(i18n("You need to install 'catt' first!"));
             return ;
         }
-        refreshDevices();
+        console.log(defaultDevice);
+        if (defaultDevice)
+            devices = [defaultDevice];
+        else
+            refreshDevices();
     }
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
@@ -71,10 +76,10 @@ Item {
             else if (drop.hasText)
                 url = drop.text;
             if (url !== "") {
-                console.log("📥 URL erkannt:", url);
+                console.log(i18n("URL detected: %1").arg(url));
                 mediaUrl.text = url;
             } else {
-                console.log("⚠️ Keine gültige URL im Drop enthalten.");
+                console.log(i18n("Not a valid url"));
                 drop.accept(Qt.IgnoreAction);
             }
         }
@@ -121,7 +126,7 @@ Item {
             }
 
             Kirigami.Heading {
-                text: "KCast"
+                text: i18n("KCast")
                 level: 2
                 Layout.fillWidth: true
             }
@@ -129,7 +134,7 @@ Item {
         }
 
         PlasmaComponents.Label {
-            text: devices.length > 0 ? "Select device:" : "No device found"
+            text: devices.length > 0 ? i18n("Select device:") : i18n("No device found")
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
         }
@@ -154,7 +159,7 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: "search devices"
+                text: i18n("search devices")
                 icon.name: "view-refresh"
                 Layout.alignment: Qt.AlignRight
                 onClicked: {
@@ -169,7 +174,7 @@ Item {
                 id: mediaUrl
 
                 Layout.fillWidth: true
-                placeholderText: "http://... or /path/to/file.mp4"
+                placeholderText: i18n("http://... or /path/to/file.mp4")
                 onTextChanged: {
                 }
 
@@ -186,25 +191,25 @@ Item {
                         id: menu
 
                         MenuItem {
-                            text: "copy"
+                            text: i18n("copy")
                             enabled: mediaUrl.selectedText.length > 0
                             onTriggered: mediaUrl.copy()
                         }
 
                         MenuItem {
-                            text: "paste"
+                            text: i18n("paste")
                             // enabled: Qt.application.clipboard.hasText
                             onTriggered: mediaUrl.paste()
                         }
 
                         MenuItem {
-                            text: "cut"
+                            text: i18n("cut")
                             enabled: mediaUrl.selectedText.length > 0
                             onTriggered: mediaUrl.cut()
                         }
 
                         MenuItem {
-                            text: "select all"
+                            text: i18n("select all")
                             onTriggered: mediaUrl.selectAll()
                         }
 
@@ -215,11 +220,10 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: "open"
+                text: i18n("open")
                 icon.name: "folder-video"
                 Layout.alignment: Qt.AlignRight
                 onClicked: {
-                    // console.log("Testaktion ausgelöst");
                     fileDialog.open();
                 }
             }
@@ -234,7 +238,7 @@ Item {
             spacing: 8
 
             PlasmaComponents.Button {
-                text: "Play"
+                text: i18n("Play")
                 icon.name: "media-playback-start"
                 enabled: !isPlaying && canPlay
                 onClicked: {
@@ -255,7 +259,7 @@ Item {
 
                 property bool isPaused: false
 
-                text: isPaused ? "Resume" : "Pause"
+                text: isPaused ? i18n("Resume") : i18n("Pause")
                 icon.name: "media-playback-pause"
                 enabled: isPlaying
                 onClicked: {
@@ -291,7 +295,7 @@ Item {
         Platform.FileDialog {
             id: fileDialog
 
-            title: "Open file"
+            title: i18n("Open file")
             nameFilters: ["Media (*.mp4 *.mkv *.webm *.mp3)", "Alle Dateien (*)"]
             onAccepted: {
                 mediaUrl.text = file;

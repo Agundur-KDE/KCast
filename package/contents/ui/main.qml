@@ -27,8 +27,7 @@ PlasmoidItem {
     Plasmoid.contextualActions: [
         PlasmaCore.Action {
             icon.name: "folder-video"
-            text: "Mediendatei öffnen"
-            onTriggered: console.log("Aktion ausgelöst")
+            text: i18n("open files")
         }
     ]
 
