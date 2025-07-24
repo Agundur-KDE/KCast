@@ -112,11 +112,10 @@ if(X11_FOUND)
   set(HAVE_X11 1)
 endif()
 
-ki18n_install(po)
+ki18n_install(translate
+    INSTALL_DESTINATION ${KDE_INSTALL_LOCALEDIR}
+)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/locale/de/LC_MESSAGES/kcast.mo
-        DESTINATION ${KDE_INSTALL_LOCALEDIR}/de/LC_MESSAGES
-        RENAME plasma_applet_de.agundur.kcast.mo)
 
 install(DIRECTORY contents/
     DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/
