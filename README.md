@@ -47,6 +47,7 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 **system wide installation**
 
+```bash
 mkdir build && cd build
 
 cmake ..
@@ -54,6 +55,30 @@ cmake ..
 make
 
 make install (as root) 
+sudo zypper in kcast
+```
+
+## Arch Linux Installation
+
+KCast is available in the [Arch User Repository (AUR)](https://aur.archlinux.org/packages/kcast).
+
+If you use an AUR helper like `yay` or `paru`, you can install it with:
+
+```bash
+yay -S kcast
+sudo zypper in kcast
+```
+
+If you prefer to build manually from the AUR package:
+
+```bash
+git clone https://aur.archlinux.org/kcast.git
+cd kcast
+makepkg -si
+```
+
+**Note:** The AUR package is community-maintained by Nocifer
+Special thanks for creating and keeping it up to date.
 
 
 ## 🛠️ Installing KCast via the openSUSE Build Service Repository
