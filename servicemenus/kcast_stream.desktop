@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=audio/*;video/*;
+Actions=castWithKCast
+Icon=media-playback-start
+
+[Desktop Action castWithKCast]
+Name=Stream with KCast
+Name[de]=Mit KCast streamen
+Name[fr]=Diffuser avec KCast
+Name[es]=Transmitir con KCast
+Name[ru]=Транслировать через KCast
+Name[nl]=Streamen met KCast
+Icon=media-playback-start
+Exec=dbus-send --session --dest=de.agundur.kcast --type=method_call /de/agundur/kcast de.agundur.kcast.CastFile string:"%u"

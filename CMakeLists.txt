@@ -77,6 +77,14 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     # Svg
 )
 
+option(BUILD_DOLPHIN_SERVICE_MENU "Install Dolphin service menu for KCast" ON)
+
+if(BUILD_DOLPHIN_SERVICE_MENU)
+    # Installiert nach /usr/share/kio/servicemenus (systemweit)
+    install(FILES servicemenus/kcast_stream.desktop
+            DESTINATION ${KDE_INSTALL_DATADIR}/kio/servicemenus)
+endif()
+
 
 find_package(KF6Kirigami ${KF6_MIN_VERSION} CONFIG)
 set_package_properties(KF6Kirigami PROPERTIES
