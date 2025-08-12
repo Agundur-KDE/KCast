@@ -53,18 +53,6 @@ KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
     // qInstallMessageHandler(customMessageHandler);
-    auto bus = QDBusConnection::sessionBus();
-    bool okObj = bus.registerObject(u"/de/agundur/kcast"_s, this, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
-    if (!okObj) {
-        qWarning() << u"[KCast] Failed to register DBus object:"_s << bus.lastError().message();
-    }
-
-    if (!bus.registerService(u"de.agundur.kcast"_s)) {
-        // Kann passieren, wenn mehrere Plasmoid-Instanzen laufen. Nicht fatal.
-        qWarning() << u"[KCast] DBus service in use (de.agundur.kcast):"_s << bus.lastError().message();
-    } else {
-        qInfo() << u"[KCast] DBus ready: de.agundur.kcast at /de/agundur/kcast"_s;
-    }
 }
 
 void KCastBridge::playMedia(const QString &device, const QString &url)
@@ -147,6 +135,36 @@ QStringList KCastBridge::scanDevicesWithCatt()
 }
 
 // ---- DBUS Helper ----
+
+bool KCastBridge::registerDBus()
+{
+    auto bus = QDBusConnection::sessionBus();
+
+    // Objekt an D-Bus binden (diese Instanz!)
+    const bool okObj = bus.registerObject(u"/de/agundur/kcast"_s, this, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
+    if (!okObj) {
+        qWarning() << u"[KCast] DBus: registerObject failed:"_s << bus.lastError().message();
+        return false;
+    }
+
+    // Well-known Name holen (kann belegt sein, dann wenigstens Objekt registriert)
+    if (!bus.registerService(u"de.agundur.kcast"_s)) {
+        qWarning() << u"[KCast] DBus: registerService failed:"_s << bus.lastError().message();
+        // Nicht fatal – Objekt ist trotzdem erreichbar, wenn Name bereits uns gehört
+    } else {
+        qInfo() << u"[KCast] DBus ready on de.agundur.kcast /de/agundur/kcast"_s;
+    }
+    return true;
+}
+
+void KCastBridge::setMediaUrl(const QString &url)
+{
+    if (m_mediaUrl == url)
+        return;
+    m_mediaUrl = url;
+    Q_EMIT mediaUrlChanged();
+}
+
 QString KCastBridge::pickDefaultDevice() const
 {
     if (!m_defaultDevice.isEmpty())
@@ -163,12 +181,12 @@ QString KCastBridge::normalizeUrlForCasting(const QString &in) const
 {
     QUrl u = QUrl::fromUserInput(in);
     if (u.isLocalFile()) {
-        return u.toLocalFile(); // Pfad ohne file://
+        return u.toLocalFile(); // kein file:// → vermeidet yt-dlp-Block
     }
     if (u.isRelative() && QFileInfo(in).exists()) {
         return QFileInfo(in).absoluteFilePath();
     }
-    return u.toString(); // Nur für echte HTTP/HTTPS-URLs
+    return u.toString(); // http/https o.ä.
 }
 
 // ---- QML-Setter ----
@@ -187,6 +205,10 @@ void KCastBridge::CastFile(const QString &url)
         return;
     }
     const QString norm = normalizeUrlForCasting(url);
+
+    // GUI synchronisieren:
+    setMediaUrl(norm);
+
     qInfo() << u"[KCast] CastFile →"_s << device << norm;
     playMedia(device, norm);
 }
@@ -198,10 +220,18 @@ void KCastBridge::CastFiles(const QStringList &urls)
         qWarning() << u"[KCast] No device available for CastFiles"_s;
         return;
     }
+    bool first = true;
     for (const QString &u : urls) {
         const QString norm = normalizeUrlForCasting(u);
+
+        // Erstes Element als "aktuell laufend" in der GUI anzeigen
+        if (first) {
+            setMediaUrl(norm);
+            first = false;
+        }
+
         qInfo() << u"[KCast] CastFiles item →"_s << device << norm;
         playMedia(device, norm);
-        // Optional: kleine Verzögerung/Queue – je nach deiner Pipeline
+        // optional: enqueue/kleine Pause etc.
     }
 }

@@ -46,9 +46,7 @@ Item {
     }
 
     Component.onCompleted: {
-        if (Config.defaultDevice && Config.defaultDevice.length > 0)
-            kcast.setDefaultDevice(Config.defaultDevice);
-
+        mediaUrl.text = kcast.mediaUrl;
         if (!kcast) {
             console.warn(i18n("Plugin not available!"));
             return ;
@@ -66,6 +64,20 @@ Item {
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
+    KCastBridge {
+        id: kcast
+
+        Component.onCompleted: {
+            const ok = registerDBus();
+            if (!ok)
+                console.warn("[KCast] DBus registration failed");
+
+            if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
+                setDefaultDevice(Plasmoid.configuration.defaultDevice);
+
+        }
+    }
 
     DropArea {
         // Optional: Timeout oder sofort schließen
@@ -92,10 +104,6 @@ Item {
             });
 
         }
-    }
-
-    KCastBridge {
-        id: kcast
     }
 
     ColumnLayout {
@@ -177,7 +185,18 @@ Item {
 
                 Layout.fillWidth: true
                 placeholderText: i18n("http://... or /path/to/file.mp4")
-                onTextChanged: {
+                // 1) UI initial mit Bridge befüllen
+                Component.onCompleted: mediaUrl.text = kcast.mediaUrl
+                // 3) Wenn der Nutzer tippt → zurück in die Bridge spiegeln
+                onTextEdited: kcast.setMediaUrl(text)
+
+                // 2) Wenn die Bridge (z.B. via D-Bus) mediaUrl ändert → UI nachziehen
+                Connections {
+                    function onMediaUrlChanged() {
+                        mediaUrl.text = kcast.mediaUrl;
+                    }
+
+                    target: kcast
                 }
 
                 MouseArea {
@@ -200,7 +219,6 @@ Item {
 
                         MenuItem {
                             text: i18n("paste")
-                            // enabled: Qt.application.clipboard.hasText
                             onTriggered: mediaUrl.paste()
                         }
 

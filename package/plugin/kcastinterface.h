@@ -11,6 +11,8 @@ class KCastBridge : public QObject
     QML_ELEMENT
     Q_CLASSINFO("D-Bus Interface", "de.agundur.kcast")
 
+    Q_PROPERTY(QString mediaUrl READ mediaUrl WRITE setMediaUrl NOTIFY mediaUrlChanged FINAL)
+
 public:
     explicit KCastBridge(QObject *parent = nullptr);
 
@@ -20,15 +22,26 @@ public:
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
-
     Q_INVOKABLE void setDefaultDevice(const QString &device);
+
+    Q_INVOKABLE bool registerDBus();
+    // Property
+    QString mediaUrl() const
+    {
+        return m_mediaUrl;
+    }
+    void setMediaUrl(const QString &url);
 
 public Q_SLOTS: // —> per D-Bus aufrufbar
     void CastFile(const QString &url);
     void CastFiles(const QStringList &urls);
 
+Q_SIGNALS:
+    void mediaUrlChanged();
+
 private:
     QString m_defaultDevice;
+    QString m_mediaUrl;
     QString pickDefaultDevice() const;
     QString normalizeUrlForCasting(const QString &in) const;
 };
