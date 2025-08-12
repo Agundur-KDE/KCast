@@ -9,6 +9,7 @@ class KCastBridge : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    Q_CLASSINFO("D-Bus Interface", "de.agundur.kcast")
 
 public:
     explicit KCastBridge(QObject *parent = nullptr);
@@ -19,6 +20,17 @@ public:
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
+
+    Q_INVOKABLE void setDefaultDevice(const QString &device);
+
+public Q_SLOTS: // —> per D-Bus aufrufbar
+    void CastFile(const QString &url);
+    void CastFiles(const QStringList &urls);
+
+private:
+    QString m_defaultDevice;
+    QString pickDefaultDevice() const;
+    QString normalizeUrlForCasting(const QString &in) const;
 };
 
 #endif // KCASTINTERFACE_H

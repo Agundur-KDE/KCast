@@ -10,6 +10,13 @@
 #include <QStringLiteral>
 #include <QTextStream>
 
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QFileInfo>
+#include <QUrl>
+
+using namespace Qt::StringLiterals;
+
 void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
     static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
@@ -46,6 +53,18 @@ KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
     // qInstallMessageHandler(customMessageHandler);
+    auto bus = QDBusConnection::sessionBus();
+    bool okObj = bus.registerObject(u"/de/agundur/kcast"_s, this, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
+    if (!okObj) {
+        qWarning() << u"[KCast] Failed to register DBus object:"_s << bus.lastError().message();
+    }
+
+    if (!bus.registerService(u"de.agundur.kcast"_s)) {
+        // Kann passieren, wenn mehrere Plasmoid-Instanzen laufen. Nicht fatal.
+        qWarning() << u"[KCast] DBus service in use (de.agundur.kcast):"_s << bus.lastError().message();
+    } else {
+        qInfo() << u"[KCast] DBus ready: de.agundur.kcast at /de/agundur/kcast"_s;
+    }
 }
 
 void KCastBridge::playMedia(const QString &device, const QString &url)
@@ -125,4 +144,64 @@ QStringList KCastBridge::scanDevicesWithCatt()
 
     qDebug() << "Devices found:" << devices;
     return devices;
+}
+
+// ---- DBUS Helper ----
+QString KCastBridge::pickDefaultDevice() const
+{
+    if (!m_defaultDevice.isEmpty())
+        return m_defaultDevice;
+
+    // Fallback: nimm das erste gefundene Gerät (pragmatisch, bis die Config angebunden ist)
+    const QStringList devs = const_cast<KCastBridge *>(this)->scanDevicesWithCatt();
+    if (!devs.isEmpty())
+        return devs.first();
+    return {};
+}
+
+QString KCastBridge::normalizeUrlForCasting(const QString &in) const
+{
+    QUrl u = QUrl::fromUserInput(in);
+    if (u.isLocalFile()) {
+        return u.toLocalFile(); // Pfad ohne file://
+    }
+    if (u.isRelative() && QFileInfo(in).exists()) {
+        return QFileInfo(in).absoluteFilePath();
+    }
+    return u.toString(); // Nur für echte HTTP/HTTPS-URLs
+}
+
+// ---- QML-Setter ----
+void KCastBridge::setDefaultDevice(const QString &device)
+{
+    m_defaultDevice = device;
+    qInfo() << u"[KCast] Default device set to:"_s << m_defaultDevice;
+}
+
+// ---- D-Bus Slots ----
+void KCastBridge::CastFile(const QString &url)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] No device available for CastFile"_s;
+        return;
+    }
+    const QString norm = normalizeUrlForCasting(url);
+    qInfo() << u"[KCast] CastFile →"_s << device << norm;
+    playMedia(device, norm);
+}
+
+void KCastBridge::CastFiles(const QStringList &urls)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] No device available for CastFiles"_s;
+        return;
+    }
+    for (const QString &u : urls) {
+        const QString norm = normalizeUrlForCasting(u);
+        qInfo() << u"[KCast] CastFiles item →"_s << device << norm;
+        playMedia(device, norm);
+        // Optional: kleine Verzögerung/Queue – je nach deiner Pipeline
+    }
 }

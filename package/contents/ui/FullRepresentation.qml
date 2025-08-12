@@ -46,6 +46,9 @@ Item {
     }
 
     Component.onCompleted: {
+        if (Config.defaultDevice && Config.defaultDevice.length > 0)
+            kcast.setDefaultDevice(Config.defaultDevice);
+
         if (!kcast) {
             console.warn(i18n("Plugin not available!"));
             return ;
