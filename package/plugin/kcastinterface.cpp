@@ -69,6 +69,7 @@ void KCastBridge::pauseMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt pause");
     }
+    setPlaying(false);
 }
 
 void KCastBridge::resumeMedia(const QString &device)
@@ -77,6 +78,7 @@ void KCastBridge::resumeMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt play_toggle");
     }
+    setPlaying(false);
 }
 
 void KCastBridge::stopMedia(const QString &device)
@@ -85,6 +87,7 @@ void KCastBridge::stopMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt stop");
     }
+    setPlaying(false);
 }
 
 bool KCastBridge::isCattInstalled() const
@@ -208,6 +211,7 @@ void KCastBridge::CastFile(const QString &url)
 
     // GUI synchronisieren:
     setMediaUrl(norm);
+    setPlaying(true);
 
     qInfo() << u"[KCast] CastFile →"_s << device << norm;
     playMedia(device, norm);
@@ -223,15 +227,11 @@ void KCastBridge::CastFiles(const QStringList &urls)
     bool first = true;
     for (const QString &u : urls) {
         const QString norm = normalizeUrlForCasting(u);
-
-        // Erstes Element als "aktuell laufend" in der GUI anzeigen
         if (first) {
             setMediaUrl(norm);
+            setPlaying(true);
             first = false;
-        }
-
-        qInfo() << u"[KCast] CastFiles item →"_s << device << norm;
+        } // ← AN
         playMedia(device, norm);
-        // optional: enqueue/kleine Pause etc.
     }
 }

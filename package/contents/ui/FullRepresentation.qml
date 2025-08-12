@@ -258,9 +258,13 @@ Item {
             spacing: 8
 
             PlasmaComponents.Button {
+                id: playBtn
+
                 text: i18n("Play")
                 icon.name: "media-playback-start"
                 enabled: !isPlaying && canPlay
+                checkable: true
+                checked: kcast.playing
                 onClicked: {
                     var raw = mediaUrl.text;
                     var cleaned = raw;
@@ -281,7 +285,7 @@ Item {
 
                 text: isPaused ? i18n("Resume") : i18n("Pause")
                 icon.name: "media-playback-pause"
-                enabled: isPlaying
+                enabled: isPlaying || kcast.playing
                 onClicked: {
                     if (isPaused) {
                         text:
@@ -301,7 +305,7 @@ Item {
 
             PlasmaComponents.Button {
                 text: "Stop"
-                enabled: isPlaying
+                enabled: isPlaying || kcast.playing
                 icon.name: "media-playback-stop"
                 onClicked: {
                     _stop();

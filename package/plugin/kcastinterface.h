@@ -12,6 +12,7 @@ class KCastBridge : public QObject
     Q_CLASSINFO("D-Bus Interface", "de.agundur.kcast")
 
     Q_PROPERTY(QString mediaUrl READ mediaUrl WRITE setMediaUrl NOTIFY mediaUrlChanged FINAL)
+    Q_PROPERTY(bool playing READ playing NOTIFY playingChanged FINAL)
 
 public:
     explicit KCastBridge(QObject *parent = nullptr);
@@ -31,6 +32,10 @@ public:
         return m_mediaUrl;
     }
     void setMediaUrl(const QString &url);
+    bool playing() const
+    {
+        return m_playing;
+    }
 
 public Q_SLOTS: // —> per D-Bus aufrufbar
     void CastFile(const QString &url);
@@ -38,12 +43,21 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
 
 Q_SIGNALS:
     void mediaUrlChanged();
+    void playingChanged();
 
 private:
     QString m_defaultDevice;
     QString m_mediaUrl;
     QString pickDefaultDevice() const;
     QString normalizeUrlForCasting(const QString &in) const;
+    bool m_playing = false; // ← NEU
+    void setPlaying(bool on)
+    { // ← NEU
+        if (m_playing == on)
+            return;
+        m_playing = on;
+        Q_EMIT playingChanged();
+    }
 };
 
 #endif // KCASTINTERFACE_H
