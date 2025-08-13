@@ -2,10 +2,8 @@ Name:           kcast
 Version:        0.2.1
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
-
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
 License:        GPL-3.0-or-later
-URL:            https://github.com/Agundur-KDE/KCast
 Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/KCast-%{version}.tar.gz
 
 # --- Build requirements (C++/CMake + Qt6 + KF6/Plasma 6)
