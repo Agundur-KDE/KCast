@@ -100,6 +100,18 @@ sudo zypper ref
 sudo zypper in kcast
 ```
 
+## 🛠️ Installing KCast via my COPR repository (Fedora)
+
+
+```bash
+# Enable repository
+sudo dnf copr enable agundur/KCast
+
+# Install package
+sudo dnf install kcast
+```
+
+
 ## KCast Runtime Installer
 
 This archive contains everything needed to install the **KCast Plasmoid** and its corresponding **QML plugin** on a KDE Plasma system.
