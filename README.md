@@ -55,7 +55,6 @@ cmake ..
 make
 
 make install (as root) 
-sudo zypper in kcast
 ```
 
 ## Arch Linux Installation
@@ -77,7 +76,7 @@ cd kcast
 makepkg -si
 ```
 
-**Note:** The AUR package is community-maintained by Nocifer
+**Note:** The AUR package is community-maintained by a third party
 Special thanks for creating and keeping it up to date.
 
 
