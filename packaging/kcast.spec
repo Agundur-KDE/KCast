@@ -16,7 +16,7 @@ BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kpackage-devel
-BuildRequires:  kf6-plasma-framework-devel
+BuildRequires:  libplasma-devel
 # ggf. weitere KF6/Qt6 - je nach deinem CMakeLists.txt (z.B. kf6-kwindowsystem-devel, qt6-qttools-devel)
 
 # --- Runtime
