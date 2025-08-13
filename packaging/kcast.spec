@@ -50,8 +50,6 @@ to Google Chromecast devices using the `catt` CLI.
   -DKDE_INSTALL_PLUGINDIR=%{_qt6_plugindir}
 %cmake_build
 
-%install
-%cmake_install
 
 %install
 %cmake_install
