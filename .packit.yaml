@@ -1,9 +1,9 @@
 specfile_path: packaging/kcast.spec
-upstream_tag_template: "v{version}"
 downstream_package_name: kcast
+upstream_tag_template: "v{version}"
 
-# Optional: falls dein Tarball per 'archive' generiert wird
 actions:
+  # Packit erzeugt das Tarball exakt so, wie es SPEC erwartet.
   create-archive:
     - bash -lc 'git archive --format=tar --prefix=KCast-{version}/ v{version} | gzip -9 > KCast-{version}.tar.gz'
   get-current-version:
@@ -11,19 +11,14 @@ actions:
 
 jobs:
   - job: copr_build
-    trigger: pull_request
-    targets:
-      - fedora-41-x86_64
-      - fedora-42-x86_64
-      - fedora-rawhide-x86_64
-    owner: deinfedorauser
-    project: kcast
-
-  - job: copr_build
     trigger: release
-    targets:
-      - fedora-41-x86_64
-      - fedora-42-x86_64
-      - fedora-rawhide-x86_64
     owner: agundur
     project: KCast
+    targets:
+      - fedora-42-x86_64
+  - job: copr_build
+    trigger: pull_request
+    owner: agundur
+    project: KCast
+    targets:
+      - fedora-42-x86_64
