@@ -59,6 +59,7 @@ Item {
             devices = [defaultDevice];
         else
             refreshDevices();
+        console.log("[KCast] DBus registration started");
         const ok = kcast.registerDBus();
         if (!ok)
             console.warn("[KCast] DBus registration failed");

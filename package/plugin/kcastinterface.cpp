@@ -244,7 +244,6 @@ void KCastBridge::CastFiles(const QStringList &urls)
 
 void KCastBridge::scheduleDbusRetry()
 {
-    // Max. 5 Versuche im Abstand von 1s – genügt in der Praxis
     static int tries = 0;
     if (tries >= 5)
         return;
