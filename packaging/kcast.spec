@@ -51,9 +51,11 @@ to Google Chromecast devices using the `catt` CLI.
 %install
 %cmake_install
 
+%install
+%cmake_install
+%find_lang plasma_applet_de.agundur.kcast
 
-
-%files
+%files -f plasma_applet_de.agundur.kcast.lang
 %license LICENSE*
 %doc README*
 %{_datadir}/plasma/plasmoids/de.agundur.kcast/
@@ -62,5 +64,5 @@ to Google Chromecast devices using the `catt` CLI.
 
 
 %changelog
-* Wed Aug 13 2025 You <you@example.com> - 2.0.0-1
+* Wed Aug 13 2025 You <you@example.com> - 0.2.1-1
 - Initial Fedora/Copr build
