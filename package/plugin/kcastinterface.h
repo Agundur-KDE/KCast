@@ -26,6 +26,10 @@ public:
     Q_INVOKABLE void setDefaultDevice(const QString &device);
 
     Q_INVOKABLE bool registerDBus();
+    bool dbusReady() const
+    {
+        return m_dbusReady;
+    }
     // Property
     QString mediaUrl() const
     {
@@ -44,6 +48,7 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
 Q_SIGNALS:
     void mediaUrlChanged();
     void playingChanged();
+    void dbusReadyChanged();
 
 private:
     QString m_defaultDevice;
@@ -58,6 +63,17 @@ private:
         m_playing = on;
         Q_EMIT playingChanged();
     }
+
+    bool m_dbusReady = false;
+    void setDbusReady(bool on)
+    {
+        if (m_dbusReady == on)
+            return;
+        m_dbusReady = on;
+        Q_EMIT dbusReadyChanged();
+    }
+
+    void scheduleDbusRetry();
 };
 
 #endif // KCASTINTERFACE_H

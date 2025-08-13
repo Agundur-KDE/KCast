@@ -59,6 +59,13 @@ Item {
             devices = [defaultDevice];
         else
             refreshDevices();
+        const ok = kcast.registerDBus();
+        if (!ok)
+            console.warn("[KCast] DBus registration failed");
+
+        if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
+            setDefaultDevice(Plasmoid.configuration.defaultDevice);
+
     }
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
@@ -67,16 +74,6 @@ Item {
 
     KCastBridge {
         id: kcast
-
-        Component.onCompleted: {
-            const ok = registerDBus();
-            if (!ok)
-                console.warn("[KCast] DBus registration failed");
-
-            if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
-                setDefaultDevice(Plasmoid.configuration.defaultDevice);
-
-        }
     }
 
     DropArea {

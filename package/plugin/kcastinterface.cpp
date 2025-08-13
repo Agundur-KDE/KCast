@@ -13,6 +13,7 @@
 #include <QDBusConnection>
 #include <QDBusError>
 #include <QFileInfo>
+#include <QTimer>
 #include <QUrl>
 
 using namespace Qt::StringLiterals;
@@ -143,20 +144,25 @@ bool KCastBridge::registerDBus()
 {
     auto bus = QDBusConnection::sessionBus();
 
-    // Objekt an D-Bus binden (diese Instanz!)
     const bool okObj = bus.registerObject(u"/de/agundur/kcast"_s, this, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
     if (!okObj) {
-        qWarning() << u"[KCast] DBus: registerObject failed:"_s << bus.lastError().message();
+        qWarning() << "[KCast] DBus: registerObject failed:" << bus.lastError().message();
+        setDbusReady(false);
+        // Retry – manchmal ist der Bus/Objektbaum noch nicht so weit
+        scheduleDbusRetry();
         return false;
     }
 
-    // Well-known Name holen (kann belegt sein, dann wenigstens Objekt registriert)
     if (!bus.registerService(u"de.agundur.kcast"_s)) {
-        qWarning() << u"[KCast] DBus: registerService failed:"_s << bus.lastError().message();
-        // Nicht fatal – Objekt ist trotzdem erreichbar, wenn Name bereits uns gehört
-    } else {
-        qInfo() << u"[KCast] DBus ready on de.agundur.kcast /de/agundur/kcast"_s;
+        // Kann beim Plasma-Start vorkommen (Race mit zweiter Instanz / Bus init)
+        qWarning() << "[KCast] DBus: registerService failed:" << bus.lastError().message();
+        setDbusReady(false);
+        scheduleDbusRetry();
+        return false;
     }
+
+    qInfo() << "[KCast] DBus ready on de.agundur.kcast /de/agundur/kcast";
+    setDbusReady(true);
     return true;
 }
 
@@ -234,4 +240,18 @@ void KCastBridge::CastFiles(const QStringList &urls)
         } // ← AN
         playMedia(device, norm);
     }
+}
+
+void KCastBridge::scheduleDbusRetry()
+{
+    // Max. 5 Versuche im Abstand von 1s – genügt in der Praxis
+    static int tries = 0;
+    if (tries >= 5)
+        return;
+    ++tries;
+
+    QTimer::singleShot(1000, this, [this]() {
+        qInfo() << "[KCast] DBus retry…";
+        registerDBus();
+    });
 }
