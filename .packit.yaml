@@ -25,5 +25,5 @@ jobs:
       - fedora-41-x86_64
       - fedora-42-x86_64
       - fedora-rawhide-x86_64
-    owner: deinfedorauser
+    owner: agundur
     project: kcast
