@@ -41,14 +41,15 @@ to Google Chromecast devices using the `catt` CLI.
 %autosetup -n KCast-%{version}
 
 %build
-%cmake -B build -S . \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_INSTALL_PREFIX=%{_prefix} \
-      -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
-%cmake_build -C build
+%cmake -S . -B build \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DKDE_INSTALL_USE_QT_SYS_PATHS=ON \
+  -DKDE_INSTALL_QMLDIR=%{_qt6_qmldir} \
+  -DKDE_INSTALL_PLUGINDIR=%{_qt6_plugindir}
+%cmake_build
 
 %install
-%cmake_install -C build
+%cmake_install
 
 
 
