@@ -36,7 +36,7 @@ If you’d like to support ongoing development, consider sponsoring the project:
 
 ## 🏠 Homepage
 
-📦 [https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html](https://www.agundur.de/)
+📦 [https://www.agundur.de/](https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html)
 
 ## 📦 Features
 
