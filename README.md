@@ -25,9 +25,18 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 
 **Caution!** starting with version 0.0.2 we need [catt](https://github.com/skorokithakis/catt) installed.
 
+## Community reception
+
+KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **28,000 views** and **295 upvotes** (99% positive).
+Thanks to everyone for the amazing feedback, ideas, and testing!
+
+If you’d like to support ongoing development, consider sponsoring the project:  
+💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) 
+
+
 ## 🏠 Homepage
 
-📦 [https://github.com/Agundur-KDE/KCast](https://github.com/Agundur-KDE/KCast)
+📦 [https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html](https://www.agundur.de/)
 
 ## 📦 Features
 
@@ -36,14 +45,6 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 - 📂 **Support for local media files** via built-in HTTP server
 - 🧲 **Drag & Drop** from Firefox, Chrome, or Dolphin
 
-
-## Community reception
-
-KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **28,000 views** and **295 upvotes** (99% positive).  
-Thanks to everyone for the amazing feedback, ideas, and testing!
-
-If you’d like to support ongoing development, consider sponsoring the project:  
-💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) 
 
 ## Visuals
 ![KCast Plasmoid](KCast2.png)
