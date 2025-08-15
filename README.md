@@ -123,14 +123,14 @@ sudo dnf install kcast
 
 This archive contains everything needed to install the **KCast Plasmoid** and its corresponding **QML plugin** on a KDE Plasma system.
 
-# 📦 Content
+# Content
 
 The package [kcast-installer-package.tar.gz](https://github.com/Agundur-KDE/KCast/blob/0bf6487cc080849a661de4ef5ee7049a539cf03b/kcast-installer-package.tar.gz) includes:
 
 - `kcast-runtime.tar.gz`: Contains the compiled `.so`, `qmldir`, and QML files
 - `installer.sh`: Installs everything into the appropriate user directories
 
-# ✅ Requirements
+# Requirements
 
 - KDE Plasma 6.x
 - Qt 6.x runtime
