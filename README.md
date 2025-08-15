@@ -40,10 +40,10 @@ If you’d like to support ongoing development, consider sponsoring the project:
 
 ## 📦 Features
 
-- 📡 **Chromecast discovery** using Avahi (mDNS)
-- ▶️ **Media playback controls**: Play, Pause, Resume, Stop
-- 📂 **Support for local media files** via built-in HTTP server
-- 🧲 **Drag & Drop** from Firefox, Chrome, or Dolphin
+-  **Chromecast discovery** using Avahi (mDNS)
+-  **Media playback controls**: Play, Pause, Resume, Stop
+-  **Support for local media files** via built-in HTTP server
+-  **Drag & Drop** from Firefox, Chrome, or Dolphin
 
 
 ## Visuals
@@ -136,9 +136,9 @@ The package [kcast-installer-package.tar.gz](https://github.com/Agundur-KDE/KCas
 - Qt 6.x runtime
 - Tar, Bash, and basic command-line tools
 
-> 📝 Needs testing on Fedora Silverblue, Bazzite
+>  Needs testing on Fedora Silverblue, Bazzite
 
-# 🚀 Installation
+#  Installation
 
 ```bash
 tar xzf kcast-installer-package.tar.gz
@@ -148,7 +148,7 @@ tar xzf kcast-installer-package.tar.gz
 ```
 
 
-## 🧠 Dependencies
+## Dependencies
 
 To run KCast successfully, the following software must be installed:
 
