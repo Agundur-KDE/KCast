@@ -38,10 +38,17 @@ It supports device discovery, local media playback via an embedded HTTP server, 
 - 🧲 **Drag & Drop** from Firefox, Chrome, or Dolphin
 
 
+## Community reception
+
+KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **28,000 views** and **295 upvotes** (99% positive).  
+Thanks to everyone for the amazing feedback, ideas, and testing!
+
+If you’d like to support ongoing development, consider sponsoring the project:  
+💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) | ☕ [Buy me a coffee](https://www.buymeacoffee.com/...)
+
 ## Visuals
 ![KCast Plasmoid](KCast2.png)
 ![KCast Plasmoid config](KCast_ready.png)
-
 
 ## Installation
 
