@@ -44,7 +44,7 @@ KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mm
 Thanks to everyone for the amazing feedback, ideas, and testing!
 
 If you’d like to support ongoing development, consider sponsoring the project:  
-💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) | ☕ [Buy me a coffee](https://www.buymeacoffee.com/...)
+💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) 
 
 ## Visuals
 ![KCast Plasmoid](KCast2.png)
