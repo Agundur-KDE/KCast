@@ -1,8 +1,10 @@
 name: build-deb
 
 on:
-  push: {}              # läuft bei jedem Push (alle Branches)
-  workflow_dispatch: {} # optional: manuell startbar
+  push:
+    tags:
+      - 'v*'     # läuft nur bei Tags wie v0.1.0, v1.2.3
+  workflow_dispatch:  # optional: manuell startbar
 
 jobs:
   deb:
