@@ -1,10 +1,28 @@
 #!/usr/bin/make -f
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DH_VERBOSE = 1
 
 %:
-	dh $@ --buildsystem=cmake --builddirectory=build
+	dh $@ --buildsystem=cmake --parallel
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr
+	  -DCMAKE_BUILD_TYPE=Release \
+	  -DBUILD_TESTING=OFF \
+	  -DCMAKE_INSTALL_PREFIX=/usr \
+	  -Wdev --debug-find
+
+override_dh_auto_test:
+	:
+
+override_dh_auto_install:
+	dh_auto_install
+	# keine Quelltexte ins Paket:
+	rm -f debian/kfritz/usr/share/plasma/plasmoids/de.agundur.kfritz/plugin/*.{cpp,h,CMakeLists.txt} || true
+
+override_dh_auto_clean:
+	rm -rf obj-* build || true
+	dh_auto_clean || true
+
+override_dh_missing:
+	dh_missing --fail-missing --list-missing

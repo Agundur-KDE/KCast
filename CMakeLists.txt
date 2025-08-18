@@ -31,6 +31,11 @@ include(FeatureSummary)
 include(CheckIncludeFiles)
 include(KDEClangFormat)
 include(KDEGitCommitHooks)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  include(KDEGitCommitHooks OPTIONAL)
+endif()
+
 include(ECMQmlModule)
 include(ECMConfiguredInstall)
 
