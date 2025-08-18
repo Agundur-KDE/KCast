@@ -50,11 +50,13 @@ If you’d like to support ongoing development, consider sponsoring the project:
 ![KCast Plasmoid](KCast2.png)
 ![KCast Plasmoid config](KCast_ready.png)
 
-## Installation
+## 🛠️ Installation
 
-**system wide installation**
+### Build
 
 ```bash
+git clone https://github.com/Agundur-KDE/KCast.git
+
 mkdir build && cd build
 
 cmake ..
@@ -64,8 +66,7 @@ make
 make install (as root) 
 ```
 
-## Arch Linux Installation
-
+### Arch Linux Installation
 KCast is available in the [Arch User Repository (AUR)](https://aur.archlinux.org/packages/kcast).
 
 If you use an AUR helper like `yay` or `paru`, you can install it with:
@@ -87,7 +88,7 @@ makepkg -si
 Special thanks for creating and keeping it up to date.
 
 
-## 🛠️ Installing KCast via the openSUSE Build Service Repository
+###  Installing KCast via the openSUSE Build Service Repository
 
 [![build result](https://build.opensuse.org/projects/home:Agundur/packages/kcast/badge.svg?type=default)](https://build.opensuse.org/package/show/home:Agundur/kcast)
 
@@ -107,8 +108,7 @@ sudo zypper ref
 sudo zypper in kcast
 ```
 
-## 🛠️ Installing KCast via my COPR repository (Fedora)
-
+###  Installing KCast via my COPR repository (Fedora)
 
 ```bash
 # Enable repository
@@ -119,32 +119,25 @@ sudo dnf install kcast
 ```
 
 
-## KCast Runtime Installer
+### Install on Debian (Trixie)
 
-This archive contains everything needed to install the **KCast Plasmoid** and its corresponding **QML plugin** on a KDE Plasma system.
+Prerequisites
 
-# Content
+ - You’re running KDE Plasma 6 on Debian 13 (Trixie) — e.g. on plasma-desktop / plasma-workspace.
 
-The package [kcast-installer-package.tar.gz](https://github.com/Agundur-KDE/KCast/blob/0bf6487cc080849a661de4ef5ee7049a539cf03b/kcast-installer-package.tar.gz) includes:
-
-- `kcast-runtime.tar.gz`: Contains the compiled `.so`, `qmldir`, and QML files
-- `installer.sh`: Installs everything into the appropriate user directories
-
-# Requirements
-
-- KDE Plasma 6.x
-- Qt 6.x runtime
-- Tar, Bash, and basic command-line tools
-
->  Needs testing on Fedora Silverblue, Bazzite
-
-#  Installation
+ - Architecture: packages provided are amd64 (x86-64).
+ 
+```bash
+sudo apt update
+sudo apt install -y pipx
+pipx ensurepath   # add ~/.local/bin to PATH (log out/in if prompted)
+pipx install catt
+catt --version
+```
+Download the .deb from the project’s GitHub Release page, then:
 
 ```bash
-tar xzf kcast-installer-package.tar.gz
-
-./installer.sh
-
+sudo apt install ./kcast_0.2.1-1_amd64.deb 
 ```
 
 
@@ -190,7 +183,6 @@ _______________________
 - drop a video file from Dolphin and/or Web-Browser on it an hit "play"
 
 
-
 ## Tested Hardware
 
 KCast has been tested successfully with the 
@@ -204,7 +196,6 @@ Using this link helps support the development of KCast at no additional cost to 
 
 
 ## Support
-
 
 
 - Open an issue in git ...
