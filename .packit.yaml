@@ -11,14 +11,8 @@ actions:
 
 jobs:
   - job: copr_build
-    trigger: release
+    trigger: release           # nur neue Tags/Releases
     owner: agundur
     project: KCast
-    targets:
-      - fedora-42-x86_64
-  - job: copr_build
-    trigger: pull_request
-    owner: agundur
-    project: KCast
-    targets:
-      - fedora-42-x86_64
+    targets: ["fedora-42-x86_64"]
+
