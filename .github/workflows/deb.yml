@@ -1,0 +1,99 @@
+name: build-deb
+
+on:
+  push:
+    tags:
+      - 'v*'     # läuft nur bei Tags wie v0.1.0, v1.2.3
+  workflow_dispatch:  # optional: manuell startbar
+
+jobs:
+  deb:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      GIT_DISCOVERY_ACROSS_FILESYSTEM: "1"   # verhindert "not a git repository" im Container
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Distro info & git check
+        run: |
+          set -euxo pipefail
+          cat /etc/os-release
+          git rev-parse --is-inside-work-tree || true
+
+      - name: Install base tools
+        run: |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            devscripts equivs build-essential fakeroot ca-certificates git \
+            cmake ninja-build pkg-config
+
+      - name: Install Build-Depends from debian/control
+        run: |
+          set -euxo pipefail
+          mk-build-deps -i -r -t 'apt-get -y --no-install-recommends' debian/control
+
+      - name: Build .deb (log via tee)
+        env:
+          DEB_BUILD_OPTIONS: parallel=${{ runner.processorCount }}
+          DH_VERBOSE: "1"
+        run: |
+          set -euxo pipefail
+          dpkg-buildpackage -us -uc -b 2>&1 | tee build.log
+
+      - name: Collect Debian artifacts into ./dist
+        run: |
+          set -euxo pipefail
+          mkdir -p dist
+          mapfile -t files < <(find . .. -maxdepth 2 -type f \( -name '*.deb' -o -name '*.changes' -o -name '*.buildinfo' \) -print)
+          if (( ${#files[@]} )); then
+            printf 'Collecting artifacts:\n%s\n' "${files[@]}"
+            mv -t dist "${files[@]}"
+          fi
+          ls -lah dist || true
+
+      - name: Verify .deb exist
+        run: |
+          set -euxo pipefail
+          shopt -s nullglob
+          debs=( dist/*.deb )
+          if (( ${#debs[@]} == 0 )); then
+            echo "No .deb produced. See build.log above." >&2
+            exit 2
+          fi
+          printf "Found debs:\n%s\n" "${debs[@]}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kcast-trixie
+          path: |
+            build.log
+            dist/**
+          if-no-files-found: error
+
+      - name: Dump CMake & debhelper logs on failure
+        if: failure()
+        run: |
+          set +e
+          echo "---- CMakeError.log ----"
+          find . -name CMakeError.log -print0 | xargs -0 -r -I{} sh -c 'echo ">>> {}"; sed -n "1,200p" "{}"'
+          echo "---- CMakeOutput.log (tail) ----"
+          find . -name CMakeOutput.log -print0 | xargs -0 -r -I{} sh -c 'echo ">>> {}"; tail -n 200 "{}"'
+          echo "---- CMakeCache (head) ----"
+          for f in obj-*/CMakeCache.txt; do [ -f "$f" ] && { echo ">>> $f"; sed -n '1,120p' "$f"; }; done
+          echo "---- debhelper logs (tail) ----"
+          find ./debian -maxdepth 2 -type f -name '*.log' -print0 | xargs -0 -r -I{} sh -c 'echo ">>> {}"; tail -n 200 "{}"'

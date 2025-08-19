@@ -1,0 +1,24 @@
+Source: kcast
+Section: kde
+Priority: optional
+Maintainer: Agundur <info@agundur.de>
+Build-Depends: debhelper-compat (= 13),
+ cmake, ninja-build, extra-cmake-modules, pkg-kde-tools, gettext, pkg-config,
+ qt6-base-dev, qt6-declarative-dev, qt6-declarative-dev-tools, qt6-svg-dev, qt6-base-dev-tools,
+ qt6-declarative-private-dev, qt6-base-private-dev,
+ libplasma-dev,
+ libkf6i18n-dev, libkf6notifications-dev, libkf6package-dev, libkf6declarative-dev,
+ libkirigami-dev, libkf6coreaddons-dev, libkf6config-dev,
+ libkf6kcmutils-dev, libkf6notifyconfig-dev, libkf6globalaccel-dev,
+ libkf6guiaddons-dev, libkf6widgetsaddons-dev, libkf6codecs-dev,
+ libkf6iconthemes-dev, libkf6xmlgui-dev,
+ appstream
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/Agundur-KDE/KCast
+
+Package: kcast
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ qml6-module-qtquick-controls, qml6-module-org-kde-kirigami
+Description: KCast is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a Chromecast devices in your local network.

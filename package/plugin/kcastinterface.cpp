@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Agundur <info@agundur.de>
+ *
+ * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
+ *
+ */
+
 #include "kcastinterface.h"
 #include <QDateTime>
 #include <QDebug>
@@ -107,35 +114,74 @@ bool KCastBridge::isCattInstalled() const
 
 QStringList KCastBridge::scanDevicesWithCatt()
 {
+    using namespace Qt::StringLiterals;
+
     QStringList devices;
     QProcess process;
-    process.setProgram(QLatin1String("catt"));
-    process.setArguments(QStringList() << QLatin1String("scan"));
+    process.setProgram(u"catt"_s);
+    process.setArguments({u"scan"_s});
+    process.setProcessChannelMode(QProcess::MergedChannels);
 
     process.start();
     if (!process.waitForStarted(3000)) {
-        qWarning() << "catt process did not start properly" << devices;
-        return devices;
+        qWarning() << "[KCast] catt process did not start properly";
+        return devices; // leer
     }
 
-    if (!process.waitForFinished(8000)) {
-        qWarning() << "catt process did not finish in time" << devices;
-        return devices;
-    }
+    QByteArray buffer;
 
-    QString output = QString::fromUtf8(process.readAllStandardOutput());
-    qDebug() << "catt output:" << output;
+    auto drainOutput = [&]() {
+        buffer += process.readAllStandardOutput();
 
-    const QStringList lines = output.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
-    for (const QString &line : lines) {
-        if (line.contains(QLatin1Char('-'))) {
-            QString name = line.section(QLatin1Char('-'), 1, 1).trimmed();
-            devices << name;
+        int nl = -1;
+        while ((nl = buffer.indexOf('\n')) >= 0) {
+            const QByteArray lineBa = buffer.left(nl);
+            buffer.remove(0, nl + 1);
+
+            const QString line = QString::fromUtf8(lineBa).trimmed();
+            if (line.isEmpty())
+                continue;
+            if (line.startsWith(u"Scanning Chromecasts"_s, Qt::CaseInsensitive))
+                continue;
+
+            // Erwartetes Format: "IP - Name - Type"
+            const QStringList parts = line.split(u" - "_s);
+            if (parts.size() < 2) {
+                qWarning() << "[KCast] Unexpected catt output line:" << line;
+                continue;
+            }
+
+            const QString name = parts.at(1).trimmed();
+            if (!devices.contains(name))
+                devices.append(name);
+        }
+    };
+
+    // Bis zu 25s warten; zwischendurch stdout regelmäßig "drainen"
+    const qint64 deadlineMs = QDateTime::currentMSecsSinceEpoch() + 25000;
+
+    while (process.state() != QProcess::NotRunning) {
+        // Bis zu 200 ms auf neue Daten warten, dann drainen
+        process.waitForReadyRead(200);
+        drainOutput();
+
+        // Prozess evtl. fertig?
+        if (process.state() == QProcess::Running)
+            process.waitForFinished(50);
+
+        // Globales Timeout?
+        if (QDateTime::currentMSecsSinceEpoch() > deadlineMs) {
+            qWarning() << "[KCast] catt scan timed out — returning partial results";
+            process.kill();
+            break;
         }
     }
 
-    qDebug() << "Devices found:" << devices;
+    // Rest (evtl. letzte Zeile ohne \n) noch einsammeln
+    drainOutput();
+
     return devices;
+
 }
 
 // ---- DBUS Helper ----

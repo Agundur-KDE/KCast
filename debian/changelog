@@ -1,0 +1,5 @@
+kcast (0.2.1-1) unstable; urgency=medium
+
+  * Initial minimal Debian packaging for KF6/Qt6 (OBS builds for Debian/Ubuntu).
+
+ -- Agundur <info@agundur.de>  Fri, 15 Aug 2025 10:00:00 +0200
