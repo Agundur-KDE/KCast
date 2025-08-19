@@ -10,5 +10,6 @@ target_sources(kcastplugin PRIVATE
 target_link_libraries(kcastplugin PRIVATE
     Qt6::Core
     Qt6::Qml
+    Qt6::DBus
 )
 ecm_finalize_qml_module(kcastplugin)

@@ -44,7 +44,7 @@ option(BUILD_KCM_MOUSE_X11 "Build the Mouse KCM's X11 backend" ON)
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Quick
     QuickWidgets
-    # DBus
+    DBus
     Widgets
     # Svg
     #Concurrent
@@ -72,7 +72,7 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     GlobalAccel
     CoreAddons # KSharedDataCache required by KImageCache, KStringHandler required by FolderModel
     GuiAddons # KImageCache
-    # DBusAddons
+    DBusAddons
     Config
     WidgetsAddons
     Codecs
@@ -81,6 +81,14 @@ find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     XmlGui
     # Svg
 )
+
+option(BUILD_DOLPHIN_SERVICE_MENU "Install Dolphin service menu for KCast" ON)
+
+if(BUILD_DOLPHIN_SERVICE_MENU)
+    # Installiert nach /usr/share/kio/servicemenus (systemweit)
+    install(FILES servicemenus/kcast_stream.desktop
+            DESTINATION ${KDE_INSTALL_DATADIR}/kio/servicemenus)
+endif()
 
 
 find_package(KF6Kirigami ${KF6_MIN_VERSION} CONFIG)

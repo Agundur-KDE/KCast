@@ -17,6 +17,14 @@
 #include <QStringLiteral>
 #include <QTextStream>
 
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QFileInfo>
+#include <QTimer>
+#include <QUrl>
+
+using namespace Qt::StringLiterals;
+
 void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
     static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
@@ -69,6 +77,7 @@ void KCastBridge::pauseMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt pause");
     }
+    setPlaying(false);
 }
 
 void KCastBridge::resumeMedia(const QString &device)
@@ -77,6 +86,7 @@ void KCastBridge::resumeMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt play_toggle");
     }
+    setPlaying(false);
 }
 
 void KCastBridge::stopMedia(const QString &device)
@@ -85,6 +95,7 @@ void KCastBridge::stopMedia(const QString &device)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt stop");
     }
+    setPlaying(false);
 }
 
 bool KCastBridge::isCattInstalled() const
@@ -170,4 +181,122 @@ QStringList KCastBridge::scanDevicesWithCatt()
     drainOutput();
 
     return devices;
+
+}
+
+// ---- DBUS Helper ----
+
+bool KCastBridge::registerDBus()
+{
+    auto bus = QDBusConnection::sessionBus();
+
+    const bool okObj = bus.registerObject(u"/de/agundur/kcast"_s, this, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
+    if (!okObj) {
+        qWarning() << "[KCast] DBus: registerObject failed:" << bus.lastError().message();
+        setDbusReady(false);
+        // Retry – manchmal ist der Bus/Objektbaum noch nicht so weit
+        scheduleDbusRetry();
+        return false;
+    }
+
+    if (!bus.registerService(u"de.agundur.kcast"_s)) {
+        // Kann beim Plasma-Start vorkommen (Race mit zweiter Instanz / Bus init)
+        qWarning() << "[KCast] DBus: registerService failed:" << bus.lastError().message();
+        setDbusReady(false);
+        scheduleDbusRetry();
+        return false;
+    }
+
+    qInfo() << "[KCast] DBus ready on de.agundur.kcast /de/agundur/kcast";
+    setDbusReady(true);
+    return true;
+}
+
+void KCastBridge::setMediaUrl(const QString &url)
+{
+    if (m_mediaUrl == url)
+        return;
+    m_mediaUrl = url;
+    Q_EMIT mediaUrlChanged();
+}
+
+QString KCastBridge::pickDefaultDevice() const
+{
+    if (!m_defaultDevice.isEmpty())
+        return m_defaultDevice;
+
+    // Fallback: nimm das erste gefundene Gerät (pragmatisch, bis die Config angebunden ist)
+    const QStringList devs = const_cast<KCastBridge *>(this)->scanDevicesWithCatt();
+    if (!devs.isEmpty())
+        return devs.first();
+    return {};
+}
+
+QString KCastBridge::normalizeUrlForCasting(const QString &in) const
+{
+    QUrl u = QUrl::fromUserInput(in);
+    if (u.isLocalFile()) {
+        return u.toLocalFile(); // kein file:// → vermeidet yt-dlp-Block
+    }
+    if (u.isRelative() && QFileInfo(in).exists()) {
+        return QFileInfo(in).absoluteFilePath();
+    }
+    return u.toString(); // http/https o.ä.
+}
+
+// ---- QML-Setter ----
+void KCastBridge::setDefaultDevice(const QString &device)
+{
+    m_defaultDevice = device;
+    qInfo() << u"[KCast] Default device set to:"_s << m_defaultDevice;
+}
+
+// ---- D-Bus Slots ----
+void KCastBridge::CastFile(const QString &url)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] No device available for CastFile"_s;
+        return;
+    }
+    const QString norm = normalizeUrlForCasting(url);
+
+    // GUI synchronisieren:
+    setMediaUrl(norm);
+    setPlaying(true);
+
+    qInfo() << u"[KCast] CastFile →"_s << device << norm;
+    playMedia(device, norm);
+}
+
+void KCastBridge::CastFiles(const QStringList &urls)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] No device available for CastFiles"_s;
+        return;
+    }
+    bool first = true;
+    for (const QString &u : urls) {
+        const QString norm = normalizeUrlForCasting(u);
+        if (first) {
+            setMediaUrl(norm);
+            setPlaying(true);
+            first = false;
+        } // ← AN
+        playMedia(device, norm);
+    }
+}
+
+void KCastBridge::scheduleDbusRetry()
+{
+    static int tries = 0;
+    if (tries >= 5)
+        return;
+    ++tries;
+
+    QTimer::singleShot(1000, this, [this]() {
+        qInfo() << "[KCast] DBus retry…";
+        registerDBus();
+    });
 }
