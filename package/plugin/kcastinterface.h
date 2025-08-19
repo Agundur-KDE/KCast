@@ -1,9 +1,13 @@
 #ifndef KCASTINTERFACE_H
 #define KCASTINTERFACE_H
 
+#include <QByteArray>
 #include <QObject>
+#include <QProcess>
 #include <QQmlEngine>
+#include <QSet>
 #include <QStringList>
+#include <QTimer>
 
 class KCastBridge : public QObject
 {
@@ -19,6 +23,9 @@ public:
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
+
+private:
+    QVariantList m_devices;
 };
 
 #endif // KCASTINTERFACE_H
