@@ -71,6 +71,7 @@ Item {
         if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
             setDefaultDevice(Plasmoid.configuration.defaultDevice);
 
+        kcast.probeReceiver(Qt.resolvedUrl("250-milliseconds-of-silence.mp3"));
     }
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200

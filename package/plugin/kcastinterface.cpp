@@ -183,6 +183,50 @@ QStringList KCastBridge::scanDevicesWithCatt()
     return devices;
 }
 
+static QString toLocalMediaPath(const QString &in)
+{
+    const QUrl u(in);
+    if (u.isLocalFile() || in.startsWith(u"file://"_s))
+        return u.toLocalFile();
+    return in;
+}
+
+void KCastBridge::probeReceiver(const QString &assetUrl)
+{
+    const QString dev = pickDefaultDevice();
+    if (dev.isEmpty())
+        return;
+
+    // 1) Prefer: expliziten Pfad/URL aus QML verwenden (funktioniert im Dev-Tree)
+    QString asset = assetUrl;
+
+    // 2) Fallback: im installierten System suchen
+    if (asset.isEmpty()) {
+        asset = QStandardPaths::locate(QStandardPaths::GenericDataLocation, u"plasma/plasmoids/de.agundur.kcast/contents/ui/250-milliseconds-of-silence.mp3"_s);
+        if (asset.isEmpty())
+            return; // kein Outbound, einfach aufgeben
+    }
+
+    const QString local = toLocalMediaPath(asset);
+
+    QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"stop"_s});
+    QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"quit"_s});
+
+    QTimer::singleShot(350, this, [dev, local]() {
+        auto *p = new QProcess();
+        p->setProgram(u"catt"_s);
+        p->setArguments({u"-d"_s, dev, u"cast"_s, local});
+        p->setProcessChannelMode(QProcess::MergedChannels);
+        QObject::connect(p, &QProcess::finished, p, [dev, p] {
+            const QString out = QString::fromUtf8(p->readAll());
+            p->deleteLater();
+            QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"quit"_s});
+            // Optional: out auf CC1AD845 prüfen und ein Signal emittieren
+        });
+        p->start();
+    });
+}
+
 // ---- DBUS Helper ----
 
 bool KCastBridge::registerDBus()

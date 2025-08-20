@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE bool isCattInstalled() const;
     Q_INVOKABLE void setDefaultDevice(const QString &device);
     Q_INVOKABLE bool registerDBus();
+    Q_INVOKABLE void probeReceiver(const QString &assetUrl = QString());
     Q_INVOKABLE bool setVolume(int level); // 0..100
     Q_INVOKABLE bool volumeUp(int delta = 5);
     Q_INVOKABLE bool volumeDown(int delta = 5);
