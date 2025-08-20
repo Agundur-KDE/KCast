@@ -6,22 +6,22 @@
  */
 
 #include "kcastinterface.h"
+#include <QDBusConnection>
+#include <QDBusError>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStringLiteral>
 #include <QTextStream>
-
-#include <QDBusConnection>
-#include <QDBusError>
-#include <QFileInfo>
 #include <QTimer>
 #include <QUrl>
+#include <algorithm>
 
 using namespace Qt::StringLiterals;
 
@@ -181,7 +181,6 @@ QStringList KCastBridge::scanDevicesWithCatt()
     drainOutput();
 
     return devices;
-
 }
 
 // ---- DBUS Helper ----
@@ -299,4 +298,97 @@ void KCastBridge::scheduleDbusRetry()
         qInfo() << "[KCast] DBus retry…";
         registerDBus();
     });
+}
+
+// ---- Volume ----
+
+bool KCastBridge::setVolume(int level)
+{
+    // clamp auf 0..100
+    level = std::clamp(level, 0, 100);
+
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setVolume: no Chromecast device available."_s;
+        return false;
+    }
+
+    // catt -d "<device>" volume <level>
+    const QStringList args{u"-d"_s, device, u"volume"_s, QString::number(level)};
+
+    const bool ok = QProcess::startDetached(u"catt"_s, args);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volume."_s;
+        return false;
+    }
+
+    Q_EMIT volumeCommandSent(u"set"_s, level);
+    return true;
+}
+
+bool KCastBridge::volumeUp(int delta)
+{
+    if (delta <= 0)
+        delta = 5;
+
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] volumeUp: no Chromecast device available."_s;
+        return false;
+    }
+
+    // catt -d "<device>" volumeup <delta>
+    const QStringList args{u"-d"_s, device, u"volumeup"_s, QString::number(delta)};
+
+    const bool ok = QProcess::startDetached(u"catt"_s, args);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volumeup."_s;
+        return false;
+    }
+    Q_EMIT volumeCommandSent(u"up"_s, delta);
+    return true;
+}
+
+bool KCastBridge::volumeDown(int delta)
+{
+    if (delta <= 0)
+        delta = 5;
+
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] volumeDown: no Chromecast device available."_s;
+        return false;
+    }
+
+    // catt -d "<device>" volumedown <delta>
+    const QStringList args{u"-d"_s, device, u"volumedown"_s, QString::number(delta)};
+
+    const bool ok = QProcess::startDetached(u"catt"_s, args);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volumedown."_s;
+        return false;
+    }
+    Q_EMIT volumeCommandSent(u"down"_s, delta);
+    return true;
+}
+
+bool KCastBridge::setMuted(bool on)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setMuted: no Chromecast device available."_s;
+        return false;
+    }
+
+    // catt -d "<device>" volumemute [true|false]
+    // (catt CLI akzeptiert BOOL; safer als on/off Strings)
+    const QStringList args{u"-d"_s, device, u"volumemute"_s, on ? u"true"_s : u"false"_s};
+
+    const bool ok = QProcess::startDetached(u"catt"_s, args);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volumemute."_s;
+        return false;
+    }
+    Q_EMIT muteCommandSent(on);
+    return true;
 }

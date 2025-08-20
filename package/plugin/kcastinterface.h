@@ -27,10 +27,13 @@ public:
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
-
     Q_INVOKABLE void setDefaultDevice(const QString &device);
-
     Q_INVOKABLE bool registerDBus();
+    Q_INVOKABLE bool setVolume(int level); // 0..100
+    Q_INVOKABLE bool volumeUp(int delta = 5); // +delta
+    Q_INVOKABLE bool volumeDown(int delta = 5); // -delta
+    Q_INVOKABLE bool setMuted(bool on); // true = mute
+
     bool dbusReady() const
     {
         return m_dbusReady;
@@ -54,6 +57,8 @@ Q_SIGNALS:
     void mediaUrlChanged();
     void playingChanged();
     void dbusReadyChanged();
+    void volumeCommandSent(QString command, int value);
+    void muteCommandSent(bool muted);
 
 private:
     QString m_defaultDevice;
@@ -81,7 +86,6 @@ private:
     void scheduleDbusRetry();
 
     QVariantList m_devices;
-
 };
 
 #endif // KCASTINTERFACE_H
