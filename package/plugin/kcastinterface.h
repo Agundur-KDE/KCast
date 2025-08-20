@@ -30,9 +30,9 @@ public:
     Q_INVOKABLE void setDefaultDevice(const QString &device);
     Q_INVOKABLE bool registerDBus();
     Q_INVOKABLE bool setVolume(int level); // 0..100
-    Q_INVOKABLE bool volumeUp(int delta = 5); // +delta
-    Q_INVOKABLE bool volumeDown(int delta = 5); // -delta
-    Q_INVOKABLE bool setMuted(bool on); // true = mute
+    Q_INVOKABLE bool volumeUp(int delta = 5);
+    Q_INVOKABLE bool volumeDown(int delta = 5);
+    Q_INVOKABLE bool setMuted(bool on);
 
     bool dbusReady() const
     {

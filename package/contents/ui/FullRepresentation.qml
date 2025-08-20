@@ -22,6 +22,10 @@ Item {
     property var devices: []
     readonly property bool canPlay: devices.length > 0 && typeof mediaUrl.text === "string" && mediaUrl.text.length > 0
     property bool isPlaying: false
+    property int volumeStepBig: 5
+    property int volumeStepSmall: 1
+    property int currentVolume: 50
+    property bool muted: false
 
     function refreshDevices() {
         console.log(i18n("refreashing"));
@@ -72,6 +76,18 @@ Item {
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
+    Timer {
+        id: volumeDebounce
+
+        interval: 180
+        repeat: false
+        onTriggered: {
+            if (kcast && kcast.setVolume)
+                kcast.setVolume(currentVolume);
+
+        }
+    }
 
     KCastBridge {
         id: kcast
@@ -314,6 +330,112 @@ Item {
 
         }
 
+        RowLayout {
+            id: volumeControls
+
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 8
+
+            PlasmaComponents.Button {
+                id: muteBtn
+
+                checkable: true
+                checked: muted
+                icon.name: muted ? "audio-volume-muted" : "audio-volume-high"
+                text: muted ? i18n("Unmute") : i18n("Mute")
+                Accessible.name: checked ? "Unmute" : "Mute"
+                onClicked: {
+                    if (!kcast || !kcast.setMuted)
+                        return ;
+
+                    muted = checked;
+                    kcast.setMuted(muted);
+                }
+            }
+
+            PlasmaComponents.Button {
+                icon.name: "media-volume-down"
+                text: i18n("Leiser")
+                onClicked: {
+                    if (!kcast || !kcast.volumeDown)
+                        return ;
+
+                    kcast.volumeDown(volumeStepBig);
+                }
+            }
+
+            PlasmaComponents.Slider {
+                id: volumeSlider
+
+                Layout.fillWidth: true
+                from: 0
+                to: 100
+                stepSize: volumeStepSmall
+                live: true
+                value: currentVolume
+                onMoved: {
+                    currentVolume = Math.round(value);
+                    volumeDebounce.restart();
+                }
+                onReleased: {
+                    if (!kcast || !kcast.setVolume)
+                        return ;
+
+                    currentVolume = Math.round(value);
+                    kcast.setVolume(currentVolume);
+                }
+                Keys.onPressed: (ev) => {
+                    if (!kcast)
+                        return ;
+
+                    if (ev.key === Qt.Key_Left && kcast.volumeDown) {
+                        kcast.volumeDown(volumeStepSmall);
+                        ev.accepted = true;
+                    }
+                    if (ev.key === Qt.Key_Right && kcast.volumeUp) {
+                        kcast.volumeUp(volumeStepSmall);
+                        ev.accepted = true;
+                    }
+                }
+
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    onWheel: (ev) => {
+                        if (!kcast)
+                            return ;
+
+                        const d = ev.angleDelta.y > 0 ? volumeStepSmall : -volumeStepSmall;
+                        if (d > 0 && kcast.volumeUp)
+                            kcast.volumeUp(d);
+                        else if (d < 0 && kcast.volumeDown)
+                            kcast.volumeDown(-d);
+                        ev.accepted = true;
+                    }
+                }
+
+            }
+
+            PlasmaComponents.Label {
+                text: currentVolume + "%"
+                Accessible.name: i18n("Lautstärke in Prozent")
+                Layout.alignment: Qt.AlignVCenter
+                minimumWidth: implicitWidth
+            }
+
+            PlasmaComponents.Button {
+                icon.name: "media-volume-up"
+                text: i18n("Lauter")
+                onClicked: {
+                    if (!kcast || !kcast.volumeUp)
+                        return ;
+
+                    kcast.volumeUp(volumeStepBig);
+                }
+            }
+
+        }
+
         Platform.FileDialog {
             id: fileDialog
 
@@ -326,6 +448,26 @@ Item {
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Connections {
+            function onVolumeCommandSent(command, value) {
+                if (command === "set")
+                    currentVolume = value;
+
+                if (command === "up")
+                    currentVolume = Math.max(0, Math.min(100, currentVolume + value));
+
+                if (command === "down")
+                    currentVolume = Math.max(0, Math.min(100, currentVolume - value));
+
+            }
+
+            function onMuteCommandSent(on) {
+                muted = on;
+            }
+
+            target: kcast
         }
 
     }

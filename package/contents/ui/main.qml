@@ -33,6 +33,23 @@ PlasmoidItem {
     compactRepresentation: MouseArea {
         id: compact
 
+        WheelHandler {
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: (ev) => {
+                if (!kcast)
+                    return ;
+
+                const d = ev.angleDelta.y > 0 ? 1 : -1;
+                if (d > 0 && kcast.volumeUp)
+                    kcast.volumeUp(1);
+
+                if (d < 0 && kcast.volumeDown)
+                    kcast.volumeDown(1);
+
+                ev.accepted = true;
+            }
+        }
+
         DropArea {
             id: compactDrop
 
