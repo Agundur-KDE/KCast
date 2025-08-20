@@ -21,7 +21,7 @@ class KCastBridge : public QObject
 public:
     explicit KCastBridge(QObject *parent = nullptr);
 
-    Q_INVOKABLE QStringList scanDevicesWithCatt();
+    Q_INVOKABLE void scanDevicesAsync();
     Q_INVOKABLE void playMedia(const QString &device, const QString &url);
     Q_INVOKABLE void pauseMedia(const QString &device);
     Q_INVOKABLE void resumeMedia(const QString &device);
@@ -55,6 +55,8 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
     void CastFiles(const QStringList &urls);
 
 Q_SIGNALS:
+    void deviceFound(QString name); // <— neu
+    void devicesScanned(QStringList names); // falls noch nicht vorhanden
     void mediaUrlChanged();
     void playingChanged();
     void dbusReadyChanged();

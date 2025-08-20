@@ -32,7 +32,7 @@ Item {
 
     function refreshDevices() {
         console.log(i18n("refreashing"));
-        devices = kcast.scanDevicesWithCatt();
+        devices = kcast.scanDevicesAsync();
     }
 
     function _play() {

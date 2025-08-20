@@ -121,75 +121,57 @@ bool KCastBridge::isCattInstalled() const
     }
 }
 
-QStringList KCastBridge::scanDevicesWithCatt()
+void KCastBridge::scanDevicesAsync()
 {
-    using namespace Qt::StringLiterals;
+    auto *p = new QProcess(this);
+    p->setProgram(u"catt"_s);
+    p->setArguments({u"scan"_s});
+    p->setProcessChannelMode(QProcess::MergedChannels);
 
-    QStringList devices;
-    QProcess process;
-    process.setProgram(u"catt"_s);
-    process.setArguments({u"scan"_s});
-    process.setProcessChannelMode(QProcess::MergedChannels);
+    auto *buf = new QString; // Zeilenpuffer
+    auto *acc = new QStringList; // gesammelte Namen
 
-    process.start();
-    if (!process.waitForStarted(3000)) {
-        qWarning() << "[KCast] catt process did not start properly";
-        return devices; // leer
-    }
-
-    QByteArray buffer;
-
-    auto drainOutput = [&]() {
-        buffer += process.readAllStandardOutput();
+    connect(p, &QProcess::readyReadStandardOutput, this, [this, p, acc, buf]() {
+        *buf += QString::fromUtf8(p->readAllStandardOutput());
 
         int nl = -1;
-        while ((nl = buffer.indexOf('\n')) >= 0) {
-            const QByteArray lineBa = buffer.left(nl);
-            buffer.remove(0, nl + 1);
+        while ((nl = buf->indexOf(u'\n')) >= 0) { // <-- FIX: QChar, kein _s
+            const QString line = buf->left(nl);
+            buf->remove(0, nl + 1);
 
-            const QString line = QString::fromUtf8(lineBa).trimmed();
-            if (line.isEmpty())
-                continue;
-            if (line.startsWith(u"Scanning Chromecasts"_s, Qt::CaseInsensitive))
-                continue;
-
-            // Erwartetes Format: "IP - Name - Type"
-            const QStringList parts = line.split(u" - "_s);
-            if (parts.size() < 2) {
-                qWarning() << "[KCast] Unexpected catt output line:" << line;
-                continue;
+            const auto parts = line.split(u" - "_s);
+            if (parts.size() >= 2) {
+                const QString name = parts.at(1).trimmed();
+                if (!name.isEmpty() && !acc->contains(name)) {
+                    acc->append(name);
+                    Q_EMIT deviceFound(name); // live ans UI
+                    // optional zusätzlich: Q_EMIT devicesScanned(*acc);
+                }
             }
-
-            const QString name = parts.at(1).trimmed();
-            if (!devices.contains(name))
-                devices.append(name);
         }
-    };
+    });
 
-    // Bis zu 25s warten; zwischendurch stdout regelmäßig "drainen"
-    const qint64 deadlineMs = QDateTime::currentMSecsSinceEpoch() + 25000;
-
-    while (process.state() != QProcess::NotRunning) {
-        // Bis zu 200 ms auf neue Daten warten, dann drainen
-        process.waitForReadyRead(200);
-        drainOutput();
-
-        // Prozess evtl. fertig?
-        if (process.state() == QProcess::Running)
-            process.waitForFinished(50);
-
-        // Globales Timeout?
-        if (QDateTime::currentMSecsSinceEpoch() > deadlineMs) {
-            qWarning() << "[KCast] catt scan timed out — returning partial results";
-            process.kill();
-            break;
+    connect(p, &QProcess::finished, this, [this, p, acc, buf](int, QProcess::ExitStatus) {
+        // letzte (nicht terminierte) Zeile noch verarbeiten
+        if (!buf->isEmpty()) {
+            const QString line = *buf;
+            const auto parts = line.split(u" - "_s);
+            if (parts.size() >= 2) {
+                const QString name = parts.at(1).trimmed();
+                if (!name.isEmpty() && !acc->contains(name)) {
+                    acc->append(name);
+                    Q_EMIT deviceFound(name); // optional
+                }
+            }
         }
-    }
 
-    // Rest (evtl. letzte Zeile ohne \n) noch einsammeln
-    drainOutput();
+        Q_EMIT devicesScanned(*acc); // final komplette Liste
+        delete buf;
+        delete acc;
+        p->deleteLater();
+    });
 
-    return devices;
+    p->start();
 }
 
 static QString toLocalMediaPath(const QString &in)
@@ -277,10 +259,7 @@ QString KCastBridge::pickDefaultDevice() const
     if (!m_defaultDevice.isEmpty())
         return m_defaultDevice;
 
-    // Fallback: nimm das erste gefundene Gerät (pragmatisch, bis die Config angebunden ist)
-    const QStringList devs = const_cast<KCastBridge *>(this)->scanDevicesWithCatt();
-    if (!devs.isEmpty())
-        return devs.first();
+    qWarning() << u"[KCast] No default device set – refusing to scan on UI path."_s;
     return {};
 }
 
@@ -440,8 +419,8 @@ bool KCastBridge::spawnCattSetVolume(int level)
 {
     const QString device = pickDefaultDevice();
     if (device.isEmpty()) {
-        qWarning() << u"[KCast] setVolume: no Chromecast device available."_s;
-        return false;
+        qWarning() << u"[KCast] setVolume: default device not set."_s;
+        return false; // NICHT scannen!
     }
     const QStringList args{u"-d"_s, device, u"volume"_s, QString::number(level)};
     return QProcess::startDetached(u"catt"_s, args);
