@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- A new "Open" button for media files to allow quick playback selection.
++- A new "Open" button for media files to allow quick playback selection.
 - A "Network" configuration section with support for setting a default Chromecast device.
 - Internationalization (i18n) support with proper file structure.
 - German translation added as the first supported language alongside English (default).
