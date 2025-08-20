@@ -83,9 +83,9 @@ Item {
         interval: 120 // vorher 180; fühlt sich noch direkter an
         repeat: false
         onTriggered: {
-            if (kcast && kcast.setVolume) {
+            if (kcast && kcast.setVolume)
                 kcast.setVolume(currentVolume);
-            }
+
         }
     }
 
@@ -343,7 +343,7 @@ Item {
                 checkable: true
                 checked: muted
                 icon.name: muted ? "audio-volume-muted" : "audio-volume-high"
-                text: muted ? i18n("Unmute") : i18n("Mute")
+                // text: muted ? i18n("Unmute") : i18n("Mute")
                 Accessible.name: checked ? "Unmute" : "Mute"
                 onClicked: {
                     if (!kcast || !kcast.setMuted)
@@ -355,7 +355,7 @@ Item {
             }
 
             PlasmaComponents.Button {
-                icon.name: "media-volume-down"
+                // icon.name: "media-volume-down"
                 text: i18n("-")
                 onClicked: {
                     currentVolume = Math.max(0, currentVolume - volumeStepBig);
@@ -428,7 +428,7 @@ Item {
             }
 
             PlasmaComponents.Button {
-                icon.name: "media-volume-up"
+                // icon.name: "media-volume-up"
                 text: i18n("+")
                 onClicked: {
                     currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
