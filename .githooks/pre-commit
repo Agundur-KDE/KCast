@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Privacy-Policy hook no outbound connections
+
+# nur gestagte, textbasierte Dateien prüfen
+git diff --cached -z --name-only --diff-filter=ACMR \
+  | xargs -0 -I{} file --mime-type -b "{}" \
+  | paste -d' ' - <(git diff --cached -z --name-only --diff-filter=ACMR | tr '\0' '\n') \
+  | awk '$1 ~ /^text\// {print $2}' \
+  | while read -r f; do
+      if grep -Hn -E 'https?://(clients3\.google\.com|googleapis\.com|gstatic\.com|connectivitycheck|generate_204)' "$f" >/dev/null; then
+        echo "❌ Dritt-URL in $f (Privacy-Policy verletzt). Entfernen oder explizit freigeben."
+        exit 1
+      fi
+    done
