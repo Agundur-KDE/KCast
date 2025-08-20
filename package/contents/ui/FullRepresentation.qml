@@ -356,7 +356,7 @@ Item {
 
             PlasmaComponents.Button {
                 icon.name: "media-volume-down"
-                text: i18n("Leiser")
+                text: i18n("-")
                 onClicked: {
                     if (!kcast || !kcast.volumeDown)
                         return ;
@@ -374,11 +374,21 @@ Item {
                 stepSize: volumeStepSmall
                 live: true
                 value: currentVolume
-                onMoved: {
+                // Beim Ziehen: nur throttled (Debounce) senden
+                onValueChanged: {
+                    if (!pressed)
+                        return ;
+
+                    // nur wenn der User wirklich schiebt
                     currentVolume = Math.round(value);
                     volumeDebounce.restart();
                 }
-                onReleased: {
+                // „Loslassen“-Moment: final commit (ersetzt onReleased)
+                onPressedChanged: {
+                    if (pressed)
+                        return ;
+
+                    // wird false => Finger/Maus losgelassen
                     if (!kcast || !kcast.setVolume)
                         return ;
 
@@ -417,15 +427,16 @@ Item {
             }
 
             PlasmaComponents.Label {
+                // minimumWidth: implicitWidth
+
                 text: currentVolume + "%"
-                Accessible.name: i18n("Lautstärke in Prozent")
+                Accessible.name: i18n("Volume in %")
                 Layout.alignment: Qt.AlignVCenter
-                minimumWidth: implicitWidth
             }
 
             PlasmaComponents.Button {
                 icon.name: "media-volume-up"
-                text: i18n("Lauter")
+                text: i18n("+")
                 onClicked: {
                     if (!kcast || !kcast.volumeUp)
                         return ;
