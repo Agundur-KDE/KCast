@@ -80,12 +80,12 @@ Item {
     Timer {
         id: volumeDebounce
 
-        interval: 180
+        interval: 120 // vorher 180; fühlt sich noch direkter an
         repeat: false
         onTriggered: {
-            if (kcast && kcast.setVolume)
+            if (kcast && kcast.setVolume) {
                 kcast.setVolume(currentVolume);
-
+            }
         }
     }
 
@@ -358,10 +358,8 @@ Item {
                 icon.name: "media-volume-down"
                 text: i18n("-")
                 onClicked: {
-                    if (!kcast || !kcast.volumeDown)
-                        return ;
-
-                    kcast.volumeDown(volumeStepBig);
+                    currentVolume = Math.max(0, currentVolume - volumeStepBig);
+                    volumeDebounce.restart();
                 }
             }
 
@@ -412,14 +410,9 @@ Item {
                 WheelHandler {
                     acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                     onWheel: (ev) => {
-                        if (!kcast)
-                            return ;
-
                         const d = ev.angleDelta.y > 0 ? volumeStepSmall : -volumeStepSmall;
-                        if (d > 0 && kcast.volumeUp)
-                            kcast.volumeUp(d);
-                        else if (d < 0 && kcast.volumeDown)
-                            kcast.volumeDown(-d);
+                        currentVolume = Math.max(0, Math.min(100, currentVolume + d));
+                        volumeDebounce.restart();
                         ev.accepted = true;
                     }
                 }
@@ -438,10 +431,8 @@ Item {
                 icon.name: "media-volume-up"
                 text: i18n("+")
                 onClicked: {
-                    if (!kcast || !kcast.volumeUp)
-                        return ;
-
-                    kcast.volumeUp(volumeStepBig);
+                    currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
+                    volumeDebounce.restart(); // nach kurzer Zeit >= setVolume()
                 }
             }
 
