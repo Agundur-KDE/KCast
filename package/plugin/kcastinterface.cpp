@@ -61,6 +61,15 @@ KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
     // qInstallMessageHandler(customMessageHandler);
+
+    // kurze Bündel-Zeit: UI darf „ausrauschen“, dann 1x senden
+    m_coalesceTimer.setSingleShot(true);
+    m_coalesceTimer.setInterval(90); // 80–120 ms fühlt sich snappy an
+    connect(&m_coalesceTimer, &QTimer::timeout, this, &KCastBridge::flushVolumeDesired);
+
+    // Mindestabstand zwischen zwei catt-Spawns (Python-Interpreter-Overhead!)
+    m_rateLimitTimer.setSingleShot(true);
+    m_rateLimitTimer.setInterval(100);
 }
 
 void KCastBridge::playMedia(const QString &device, const QString &url)
@@ -348,25 +357,9 @@ void KCastBridge::scheduleDbusRetry()
 
 bool KCastBridge::setVolume(int level)
 {
-    // clamp auf 0..100
-    level = std::clamp(level, 0, 100);
-
-    const QString device = pickDefaultDevice();
-    if (device.isEmpty()) {
-        qWarning() << u"[KCast] setVolume: no Chromecast device available."_s;
-        return false;
-    }
-
-    // catt -d "<device>" volume <level>
-    const QStringList args{u"-d"_s, device, u"volume"_s, QString::number(level)};
-
-    const bool ok = QProcess::startDetached(u"catt"_s, args);
-    if (!ok) {
-        qWarning() << u"[KCast] Failed to start catt volume."_s;
-        return false;
-    }
-
-    Q_EMIT volumeCommandSent(u"set"_s, level);
+    level = clampVolume(level);
+    requestVolumeAbsolute(level);
+    Q_EMIT volumeCommandSent(u"set"_s, level); // UI darf sofort hochzählen
     return true;
 }
 
@@ -374,65 +367,93 @@ bool KCastBridge::volumeUp(int delta)
 {
     if (delta <= 0)
         delta = 5;
-
-    const QString device = pickDefaultDevice();
-    if (device.isEmpty()) {
-        qWarning() << u"[KCast] volumeUp: no Chromecast device available."_s;
-        return false;
-    }
-
-    // catt -d "<device>" volumeup <delta>
-    const QStringList args{u"-d"_s, device, u"volumeup"_s, QString::number(delta)};
-
-    const bool ok = QProcess::startDetached(u"catt"_s, args);
-    if (!ok) {
-        qWarning() << u"[KCast] Failed to start catt volumeup."_s;
-        return false;
-    }
-    Q_EMIT volumeCommandSent(u"up"_s, delta);
-    return true;
+    const int base = m_desiredVolume.has_value() ? *m_desiredVolume : (m_lastSentVolume >= 0 ? m_lastSentVolume : 50);
+    return setVolume(base + delta);
 }
 
 bool KCastBridge::volumeDown(int delta)
 {
     if (delta <= 0)
         delta = 5;
-
-    const QString device = pickDefaultDevice();
-    if (device.isEmpty()) {
-        qWarning() << u"[KCast] volumeDown: no Chromecast device available."_s;
-        return false;
-    }
-
-    // catt -d "<device>" volumedown <delta>
-    const QStringList args{u"-d"_s, device, u"volumedown"_s, QString::number(delta)};
-
-    const bool ok = QProcess::startDetached(u"catt"_s, args);
-    if (!ok) {
-        qWarning() << u"[KCast] Failed to start catt volumedown."_s;
-        return false;
-    }
-    Q_EMIT volumeCommandSent(u"down"_s, delta);
-    return true;
+    const int base = m_desiredVolume.has_value() ? *m_desiredVolume : (m_lastSentVolume >= 0 ? m_lastSentVolume : 50);
+    return setVolume(base - delta);
 }
 
 bool KCastBridge::setMuted(bool on)
 {
-    const QString device = pickDefaultDevice();
-    if (device.isEmpty()) {
-        qWarning() << u"[KCast] setMuted: no Chromecast device available."_s;
-        return false;
-    }
-
-    // catt -d "<device>" volumemute [true|false]
-    // (catt CLI akzeptiert BOOL; safer als on/off Strings)
-    const QStringList args{u"-d"_s, device, u"volumemute"_s, on ? u"true"_s : u"false"_s};
-
-    const bool ok = QProcess::startDetached(u"catt"_s, args);
+    const bool ok = spawnCattMute(on);
     if (!ok) {
         qWarning() << u"[KCast] Failed to start catt volumemute."_s;
         return false;
     }
     Q_EMIT muteCommandSent(on);
     return true;
+}
+
+// ---- Coalescer ----
+
+void KCastBridge::requestVolumeAbsolute(int level)
+{
+    m_desiredVolume = clampVolume(level);
+    // jeder neue Wunsch startet die Bündelung neu (last-wins)
+    m_coalesceTimer.start();
+}
+
+void KCastBridge::flushVolumeDesired()
+{
+    if (!m_desiredVolume.has_value())
+        return;
+
+    // Rate-Limit noch aktiv? Danach erneut versuchen.
+    if (m_rateLimitTimer.isActive()) {
+        m_coalesceTimer.start(m_rateLimitTimer.remainingTime() + 10);
+        return;
+    }
+
+    const int target = clampVolume(*m_desiredVolume);
+
+    if (m_lastSentVolume == target) {
+        m_desiredVolume.reset();
+        return; // schon dort
+    }
+
+    const bool ok = spawnCattSetVolume(target);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volume."_s;
+        // nicht aufgeben – in 200 ms nochmal probieren
+        m_coalesceTimer.start(200);
+        return;
+    }
+
+    m_lastSentVolume = target;
+    m_desiredVolume.reset();
+    m_rateLimitTimer.start();
+
+    // falls während des Spawns neue Wünsche kamen, direkt wieder bündeln
+    if (m_desiredVolume.has_value())
+        m_coalesceTimer.start();
+}
+
+// ---- Helpers: tatsächlich catt starten (absolut!) ----
+
+bool KCastBridge::spawnCattSetVolume(int level)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setVolume: no Chromecast device available."_s;
+        return false;
+    }
+    const QStringList args{u"-d"_s, device, u"volume"_s, QString::number(level)};
+    return QProcess::startDetached(u"catt"_s, args);
+}
+
+bool KCastBridge::spawnCattMute(bool on)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setMuted: no Chromecast device available."_s;
+        return false;
+    }
+    const QStringList args{u"-d"_s, device, u"volumemute"_s, on ? u"true"_s : u"false"_s};
+    return QProcess::startDetached(u"catt"_s, args);
 }

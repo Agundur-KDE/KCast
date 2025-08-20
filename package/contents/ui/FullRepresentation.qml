@@ -26,6 +26,9 @@ Item {
     property int volumeStepSmall: 1
     property int currentVolume: 50
     property bool muted: false
+    property bool userInteracting: false
+    property int volumeIgnoreMs: 500
+    property double lastUserTs: 0
 
     function refreshDevices() {
         console.log(i18n("refreashing"));
@@ -47,6 +50,10 @@ Item {
 
     function _stop() {
         kcast.stopMedia(deviceSelector.currentText);
+    }
+
+    function markUserAction() {
+        lastUserTs = Date.now();
     }
 
     Component.onCompleted: {
@@ -80,7 +87,7 @@ Item {
     Timer {
         id: volumeDebounce
 
-        interval: 120 // vorher 180; fühlt sich noch direkter an
+        interval: 80
         repeat: false
         onTriggered: {
             if (kcast && kcast.setVolume)
@@ -359,6 +366,7 @@ Item {
                 text: i18n("-")
                 onClicked: {
                     currentVolume = Math.max(0, currentVolume - volumeStepBig);
+                    markUserAction();
                     volumeDebounce.restart();
                 }
             }
@@ -394,15 +402,14 @@ Item {
                     kcast.setVolume(currentVolume);
                 }
                 Keys.onPressed: (ev) => {
-                    if (!kcast)
-                        return ;
-
-                    if (ev.key === Qt.Key_Left && kcast.volumeDown) {
-                        kcast.volumeDown(volumeStepSmall);
+                    if (ev.key === Qt.Key_Left) {
+                        currentVolume = Math.max(0, currentVolume - volumeStepSmall);
+                        volumeDebounce.restart();
                         ev.accepted = true;
                     }
-                    if (ev.key === Qt.Key_Right && kcast.volumeUp) {
-                        kcast.volumeUp(volumeStepSmall);
+                    if (ev.key === Qt.Key_Right) {
+                        currentVolume = Math.min(100, currentVolume + volumeStepSmall);
+                        volumeDebounce.restart();
                         ev.accepted = true;
                     }
                 }
@@ -412,6 +419,7 @@ Item {
                     onWheel: (ev) => {
                         const d = ev.angleDelta.y > 0 ? volumeStepSmall : -volumeStepSmall;
                         currentVolume = Math.max(0, Math.min(100, currentVolume + d));
+                        markUserAction();
                         volumeDebounce.restart();
                         ev.accepted = true;
                     }
@@ -432,6 +440,7 @@ Item {
                 text: i18n("+")
                 onClicked: {
                     currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
+                    markUserAction();
                     volumeDebounce.restart(); // nach kurzer Zeit >= setVolume()
                 }
             }

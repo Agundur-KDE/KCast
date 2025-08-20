@@ -87,6 +87,23 @@ private:
     void scheduleDbusRetry();
 
     QVariantList m_devices;
+
+    // ---- Coalescer ----
+    void requestVolumeAbsolute(int level);
+    void flushVolumeDesired();
+    static int clampVolume(int v)
+    {
+        return std::clamp(v, 0, 100);
+    }
+
+    bool spawnCattSetVolume(int level);
+    bool spawnCattMute(bool on);
+
+    // State
+    std::optional<int> m_desiredVolume; // letzter gewünschter Zielwert (last-wins)
+    int m_lastSentVolume = -1; // unbekannt am Start
+    QTimer m_coalesceTimer; // bündelt schnelle Änderungen
+    QTimer m_rateLimitTimer; // Mindestabstand zwischen Spawns
 };
 
 #endif // KCASTINTERFACE_H
