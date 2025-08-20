@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new Volume-Slider and volume adjustment with mouse wheel
 - Dolphin servicemenu for mediafiles "Play with KCast"
 
+
 ## Fix
 
 - chromecast discovery would time out with a lot of chromecast devices
