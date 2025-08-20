@@ -6,6 +6,7 @@
 #include <QProcess>
 #include <QQmlEngine>
 #include <QSet>
+#include <QString>
 #include <QStringList>
 #include <QTimer>
 
@@ -18,6 +19,19 @@ class KCastBridge : public QObject
     Q_PROPERTY(QString mediaUrl READ mediaUrl WRITE setMediaUrl NOTIFY mediaUrlChanged FINAL)
     Q_PROPERTY(bool playing READ playing NOTIFY playingChanged FINAL)
 
+    Q_PROPERTY(QString defaultDevice READ defaultDevice NOTIFY defaultDeviceChanged)
+    Q_PROPERTY(QStringList devices READ devices NOTIFY devicesChanged)
+
+    QString defaultDevice() const
+    {
+        return m_defaultDevice;
+    }
+
+    QStringList devices() const
+    {
+        return m_devices;
+    }
+
 public:
     explicit KCastBridge(QObject *parent = nullptr);
 
@@ -27,7 +41,7 @@ public:
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
-    Q_INVOKABLE void setDefaultDevice(const QString &device);
+    Q_INVOKABLE void setDefaultDevice(const QString &name);
     Q_INVOKABLE bool registerDBus();
     Q_INVOKABLE void probeReceiver(const QString &assetUrl = QString());
     Q_INVOKABLE bool setVolume(int level); // 0..100
@@ -57,6 +71,9 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
 Q_SIGNALS:
     void deviceFound(QString name); // <— neu
     void devicesScanned(QStringList names); // falls noch nicht vorhanden
+    void devicesChanged(QStringList); // existiert?
+    void defaultDeviceChanged(QString);
+
     void mediaUrlChanged();
     void playingChanged();
     void dbusReadyChanged();
@@ -65,6 +82,8 @@ Q_SIGNALS:
 
 private:
     QString m_defaultDevice;
+    QStringList m_devices;
+
     QString m_mediaUrl;
     QString pickDefaultDevice() const;
     QString normalizeUrlForCasting(const QString &in) const;
@@ -87,8 +106,6 @@ private:
     }
 
     void scheduleDbusRetry();
-
-    QVariantList m_devices;
 
     // ---- Coalescer ----
     void requestVolumeAbsolute(int level);

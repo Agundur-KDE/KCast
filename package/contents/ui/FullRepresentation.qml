@@ -20,7 +20,9 @@ Item {
     property bool isPaused: false
     property int selectedIndex: -1
     property var devices: []
+    property bool isScanning: false
     readonly property bool canPlay: devices.length > 0 && typeof mediaUrl.text === "string" && mediaUrl.text.length > 0
+    readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
     property bool isPlaying: false
     property int volumeStepBig: 5
     property int volumeStepSmall: 1
@@ -33,6 +35,16 @@ Item {
     function refreshDevices() {
         console.log(i18n("refreashing"));
         devices = kcast.scanDevicesAsync();
+    }
+
+    function devs() {
+        return (kcast && kcast.devices) ? kcast.devices : [];
+    }
+
+    function startScan() {
+        devices = [];
+        isScanning = true;
+        kcast.scanDevicesAsync(); // asynchron, UI bleibt frei
     }
 
     function _play() {
@@ -66,10 +78,6 @@ Item {
             console.warn(i18n("You need to install 'catt' first!"));
             return ;
         }
-        if (defaultDevice)
-            devices = [defaultDevice];
-        else
-            refreshDevices();
         console.log("[KCast] DBus registration started");
         const ok = kcast.registerDBus();
         if (!ok)
@@ -77,6 +85,9 @@ Item {
 
         if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
             setDefaultDevice(Plasmoid.configuration.defaultDevice);
+
+        if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
+            startScan();
 
     }
     Layout.minimumWidth: deviceList.implicitWidth + 100
@@ -186,7 +197,12 @@ Item {
                 id: deviceSelector
 
                 Layout.fillWidth: true
-                model: devices
+                model: devs().length > 0 ? devs() : (kcast.defaultDevice && kcast.defaultDevice.length > 0 ? [kcast.defaultDevice] : [])
+                onActivated: (i) => {
+                    if (i >= 0 && i < model.length)
+                        kcast.setDefaultDevice(model[i]);
+
+                }
             }
 
             PlasmaComponents.Button {
@@ -283,7 +299,7 @@ Item {
 
                 text: i18n("Play")
                 icon.name: "media-playback-start"
-                enabled: !isPlaying && canPlay
+                // enabled: !isPlaying && canPlay
                 checkable: true
                 checked: kcast.playing
                 onClicked: {
@@ -380,6 +396,7 @@ Item {
                 stepSize: volumeStepSmall
                 live: true
                 value: currentVolume
+                enabled: controlsEnabled
                 // Beim Ziehen: nur throttled (Debounce) senden
                 onValueChanged: {
                     if (!pressed)
@@ -476,6 +493,31 @@ Item {
 
             function onMuteCommandSent(on) {
                 muted = on;
+            }
+
+            target: kcast
+        }
+
+        Connections {
+            // erstes gefundenes nehmen
+            // z.B. eine Fehlermeldung sichtbar schalten
+
+            function onDeviceFound(name) {
+                if (devices.indexOf(name) === -1)
+                    devices = devices.concat([name]);
+
+                // trigger Bindings
+                if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
+                    kcast.setDefaultDevice(name);
+
+            }
+
+            function onDevicesScanned(list) {
+                devices = Array.isArray(list) ? list : [];
+                isScanning = false;
+                // Optional: InlineMessage zeigen, falls leer
+                if (devices.length === 0) {
+                }
             }
 
             target: kcast

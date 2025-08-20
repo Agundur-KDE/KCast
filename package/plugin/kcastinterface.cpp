@@ -124,51 +124,87 @@ bool KCastBridge::isCattInstalled() const
 void KCastBridge::scanDevicesAsync()
 {
     auto *p = new QProcess(this);
-    p->setProgram(u"catt"_s);
-    p->setArguments({u"scan"_s});
+    p->setProgram(QStringLiteral("catt"));
+    p->setArguments({QStringLiteral("scan")});
     p->setProcessChannelMode(QProcess::MergedChannels);
 
-    auto *buf = new QString; // Zeilenpuffer
-    auto *acc = new QStringList; // gesammelte Namen
+    auto *buf = new QString; // Puffer für ggf. unvollständige Zeilen
+    auto *acc = new QStringList; // gesammelte Gerätenamen
 
+    // Sicherheitsnetz: Scan nach 30s abbrechen (keine UI-Blockade)
+    auto *kill = new QTimer(this);
+    kill->setSingleShot(true);
+    kill->setInterval(30000);
+    connect(kill, &QTimer::timeout, this, [p, kill]() {
+        if (p->state() != QProcess::NotRunning)
+            p->kill();
+        kill->deleteLater();
+    });
+    kill->start();
+
+    // Inkrementell lesen und Zeilen verarbeiten
     connect(p, &QProcess::readyReadStandardOutput, this, [this, p, acc, buf]() {
         *buf += QString::fromUtf8(p->readAllStandardOutput());
 
-        int nl = -1;
-        while ((nl = buf->indexOf(u'\n')) >= 0) { // <-- FIX: QChar, kein _s
+        qsizetype nl;
+        while ((nl = buf->indexOf(QLatin1Char('\n'))) >= 0) {
             const QString line = buf->left(nl);
             buf->remove(0, nl + 1);
 
-            const auto parts = line.split(u" - "_s);
+            const auto parts = line.split(QStringLiteral(" - "));
             if (parts.size() >= 2) {
                 const QString name = parts.at(1).trimmed();
                 if (!name.isEmpty() && !acc->contains(name)) {
                     acc->append(name);
-                    Q_EMIT deviceFound(name); // live ans UI
-                    // optional zusätzlich: Q_EMIT devicesScanned(*acc);
+                    Q_EMIT deviceFound(name); // Live-Update fürs UI
+
+                    // Properties live synchron halten
+                    if (!m_devices.contains(name)) {
+                        m_devices.append(name);
+                        Q_EMIT devicesChanged(m_devices);
+                    }
+                    if (m_defaultDevice.isEmpty()) {
+                        m_defaultDevice = name;
+                        Q_EMIT defaultDeviceChanged(m_defaultDevice);
+                    }
                 }
             }
         }
     });
 
-    connect(p, &QProcess::finished, this, [this, p, acc, buf](int, QProcess::ExitStatus) {
-        // letzte (nicht terminierte) Zeile noch verarbeiten
+    // Abschluss: Restzeile (ohne \n) verarbeiten + final emitten
+    connect(p, &QProcess::finished, this, [this, p, acc, buf, kill](int, QProcess::ExitStatus) {
         if (!buf->isEmpty()) {
             const QString line = *buf;
-            const auto parts = line.split(u" - "_s);
+            const auto parts = line.split(QStringLiteral(" - "));
             if (parts.size() >= 2) {
                 const QString name = parts.at(1).trimmed();
                 if (!name.isEmpty() && !acc->contains(name)) {
                     acc->append(name);
-                    Q_EMIT deviceFound(name); // optional
+                    Q_EMIT deviceFound(name);
+                    if (!m_devices.contains(name)) {
+                        m_devices.append(name);
+                        Q_EMIT devicesChanged(m_devices);
+                    }
+                    if (m_defaultDevice.isEmpty()) {
+                        m_defaultDevice = name;
+                        Q_EMIT defaultDeviceChanged(m_defaultDevice);
+                    }
                 }
             }
         }
 
-        Q_EMIT devicesScanned(*acc); // final komplette Liste
+        if (m_devices != *acc) {
+            m_devices = *acc;
+            Q_EMIT devicesChanged(m_devices);
+        }
+        Q_EMIT devicesScanned(*acc);
+
         delete buf;
         delete acc;
         p->deleteLater();
+        if (kill)
+            kill->deleteLater();
     });
 
     p->start();
@@ -256,11 +292,7 @@ void KCastBridge::setMediaUrl(const QString &url)
 
 QString KCastBridge::pickDefaultDevice() const
 {
-    if (!m_defaultDevice.isEmpty())
-        return m_defaultDevice;
-
-    qWarning() << u"[KCast] No default device set – refusing to scan on UI path."_s;
-    return {};
+    return m_defaultDevice;
 }
 
 QString KCastBridge::normalizeUrlForCasting(const QString &in) const
@@ -276,10 +308,17 @@ QString KCastBridge::normalizeUrlForCasting(const QString &in) const
 }
 
 // ---- QML-Setter ----
-void KCastBridge::setDefaultDevice(const QString &device)
+void KCastBridge::setDefaultDevice(const QString &name)
 {
-    m_defaultDevice = device;
-    qInfo() << u"[KCast] Default device set to:"_s << m_defaultDevice;
+    if (m_defaultDevice == name)
+        return;
+    m_defaultDevice = name;
+    // <<< NEU: Default immer in Liste aufnehmen >>>
+    if (!m_devices.contains(name)) {
+        m_devices.append(name);
+        Q_EMIT devicesChanged(m_devices);
+    }
+    Q_EMIT defaultDeviceChanged(m_defaultDevice);
 }
 
 // ---- D-Bus Slots ----
