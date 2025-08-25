@@ -6,22 +6,22 @@
  */
 
 #include "kcastinterface.h"
+#include <QDBusConnection>
+#include <QDBusError>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStringLiteral>
 #include <QTextStream>
-
-#include <QDBusConnection>
-#include <QDBusError>
-#include <QFileInfo>
 #include <QTimer>
 #include <QUrl>
+#include <algorithm>
 
 using namespace Qt::StringLiterals;
 
@@ -61,6 +61,15 @@ KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
     // qInstallMessageHandler(customMessageHandler);
+
+    // kurze Bündel-Zeit: UI darf „ausrauschen“, dann 1x senden
+    m_coalesceTimer.setSingleShot(true);
+    m_coalesceTimer.setInterval(90); // 80–120 ms fühlt sich snappy an
+    connect(&m_coalesceTimer, &QTimer::timeout, this, &KCastBridge::flushVolumeDesired);
+
+    // Mindestabstand zwischen zwei catt-Spawns (Python-Interpreter-Overhead!)
+    m_rateLimitTimer.setSingleShot(true);
+    m_rateLimitTimer.setInterval(100);
 }
 
 void KCastBridge::playMedia(const QString &device, const QString &url)
@@ -69,24 +78,29 @@ void KCastBridge::playMedia(const QString &device, const QString &url)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt cast");
     }
+    setPlaying(true);
 }
 
 void KCastBridge::pauseMedia(const QString &device)
 {
-    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("pause"));
-    if (!ok) {
-        qWarning() << QString::fromUtf8("Failed to start catt pause");
-    }
+    bool ok = QProcess::startDetached(u"catt"_s, QStringList{u"-d"_s, device, u"pause"_s});
+    if (!ok)
+        qWarning() << u"[KCast] Failed to start catt pause"_s;
     setPlaying(false);
 }
 
 void KCastBridge::resumeMedia(const QString &device)
 {
-    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("play_toggle"));
+    using namespace Qt::StringLiterals;
+
+    const bool ok = QProcess::startDetached(u"catt"_s, QStringList{u"-d"_s, device, u"play"_s});
+
     if (!ok) {
-        qWarning() << QString::fromUtf8("Failed to start catt play_toggle");
+        qWarning() << u"[KCast] Failed to start catt play (resume)"_s;
+        return;
     }
-    setPlaying(false);
+
+    setPlaying(true);
 }
 
 void KCastBridge::stopMedia(const QString &device)
@@ -112,76 +126,137 @@ bool KCastBridge::isCattInstalled() const
     }
 }
 
-QStringList KCastBridge::scanDevicesWithCatt()
+void KCastBridge::scanDevicesAsync()
 {
-    using namespace Qt::StringLiterals;
+    auto *p = new QProcess(this);
+    p->setProgram(QStringLiteral("catt"));
+    p->setArguments({QStringLiteral("scan")});
+    p->setProcessChannelMode(QProcess::MergedChannels);
 
-    QStringList devices;
-    QProcess process;
-    process.setProgram(u"catt"_s);
-    process.setArguments({u"scan"_s});
-    process.setProcessChannelMode(QProcess::MergedChannels);
+    auto *buf = new QString; // Puffer für ggf. unvollständige Zeilen
+    auto *acc = new QStringList; // gesammelte Gerätenamen
 
-    process.start();
-    if (!process.waitForStarted(3000)) {
-        qWarning() << "[KCast] catt process did not start properly";
-        return devices; // leer
-    }
+    // Sicherheitsnetz: Scan nach 30s abbrechen (keine UI-Blockade)
+    auto *kill = new QTimer(this);
+    kill->setSingleShot(true);
+    kill->setInterval(30000);
+    connect(kill, &QTimer::timeout, this, [p, kill]() {
+        if (p->state() != QProcess::NotRunning)
+            p->kill();
+        kill->deleteLater();
+    });
+    kill->start();
 
-    QByteArray buffer;
+    // Inkrementell lesen und Zeilen verarbeiten
+    connect(p, &QProcess::readyReadStandardOutput, this, [this, p, acc, buf]() {
+        *buf += QString::fromUtf8(p->readAllStandardOutput());
 
-    auto drainOutput = [&]() {
-        buffer += process.readAllStandardOutput();
+        qsizetype nl;
+        while ((nl = buf->indexOf(QLatin1Char('\n'))) >= 0) {
+            const QString line = buf->left(nl);
+            buf->remove(0, nl + 1);
 
-        int nl = -1;
-        while ((nl = buffer.indexOf('\n')) >= 0) {
-            const QByteArray lineBa = buffer.left(nl);
-            buffer.remove(0, nl + 1);
+            const auto parts = line.split(QStringLiteral(" - "));
+            if (parts.size() >= 2) {
+                const QString name = parts.at(1).trimmed();
+                if (!name.isEmpty() && !acc->contains(name)) {
+                    acc->append(name);
+                    Q_EMIT deviceFound(name); // Live-Update fürs UI
 
-            const QString line = QString::fromUtf8(lineBa).trimmed();
-            if (line.isEmpty())
-                continue;
-            if (line.startsWith(u"Scanning Chromecasts"_s, Qt::CaseInsensitive))
-                continue;
-
-            // Erwartetes Format: "IP - Name - Type"
-            const QStringList parts = line.split(u" - "_s);
-            if (parts.size() < 2) {
-                qWarning() << "[KCast] Unexpected catt output line:" << line;
-                continue;
+                    // Properties live synchron halten
+                    if (!m_devices.contains(name)) {
+                        m_devices.append(name);
+                        Q_EMIT devicesChanged(m_devices);
+                    }
+                    if (m_defaultDevice.isEmpty()) {
+                        m_defaultDevice = name;
+                        Q_EMIT defaultDeviceChanged(m_defaultDevice);
+                    }
+                }
             }
-
-            const QString name = parts.at(1).trimmed();
-            if (!devices.contains(name))
-                devices.append(name);
         }
-    };
+    });
 
-    // Bis zu 25s warten; zwischendurch stdout regelmäßig "drainen"
-    const qint64 deadlineMs = QDateTime::currentMSecsSinceEpoch() + 25000;
-
-    while (process.state() != QProcess::NotRunning) {
-        // Bis zu 200 ms auf neue Daten warten, dann drainen
-        process.waitForReadyRead(200);
-        drainOutput();
-
-        // Prozess evtl. fertig?
-        if (process.state() == QProcess::Running)
-            process.waitForFinished(50);
-
-        // Globales Timeout?
-        if (QDateTime::currentMSecsSinceEpoch() > deadlineMs) {
-            qWarning() << "[KCast] catt scan timed out — returning partial results";
-            process.kill();
-            break;
+    // Abschluss: Restzeile (ohne \n) verarbeiten + final emitten
+    connect(p, &QProcess::finished, this, [this, p, acc, buf, kill](int, QProcess::ExitStatus) {
+        if (!buf->isEmpty()) {
+            const QString line = *buf;
+            const auto parts = line.split(QStringLiteral(" - "));
+            if (parts.size() >= 2) {
+                const QString name = parts.at(1).trimmed();
+                if (!name.isEmpty() && !acc->contains(name)) {
+                    acc->append(name);
+                    Q_EMIT deviceFound(name);
+                    if (!m_devices.contains(name)) {
+                        m_devices.append(name);
+                        Q_EMIT devicesChanged(m_devices);
+                    }
+                    if (m_defaultDevice.isEmpty()) {
+                        m_defaultDevice = name;
+                        Q_EMIT defaultDeviceChanged(m_defaultDevice);
+                    }
+                }
+            }
         }
+
+        if (m_devices != *acc) {
+            m_devices = *acc;
+            Q_EMIT devicesChanged(m_devices);
+        }
+        Q_EMIT devicesScanned(*acc);
+
+        delete buf;
+        delete acc;
+        p->deleteLater();
+        if (kill)
+            kill->deleteLater();
+    });
+
+    p->start();
+}
+
+static QString toLocalMediaPath(const QString &in)
+{
+    const QUrl u(in);
+    if (u.isLocalFile() || in.startsWith(u"file://"_s))
+        return u.toLocalFile();
+    return in;
+}
+
+void KCastBridge::probeReceiver(const QString &assetUrl)
+{
+    const QString dev = pickDefaultDevice();
+    if (dev.isEmpty())
+        return;
+
+    // 1) Prefer: expliziten Pfad/URL aus QML verwenden (funktioniert im Dev-Tree)
+    QString asset = assetUrl;
+
+    // 2) Fallback: im installierten System suchen
+    if (asset.isEmpty()) {
+        asset = QStandardPaths::locate(QStandardPaths::GenericDataLocation, u"plasma/plasmoids/de.agundur.kcast/contents/ui/250-milliseconds-of-silence.mp3"_s);
+        if (asset.isEmpty())
+            return; // kein Outbound, einfach aufgeben
     }
 
-    // Rest (evtl. letzte Zeile ohne \n) noch einsammeln
-    drainOutput();
+    const QString local = toLocalMediaPath(asset);
 
-    return devices;
+    QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"stop"_s});
+    QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"quit"_s});
 
+    QTimer::singleShot(350, this, [dev, local]() {
+        auto *p = new QProcess();
+        p->setProgram(u"catt"_s);
+        p->setArguments({u"-d"_s, dev, u"cast"_s, local});
+        p->setProcessChannelMode(QProcess::MergedChannels);
+        QObject::connect(p, &QProcess::finished, p, [dev, p] {
+            const QString out = QString::fromUtf8(p->readAll());
+            p->deleteLater();
+            QProcess::startDetached(u"catt"_s, {u"-d"_s, dev, u"quit"_s});
+            // Optional: out auf CC1AD845 prüfen und ein Signal emittieren
+        });
+        p->start();
+    });
 }
 
 // ---- DBUS Helper ----
@@ -222,14 +297,7 @@ void KCastBridge::setMediaUrl(const QString &url)
 
 QString KCastBridge::pickDefaultDevice() const
 {
-    if (!m_defaultDevice.isEmpty())
-        return m_defaultDevice;
-
-    // Fallback: nimm das erste gefundene Gerät (pragmatisch, bis die Config angebunden ist)
-    const QStringList devs = const_cast<KCastBridge *>(this)->scanDevicesWithCatt();
-    if (!devs.isEmpty())
-        return devs.first();
-    return {};
+    return m_defaultDevice;
 }
 
 QString KCastBridge::normalizeUrlForCasting(const QString &in) const
@@ -245,10 +313,17 @@ QString KCastBridge::normalizeUrlForCasting(const QString &in) const
 }
 
 // ---- QML-Setter ----
-void KCastBridge::setDefaultDevice(const QString &device)
+void KCastBridge::setDefaultDevice(const QString &name)
 {
-    m_defaultDevice = device;
-    qInfo() << u"[KCast] Default device set to:"_s << m_defaultDevice;
+    if (m_defaultDevice == name)
+        return;
+    m_defaultDevice = name;
+    // <<< NEU: Default immer in Liste aufnehmen >>>
+    if (!m_devices.contains(name)) {
+        m_devices.append(name);
+        Q_EMIT devicesChanged(m_devices);
+    }
+    Q_EMIT defaultDeviceChanged(m_defaultDevice);
 }
 
 // ---- D-Bus Slots ----
@@ -299,4 +374,110 @@ void KCastBridge::scheduleDbusRetry()
         qInfo() << "[KCast] DBus retry…";
         registerDBus();
     });
+}
+
+// ---- Volume ----
+
+bool KCastBridge::setVolume(int level)
+{
+    level = clampVolume(level);
+    requestVolumeAbsolute(level);
+    Q_EMIT volumeCommandSent(u"set"_s, level); // UI darf sofort hochzählen
+    return true;
+}
+
+bool KCastBridge::volumeUp(int delta)
+{
+    if (delta <= 0)
+        delta = 5;
+    const int base = m_desiredVolume.has_value() ? *m_desiredVolume : (m_lastSentVolume >= 0 ? m_lastSentVolume : 50);
+    return setVolume(base + delta);
+}
+
+bool KCastBridge::volumeDown(int delta)
+{
+    if (delta <= 0)
+        delta = 5;
+    const int base = m_desiredVolume.has_value() ? *m_desiredVolume : (m_lastSentVolume >= 0 ? m_lastSentVolume : 50);
+    return setVolume(base - delta);
+}
+
+bool KCastBridge::setMuted(bool on)
+{
+    const bool ok = spawnCattMute(on);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volumemute."_s;
+        return false;
+    }
+    Q_EMIT muteCommandSent(on);
+    return true;
+}
+
+// ---- Coalescer ----
+
+void KCastBridge::requestVolumeAbsolute(int level)
+{
+    m_desiredVolume = clampVolume(level);
+    // jeder neue Wunsch startet die Bündelung neu (last-wins)
+    m_coalesceTimer.start();
+}
+
+void KCastBridge::flushVolumeDesired()
+{
+    if (!m_desiredVolume.has_value())
+        return;
+
+    // Rate-Limit noch aktiv? Danach erneut versuchen.
+    if (m_rateLimitTimer.isActive()) {
+        m_coalesceTimer.start(m_rateLimitTimer.remainingTime() + 10);
+        return;
+    }
+
+    const int target = clampVolume(*m_desiredVolume);
+
+    if (m_lastSentVolume == target) {
+        m_desiredVolume.reset();
+        return; // schon dort
+    }
+
+    const bool ok = spawnCattSetVolume(target);
+    if (!ok) {
+        qWarning() << u"[KCast] Failed to start catt volume."_s;
+        // nicht aufgeben – in 200 ms nochmal probieren
+        m_coalesceTimer.start(200);
+        return;
+    }
+
+    m_lastSentVolume = target;
+    m_desiredVolume.reset();
+    m_rateLimitTimer.start();
+
+    // falls während des Spawns neue Wünsche kamen, direkt wieder bündeln
+    if (m_desiredVolume.has_value())
+        m_coalesceTimer.start();
+}
+
+// ---- Helpers: tatsächlich catt starten (absolut!) ----
+
+bool KCastBridge::spawnCattSetVolume(int level)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setVolume: default device not set."_s;
+        return false; // NICHT scannen!
+    }
+    const QStringList args{u"-d"_s, device, u"volume"_s, QString::number(level)};
+    return QProcess::startDetached(u"catt"_s, args);
+}
+
+bool KCastBridge::spawnCattMute(bool on)
+{
+    const QString device = pickDefaultDevice();
+    if (device.isEmpty()) {
+        qWarning() << u"[KCast] setMuted: no Chromecast device available."_s;
+        return false;
+    }
+    // catt --help: volumemute  Enable or disable mute on supported devices.
+    const QStringList args{u"-d"_s, device, u"volumemute"_s, on ? u"true"_s : u"false"_s};
+    return QProcess::startDetached(u"catt"_s, args);
 }

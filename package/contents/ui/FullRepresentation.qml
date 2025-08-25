@@ -20,17 +20,43 @@ Item {
     property bool isPaused: false
     property int selectedIndex: -1
     property var devices: []
-    readonly property bool canPlay: devices.length > 0 && typeof mediaUrl.text === "string" && mediaUrl.text.length > 0
+    property bool isScanning: false
     property bool isPlaying: false
+    property int volumeStepBig: 5
+    property int volumeStepSmall: 1
+    property int currentVolume: 50
+    property bool muted: false
+    property bool userInteracting: false
+    property int volumeIgnoreMs: 500
+    property double lastUserTs: 0
+    property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
+    property bool wasPaused: false
+    property bool hasSession: false
+    readonly property bool canPlay: controlsEnabled && hasMedia && !hasSession
 
     function refreshDevices() {
         console.log(i18n("refreashing"));
-        devices = kcast.scanDevicesWithCatt();
+        devices = kcast.scanDevicesAsync();
+    }
+
+    function devs() {
+        return (kcast && kcast.devices) ? kcast.devices : [];
+    }
+
+    function startScan() {
+        devices = [];
+        isScanning = true;
+        kcast.scanDevicesAsync(); // asynchron, UI bleibt frei
     }
 
     function _play() {
-        console.log(mediaUrl.text);
-        kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
+        let url = mediaUrl.text || "";
+        if (url.startsWith("file://"))
+            url = url.replace(/^file:\/\//, "");
+
+        kcast.CastFile(url);
     }
 
     function _pause() {
@@ -45,6 +71,10 @@ Item {
         kcast.stopMedia(deviceSelector.currentText);
     }
 
+    function markUserAction() {
+        lastUserTs = Date.now();
+    }
+
     Component.onCompleted: {
         mediaUrl.text = kcast.mediaUrl;
         if (!kcast) {
@@ -55,23 +85,34 @@ Item {
             console.warn(i18n("You need to install 'catt' first!"));
             return ;
         }
-        if (defaultDevice)
-            devices = [defaultDevice];
-        else
-            refreshDevices();
         console.log("[KCast] DBus registration started");
         const ok = kcast.registerDBus();
         if (!ok)
             console.warn("[KCast] DBus registration failed");
 
         if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
-            setDefaultDevice(Plasmoid.configuration.defaultDevice);
+            kcast.setDefaultDevice(Plasmoid.configuration.defaultDevice);
+
+        if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
+            startScan();
 
     }
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + 200
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
     implicitHeight: FullRepresentation.implicitHeight > 0 ? FullRepresentation.implicitHeight : 300
+
+    Timer {
+        id: volumeDebounce
+
+        interval: 80
+        repeat: false
+        onTriggered: {
+            if (kcast && kcast.setVolume)
+                kcast.setVolume(currentVolume);
+
+        }
+    }
 
     KCastBridge {
         id: kcast
@@ -163,7 +204,12 @@ Item {
                 id: deviceSelector
 
                 Layout.fillWidth: true
-                model: devices
+                model: devs().length > 0 ? devs() : (kcast.defaultDevice && kcast.defaultDevice.length > 0 ? [kcast.defaultDevice] : [])
+                onActivated: (i) => {
+                    if (i >= 0 && i < model.length)
+                        kcast.setDefaultDevice(model[i]);
+
+                }
             }
 
             PlasmaComponents.Button {
@@ -260,7 +306,7 @@ Item {
 
                 text: i18n("Play")
                 icon.name: "media-playback-start"
-                enabled: !isPlaying && canPlay
+                enabled: canPlay
                 checkable: true
                 checked: kcast.playing
                 onClicked: {
@@ -270,45 +316,151 @@ Item {
                         cleaned = raw.replace(/^file:\/\//, "");
                         mediaUrl.text = cleaned;
                     }
-                    _play();
-                    isPlaying = true;
-                    isPaused = false;
+                    kcast.CastFile(cleaned);
+                    wasPaused = false;
+                    hasSession = true;
                 }
             }
 
             PlasmaComponents.Button {
-                id: pauseButton
+                id: pauseBtn
 
-                property bool isPaused: false
+                checkable: true
+                checked: kcast.playing
+                text: checked ? i18n("Pause") : i18n("Resume")
+                icon.name: checked ? "media-playback-pause" : "media-playback-start"
+                enabled: deviceReady && hasSession
+                onToggled: (nowChecked) => {
+                    // Resume
+                    // Pause
 
-                text: isPaused ? i18n("Resume") : i18n("Pause")
-                icon.name: "media-playback-pause"
-                enabled: isPlaying || kcast.playing
-                onClicked: {
-                    if (isPaused) {
-                        text:
-                        "Resume";
-                        _resume();
-                        isPaused = false;
-                        pauseButton.icon.name = "media-playback-pause";
-                    } else {
-                        text:
-                        "Pause";
-                        _pause();
-                        isPaused = true;
-                        pauseButton.icon.name = "media-playback-start";
-                    }
+                    if (!hasSession)
+                        return ;
+
+                    if (nowChecked)
+                        kcast.resumeMedia(kcast.defaultDevice);
+                    else
+                        kcast.pauseMedia(kcast.defaultDevice);
                 }
             }
 
             PlasmaComponents.Button {
                 text: "Stop"
-                enabled: isPlaying || kcast.playing
                 icon.name: "media-playback-stop"
+                enabled: controlsEnabled && hasSession
                 onClicked: {
-                    _stop();
-                    isPlaying = false;
-                    isPaused = false;
+                    kcast.stopMedia(kcast.defaultDevice);
+                    hasSession = false; // Session beendet
+                }
+            }
+
+        }
+
+        RowLayout {
+            id: volumeControls
+
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 8
+
+            PlasmaComponents.Button {
+                id: muteBtn
+
+                enabled: controlsEnabled
+                checkable: true
+                checked: muted
+                icon.name: muted ? "audio-volume-muted" : "audio-volume-high"
+                // text: muted ? i18n("Unmute") : i18n("Mute")
+                Accessible.name: checked ? "Unmute" : "Mute"
+                onClicked: {
+                    kcast.setMuted(muteBtn.checked);
+                }
+            }
+
+            PlasmaComponents.Button {
+                // icon.name: "media-volume-down"
+                text: i18n("-")
+                enabled: deviceReady
+                onClicked: {
+                    currentVolume = Math.max(0, currentVolume - volumeStepBig);
+                    markUserAction();
+                    volumeDebounce.restart();
+                }
+            }
+
+            PlasmaComponents.Slider {
+                id: volumeSlider
+
+                Layout.fillWidth: true
+                from: 0
+                to: 100
+                stepSize: volumeStepSmall
+                live: true
+                value: currentVolume
+                enabled: deviceReady
+                // Beim Ziehen: nur throttled (Debounce) senden
+                onValueChanged: {
+                    if (!pressed)
+                        return ;
+
+                    // nur wenn der User wirklich schiebt
+                    currentVolume = Math.round(value);
+                    volumeDebounce.restart();
+                }
+                // „Loslassen“-Moment: final commit (ersetzt onReleased)
+                onPressedChanged: {
+                    if (pressed)
+                        return ;
+
+                    // wird false => Finger/Maus losgelassen
+                    if (!kcast || !kcast.setVolume)
+                        return ;
+
+                    currentVolume = Math.round(value);
+                    kcast.setVolume(currentVolume);
+                }
+                Keys.onPressed: (ev) => {
+                    if (ev.key === Qt.Key_Left) {
+                        currentVolume = Math.max(0, currentVolume - volumeStepSmall);
+                        volumeDebounce.restart();
+                        ev.accepted = true;
+                    }
+                    if (ev.key === Qt.Key_Right) {
+                        currentVolume = Math.min(100, currentVolume + volumeStepSmall);
+                        volumeDebounce.restart();
+                        ev.accepted = true;
+                    }
+                }
+
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    onWheel: (ev) => {
+                        const d = ev.angleDelta.y > 0 ? volumeStepSmall : -volumeStepSmall;
+                        currentVolume = Math.max(0, Math.min(100, currentVolume + d));
+                        markUserAction();
+                        volumeDebounce.restart();
+                        ev.accepted = true;
+                    }
+                }
+
+            }
+
+            PlasmaComponents.Label {
+                // minimumWidth: implicitWidth
+
+                text: currentVolume + "%"
+                Accessible.name: i18n("Volume in %")
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            PlasmaComponents.Button {
+                // icon.name: "media-volume-up"
+                text: i18n("+")
+                enabled: deviceReady
+                onClicked: {
+                    currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
+                    markUserAction();
+                    volumeDebounce.restart(); // nach kurzer Zeit >= setVolume()
                 }
             }
 
@@ -326,6 +478,51 @@ Item {
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Connections {
+            function onVolumeCommandSent(command, value) {
+                if (command === "set")
+                    currentVolume = value;
+
+                if (command === "up")
+                    currentVolume = Math.max(0, Math.min(100, currentVolume + value));
+
+                if (command === "down")
+                    currentVolume = Math.max(0, Math.min(100, currentVolume - value));
+
+            }
+
+            function onMuteCommandSent(on) {
+                muted = on;
+            }
+
+            target: kcast
+        }
+
+        Connections {
+            // erstes gefundenes nehmen
+            // z.B. eine Fehlermeldung sichtbar schalten
+
+            function onDeviceFound(name) {
+                if (devices.indexOf(name) === -1)
+                    devices = devices.concat([name]);
+
+                // trigger Bindings
+                if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
+                    kcast.setDefaultDevice(name);
+
+            }
+
+            function onDevicesScanned(list) {
+                devices = Array.isArray(list) ? list : [];
+                isScanning = false;
+                // Optional: InlineMessage zeigen, falls leer
+                if (devices.length === 0) {
+                }
+            }
+
+            target: kcast
         }
 
     }

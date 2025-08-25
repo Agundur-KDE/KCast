@@ -15,10 +15,10 @@
         "Name": "Alec"
       }
     ],
-    "Version": "2.0",
+    "Version": "0.3.0",
     "License": "GPL",
-    "Website": "https://www.agundur.de",
-    "BugReportUrl": "info@agundur.de"
+    "Website": "https://github.com/Agundur-KDE/KCast",
+    "BugReportUrl": "mailto:info@agundur.de?subject=KCast%20bug%20report"
   },
   "X-Plasma-API-Minimum-Version": "6.0",
   "X-Plasma-API": "declarativeappletscript",

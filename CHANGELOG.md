@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] – 2025-08-20
+
+### Added
+
+- A new Volume-Slider and volume adjustment with mouse wheel
+- Dolphin servicemenu for mediafiles "Play with KCast"
+
+
+## Fix
+
+- chromecast discovery would time out with a lot of chromecast devices
+- small bugfixes
 
 ---
 
@@ -23,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] – 2025-07-23
 
 ### Added
-- A new "Open" button for media files to allow quick playback selection.
+
++- A new "Open" button for media files to allow quick playback selection.
 - A "Network" configuration section with support for setting a default Chromecast device.
 - Internationalization (i18n) support with proper file structure.
 - German translation added as the first supported language alongside English (default).

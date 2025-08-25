@@ -6,6 +6,7 @@
 #include <QProcess>
 #include <QQmlEngine>
 #include <QSet>
+#include <QString>
 #include <QStringList>
 #include <QTimer>
 
@@ -18,19 +19,36 @@ class KCastBridge : public QObject
     Q_PROPERTY(QString mediaUrl READ mediaUrl WRITE setMediaUrl NOTIFY mediaUrlChanged FINAL)
     Q_PROPERTY(bool playing READ playing NOTIFY playingChanged FINAL)
 
+    Q_PROPERTY(QString defaultDevice READ defaultDevice NOTIFY defaultDeviceChanged)
+    Q_PROPERTY(QStringList devices READ devices NOTIFY devicesChanged)
+
+    QString defaultDevice() const
+    {
+        return m_defaultDevice;
+    }
+
+    QStringList devices() const
+    {
+        return m_devices;
+    }
+
 public:
     explicit KCastBridge(QObject *parent = nullptr);
 
-    Q_INVOKABLE QStringList scanDevicesWithCatt();
+    Q_INVOKABLE void scanDevicesAsync();
     Q_INVOKABLE void playMedia(const QString &device, const QString &url);
     Q_INVOKABLE void pauseMedia(const QString &device);
     Q_INVOKABLE void resumeMedia(const QString &device);
     Q_INVOKABLE void stopMedia(const QString &device);
     Q_INVOKABLE bool isCattInstalled() const;
-
-    Q_INVOKABLE void setDefaultDevice(const QString &device);
-
+    Q_INVOKABLE void setDefaultDevice(const QString &name);
     Q_INVOKABLE bool registerDBus();
+    Q_INVOKABLE void probeReceiver(const QString &assetUrl = QString());
+    Q_INVOKABLE bool setVolume(int level); // 0..100
+    Q_INVOKABLE bool volumeUp(int delta = 5);
+    Q_INVOKABLE bool volumeDown(int delta = 5);
+    Q_INVOKABLE bool setMuted(bool on);
+
     bool dbusReady() const
     {
         return m_dbusReady;
@@ -51,12 +69,21 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
     void CastFiles(const QStringList &urls);
 
 Q_SIGNALS:
+    void deviceFound(QString name); // <— neu
+    void devicesScanned(QStringList names); // falls noch nicht vorhanden
+    void devicesChanged(QStringList); // existiert?
+    void defaultDeviceChanged(QString);
+
     void mediaUrlChanged();
     void playingChanged();
     void dbusReadyChanged();
+    void volumeCommandSent(QString command, int value);
+    void muteCommandSent(bool muted);
 
 private:
     QString m_defaultDevice;
+    QStringList m_devices;
+
     QString m_mediaUrl;
     QString pickDefaultDevice() const;
     QString normalizeUrlForCasting(const QString &in) const;
@@ -80,8 +107,22 @@ private:
 
     void scheduleDbusRetry();
 
-    QVariantList m_devices;
+    // ---- Coalescer ----
+    void requestVolumeAbsolute(int level);
+    void flushVolumeDesired();
+    static int clampVolume(int v)
+    {
+        return std::clamp(v, 0, 100);
+    }
 
+    bool spawnCattSetVolume(int level);
+    bool spawnCattMute(bool on);
+
+    // State
+    std::optional<int> m_desiredVolume; // letzter gewünschter Zielwert (last-wins)
+    int m_lastSentVolume = -1; // unbekannt am Start
+    QTimer m_coalesceTimer; // bündelt schnelle Änderungen
+    QTimer m_rateLimitTimer; // Mindestabstand zwischen Spawns
 };
 
 #endif // KCASTINTERFACE_H
