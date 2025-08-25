@@ -78,24 +78,29 @@ void KCastBridge::playMedia(const QString &device, const QString &url)
     if (!ok) {
         qWarning() << QString::fromUtf8("Failed to start catt cast");
     }
+    setPlaying(true);
 }
 
 void KCastBridge::pauseMedia(const QString &device)
 {
-    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("pause"));
-    if (!ok) {
-        qWarning() << QString::fromUtf8("Failed to start catt pause");
-    }
+    bool ok = QProcess::startDetached(u"catt"_s, QStringList{u"-d"_s, device, u"pause"_s});
+    if (!ok)
+        qWarning() << u"[KCast] Failed to start catt pause"_s;
     setPlaying(false);
 }
 
 void KCastBridge::resumeMedia(const QString &device)
 {
-    bool ok = QProcess::startDetached(QString::fromUtf8("catt"), QStringList() << QString::fromUtf8("-d") << device << QString::fromUtf8("play_toggle"));
+    using namespace Qt::StringLiterals;
+
+    const bool ok = QProcess::startDetached(u"catt"_s, QStringList{u"-d"_s, device, u"play"_s});
+
     if (!ok) {
-        qWarning() << QString::fromUtf8("Failed to start catt play_toggle");
+        qWarning() << u"[KCast] Failed to start catt play (resume)"_s;
+        return;
     }
-    setPlaying(false);
+
+    setPlaying(true);
 }
 
 void KCastBridge::stopMedia(const QString &device)
@@ -472,6 +477,7 @@ bool KCastBridge::spawnCattMute(bool on)
         qWarning() << u"[KCast] setMuted: no Chromecast device available."_s;
         return false;
     }
+    // catt --help: volumemute  Enable or disable mute on supported devices.
     const QStringList args{u"-d"_s, device, u"volumemute"_s, on ? u"true"_s : u"false"_s};
     return QProcess::startDetached(u"catt"_s, args);
 }

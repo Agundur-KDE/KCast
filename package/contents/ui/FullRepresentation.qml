@@ -21,8 +21,6 @@ Item {
     property int selectedIndex: -1
     property var devices: []
     property bool isScanning: false
-    readonly property bool canPlay: devices.length > 0 && typeof mediaUrl.text === "string" && mediaUrl.text.length > 0
-    readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
     property bool isPlaying: false
     property int volumeStepBig: 5
     property int volumeStepSmall: 1
@@ -31,6 +29,12 @@ Item {
     property bool userInteracting: false
     property int volumeIgnoreMs: 500
     property double lastUserTs: 0
+    property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
+    property bool wasPaused: false
+    property bool hasSession: false
+    readonly property bool canPlay: controlsEnabled && hasMedia && !hasSession
 
     function refreshDevices() {
         console.log(i18n("refreashing"));
@@ -48,8 +52,11 @@ Item {
     }
 
     function _play() {
-        console.log(mediaUrl.text);
-        kcast.playMedia(deviceSelector.currentText, mediaUrl.text);
+        let url = mediaUrl.text || "";
+        if (url.startsWith("file://"))
+            url = url.replace(/^file:\/\//, "");
+
+        kcast.CastFile(url);
     }
 
     function _pause() {
@@ -84,7 +91,7 @@ Item {
             console.warn("[KCast] DBus registration failed");
 
         if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
-            setDefaultDevice(Plasmoid.configuration.defaultDevice);
+            kcast.setDefaultDevice(Plasmoid.configuration.defaultDevice);
 
         if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
             startScan();
@@ -299,7 +306,7 @@ Item {
 
                 text: i18n("Play")
                 icon.name: "media-playback-start"
-                // enabled: !isPlaying && canPlay
+                enabled: canPlay
                 checkable: true
                 checked: kcast.playing
                 onClicked: {
@@ -309,45 +316,41 @@ Item {
                         cleaned = raw.replace(/^file:\/\//, "");
                         mediaUrl.text = cleaned;
                     }
-                    _play();
-                    isPlaying = true;
-                    isPaused = false;
+                    kcast.CastFile(cleaned);
+                    wasPaused = false;
+                    hasSession = true;
                 }
             }
 
             PlasmaComponents.Button {
-                id: pauseButton
+                id: pauseBtn
 
-                property bool isPaused: false
+                checkable: true
+                checked: kcast.playing
+                text: checked ? i18n("Pause") : i18n("Resume")
+                icon.name: checked ? "media-playback-pause" : "media-playback-start"
+                enabled: deviceReady && hasSession
+                onToggled: (nowChecked) => {
+                    // Resume
+                    // Pause
 
-                text: isPaused ? i18n("Resume") : i18n("Pause")
-                icon.name: "media-playback-pause"
-                enabled: isPlaying || kcast.playing
-                onClicked: {
-                    if (isPaused) {
-                        text:
-                        "Resume";
-                        _resume();
-                        isPaused = false;
-                        pauseButton.icon.name = "media-playback-pause";
-                    } else {
-                        text:
-                        "Pause";
-                        _pause();
-                        isPaused = true;
-                        pauseButton.icon.name = "media-playback-start";
-                    }
+                    if (!hasSession)
+                        return ;
+
+                    if (nowChecked)
+                        kcast.resumeMedia(kcast.defaultDevice);
+                    else
+                        kcast.pauseMedia(kcast.defaultDevice);
                 }
             }
 
             PlasmaComponents.Button {
                 text: "Stop"
-                enabled: isPlaying || kcast.playing
                 icon.name: "media-playback-stop"
+                enabled: controlsEnabled && hasSession
                 onClicked: {
-                    _stop();
-                    isPlaying = false;
-                    isPaused = false;
+                    kcast.stopMedia(kcast.defaultDevice);
+                    hasSession = false; // Session beendet
                 }
             }
 
@@ -363,23 +366,21 @@ Item {
             PlasmaComponents.Button {
                 id: muteBtn
 
+                enabled: controlsEnabled
                 checkable: true
                 checked: muted
                 icon.name: muted ? "audio-volume-muted" : "audio-volume-high"
                 // text: muted ? i18n("Unmute") : i18n("Mute")
                 Accessible.name: checked ? "Unmute" : "Mute"
                 onClicked: {
-                    if (!kcast || !kcast.setMuted)
-                        return ;
-
-                    muted = checked;
-                    kcast.setMuted(muted);
+                    kcast.setMuted(muteBtn.checked);
                 }
             }
 
             PlasmaComponents.Button {
                 // icon.name: "media-volume-down"
                 text: i18n("-")
+                enabled: deviceReady
                 onClicked: {
                     currentVolume = Math.max(0, currentVolume - volumeStepBig);
                     markUserAction();
@@ -396,7 +397,7 @@ Item {
                 stepSize: volumeStepSmall
                 live: true
                 value: currentVolume
-                enabled: controlsEnabled
+                enabled: deviceReady
                 // Beim Ziehen: nur throttled (Debounce) senden
                 onValueChanged: {
                     if (!pressed)
@@ -455,6 +456,7 @@ Item {
             PlasmaComponents.Button {
                 // icon.name: "media-volume-up"
                 text: i18n("+")
+                enabled: deviceReady
                 onClicked: {
                     currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
                     markUserAction();
