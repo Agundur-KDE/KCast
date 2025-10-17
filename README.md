@@ -73,7 +73,7 @@ If you use an AUR helper like `yay` or `paru`, you can install it with:
 
 ```bash
 yay -S kcast
-sudo zypper in kcast
+paru -S kcast
 ```
 
 If you prefer to build manually from the AUR package:
