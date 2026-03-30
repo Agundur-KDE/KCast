@@ -143,3 +143,11 @@ install(DIRECTORY contents/
 add_subdirectory(package)
 
 install(DIRECTORY package/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
+
+install(FILES package/contents/icons/kcast_icon.svg
+    DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps
+    RENAME de.agundur.kcast.svg)
+
+install(FILES package/contents/icons/kcast-symbolic.svg
+    DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/symbolic/apps
+    RENAME de.agundur.kcast-symbolic.svg)
