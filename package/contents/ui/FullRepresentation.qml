@@ -32,6 +32,15 @@ Item {
     property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
     readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
+    property var deviceListModel: {
+        var def = kcast.defaultDevice || "";
+        var found = (kcast && kcast.devices) ? kcast.devices : [];
+        var list = (def.length > 0 && def !== "-") ? [def] : [];
+        for (var i = 0; i < found.length; i++) {
+            if (found[i] !== def) list.push(found[i]);
+        }
+        return list;
+    }
     property bool wasPaused: false
     property bool hasSession: false
     readonly property bool canPlay: controlsEnabled && hasMedia && !hasSession
@@ -225,7 +234,7 @@ Item {
                 id: deviceSelector
 
                 Layout.fillWidth: true
-                model: devs().length > 0 ? devs() : (kcast.defaultDevice && kcast.defaultDevice.length > 0 ? [kcast.defaultDevice] : [])
+                model: deviceListModel
                 onActivated: (i) => {
                     if (i >= 0 && i < model.length) {
                         kcast.setDefaultDevice(model[i]);
