@@ -33,7 +33,7 @@ Item {
     readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
     property var deviceListModel: {
-        var def = kcast.defaultDevice || "";
+        var def = kcast.defaultDevice || defaultDevice || "";
         var found = (kcast && kcast.devices) ? kcast.devices : [];
         var list = (def.length > 0 && def !== "-") ? [def] : [];
         for (var i = 0; i < found.length; i++) {
@@ -117,10 +117,10 @@ Item {
         if (!ok)
             console.warn("[KCast] DBus registration failed");
 
-        if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
-            kcast.setDefaultDevice(Plasmoid.configuration.defaultDevice);
+        if (defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
+            kcast.setDefaultDevice(defaultDevice);
 
-        loadVolumeForDevice(kcast.defaultDevice);
+        loadVolumeForDevice(defaultDevice || kcast.defaultDevice);
 
         if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
             startScan();
