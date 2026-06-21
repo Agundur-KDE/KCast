@@ -46,7 +46,7 @@ to Google Chromecast devices using the `catt` CLI.
 %{_datadir}/kio/servicemenus/kcast_stream.desktop
 
 %changelog
-* Sun Jun 21 2026 Alec <info@agundur.de> - 0.2.4-1
-- Remember volume per device, fix default device, clean button states
+* Sun Jun 21 2026 Alec <info@agundur.de> - 0.2.5-1
+- Remember volume per device, fix default device always shown, clean button state machine
 * Wed Aug 13 2025 Alec <info@agundur.de> - 0.2.1-1
 - Initial Fedora/Copr build
