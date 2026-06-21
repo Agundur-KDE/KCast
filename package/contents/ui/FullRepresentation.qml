@@ -36,6 +36,24 @@ Item {
     property bool hasSession: false
     readonly property bool canPlay: controlsEnabled && hasMedia && !hasSession
 
+    function loadVolumeForDevice(name) {
+        if (!name || name.length === 0) return;
+        try {
+            var vols = JSON.parse(Plasmoid.configuration.deviceVolumes || "{}");
+            if (name in vols)
+                currentVolume = vols[name];
+        } catch(e) {}
+    }
+
+    function saveVolumeForDevice(name, vol) {
+        if (!name || name.length === 0) return;
+        try {
+            var vols = JSON.parse(Plasmoid.configuration.deviceVolumes || "{}");
+            vols[name] = vol;
+            Plasmoid.configuration.deviceVolumes = JSON.stringify(vols);
+        } catch(e) {}
+    }
+
     function refreshDevices() {
         console.log(i18n("refreashing"));
         devices = kcast.scanDevicesAsync();
@@ -93,6 +111,8 @@ Item {
         if (Plasmoid.configuration.defaultDevice && Plasmoid.configuration.defaultDevice.length > 0)
             kcast.setDefaultDevice(Plasmoid.configuration.defaultDevice);
 
+        loadVolumeForDevice(kcast.defaultDevice);
+
         if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
             startScan();
 
@@ -108,9 +128,10 @@ Item {
         interval: 80
         repeat: false
         onTriggered: {
-            if (kcast && kcast.setVolume)
+            if (kcast && kcast.setVolume) {
                 kcast.setVolume(currentVolume);
-
+                saveVolumeForDevice(kcast.defaultDevice, currentVolume);
+            }
         }
     }
 
@@ -206,9 +227,10 @@ Item {
                 Layout.fillWidth: true
                 model: devs().length > 0 ? devs() : (kcast.defaultDevice && kcast.defaultDevice.length > 0 ? [kcast.defaultDevice] : [])
                 onActivated: (i) => {
-                    if (i >= 0 && i < model.length)
+                    if (i >= 0 && i < model.length) {
                         kcast.setDefaultDevice(model[i]);
-
+                        loadVolumeForDevice(model[i]);
+                    }
                 }
             }
 
@@ -418,6 +440,7 @@ Item {
 
                     currentVolume = Math.round(value);
                     kcast.setVolume(currentVolume);
+                    saveVolumeForDevice(kcast.defaultDevice, currentVolume);
                 }
                 Keys.onPressed: (ev) => {
                     if (ev.key === Qt.Key_Left) {

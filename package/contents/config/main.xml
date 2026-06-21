@@ -5,5 +5,8 @@
     <entry name="DefaultDevice" type="String">
       <default>-</default>
     </entry>
+    <entry name="deviceVolumes" type="String">
+      <default>{}</default>
+    </entry>
   </group>
 </kcfg>
