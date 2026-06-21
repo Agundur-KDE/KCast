@@ -5,7 +5,7 @@ upstream_tag_template: "v{version}"
 actions:
   # Packit erzeugt das Tarball exakt so, wie es SPEC erwartet.
   create-archive:
-    - bash -lc 'git archive --format=tar --prefix=KCast-{version}/ v{version} | gzip -9 > KCast-{version}.tar.gz'
+    - bash -lc 'git archive --format=tar --prefix=KCast-{version}/ v{version} | gzip -9 > KCast-{version}.tar.gz && echo KCast-{version}.tar.gz'
   get-current-version:
     - bash -lc "git describe --tags --abbrev=0 | sed 's/^v//'"
 
