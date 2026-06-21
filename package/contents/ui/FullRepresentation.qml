@@ -66,8 +66,7 @@ Item {
 
     function startScan() {
         devices = [];
-        isScanning = true;
-        kcast.scanDevicesAsync(); // asynchron, UI bleibt frei
+        kcast.scanDevicesAsync();
     }
 
     function _play() {
@@ -90,9 +89,7 @@ Item {
         kcast.stopMedia(deviceSelector.currentText);
     }
 
-    function markUserAction() {
-        lastUserTs = Date.now();
-    }
+
 
     Component.onCompleted: {
         mediaUrl.text = kcast.mediaUrl;
@@ -214,12 +211,6 @@ Item {
         RowLayout {
             id: deviceList
 
-            Component.onCompleted: {
-                if (devices.length > 0)
-                    selectedIndex = 0;
-                else
-                    selectedIndex = -1;
-            }
             Layout.fillWidth: true
 
             PlasmaComponents.ComboBox {
@@ -390,7 +381,7 @@ Item {
                 enabled: deviceReady
                 onClicked: {
                     currentVolume = Math.max(0, currentVolume - volumeStepBig);
-                    markUserAction();
+                    
                     volumeDebounce.restart();
                 }
             }
@@ -445,7 +436,7 @@ Item {
                     onWheel: (ev) => {
                         const d = ev.angleDelta.y > 0 ? volumeStepSmall : -volumeStepSmall;
                         currentVolume = Math.max(0, Math.min(100, currentVolume + d));
-                        markUserAction();
+                        
                         volumeDebounce.restart();
                         ev.accepted = true;
                     }
@@ -467,7 +458,7 @@ Item {
                 enabled: deviceReady
                 onClicked: {
                     currentVolume = Math.min(100, currentVolume + volumeStepBig); // sofort im UI
-                    markUserAction();
+                    
                     volumeDebounce.restart(); // nach kurzer Zeit >= setVolume()
                 }
             }
@@ -532,10 +523,6 @@ Item {
 
             function onDevicesScanned(list) {
                 devices = Array.isArray(list) ? list : [];
-                isScanning = false;
-                // Optional: InlineMessage zeigen, falls leer
-                if (devices.length === 0) {
-                }
             }
 
             target: kcast
