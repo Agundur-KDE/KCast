@@ -17,19 +17,13 @@ import org.kde.plasma.plasmoid
 
 Item {
     property string defaultDevice: Plasmoid.configuration.DefaultDevice
-    property bool isPaused: false
-    property int selectedIndex: -1
     property var devices: []
-    property bool isScanning: false
-    property bool isPlaying: false
     property int volumeStepBig: 5
     property int volumeStepSmall: 1
     property int currentVolume: 50
     property bool muted: false
-    property bool userInteracting: false
-    property int volumeIgnoreMs: 500
-    property double lastUserTs: 0
-    property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    property string playState: "idle"   // "idle" | "playing" | "paused"
+    readonly property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
     readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
     property var deviceListModel: {
@@ -41,9 +35,7 @@ Item {
         }
         return list;
     }
-    property bool wasPaused: false
-    property bool hasSession: false
-    readonly property bool canPlay: controlsEnabled && hasMedia && !hasSession
+    readonly property bool canPlay: controlsEnabled && hasMedia && playState === "idle"
 
     function loadVolumeForDevice(name) {
         if (!name || name.length === 0) return;
@@ -333,55 +325,39 @@ Item {
             spacing: 8
 
             PlasmaComponents.Button {
-                id: playBtn
-
                 text: i18n("Play")
                 icon.name: "media-playback-start"
                 enabled: canPlay
-                checkable: true
-                checked: kcast.playing
                 onClicked: {
-                    var raw = mediaUrl.text;
-                    var cleaned = raw;
-                    if (raw.startsWith("file://")) {
-                        cleaned = raw.replace(/^file:\/\//, "");
-                        mediaUrl.text = cleaned;
-                    }
-                    kcast.CastFile(cleaned);
-                    wasPaused = false;
-                    hasSession = true;
+                    var url = mediaUrl.text.replace(/^file:\/\//, "");
+                    mediaUrl.text = url;
+                    kcast.CastFile(url);
+                    playState = "playing";
                 }
             }
 
             PlasmaComponents.Button {
-                id: pauseBtn
-
-                checkable: true
-                checked: kcast.playing
-                text: checked ? i18n("Pause") : i18n("Resume")
-                icon.name: checked ? "media-playback-pause" : "media-playback-start"
-                enabled: deviceReady && hasSession
-                onToggled: (nowChecked) => {
-                    // Resume
-                    // Pause
-
-                    if (!hasSession)
-                        return ;
-
-                    if (nowChecked)
-                        kcast.resumeMedia(kcast.defaultDevice);
-                    else
+                text: playState === "playing" ? i18n("Pause") : i18n("Resume")
+                icon.name: playState === "playing" ? "media-playback-pause" : "media-playback-start"
+                enabled: controlsEnabled && playState !== "idle"
+                onClicked: {
+                    if (playState === "playing") {
                         kcast.pauseMedia(kcast.defaultDevice);
+                        playState = "paused";
+                    } else if (playState === "paused") {
+                        kcast.resumeMedia(kcast.defaultDevice);
+                        playState = "playing";
+                    }
                 }
             }
 
             PlasmaComponents.Button {
-                text: "Stop"
+                text: i18n("Stop")
                 icon.name: "media-playback-stop"
-                enabled: controlsEnabled && hasSession
+                enabled: controlsEnabled && playState !== "idle"
                 onClicked: {
                     kcast.stopMedia(kcast.defaultDevice);
-                    hasSession = false; // Session beendet
+                    playState = "idle";
                 }
             }
 
@@ -510,6 +486,14 @@ Item {
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Connections {
+            target: kcast
+            function onPlayingChanged() {
+                if (!kcast.playing && playState === "playing")
+                    playState = "idle";
+            }
         }
 
         Connections {
