@@ -34,9 +34,7 @@ to Google Chromecast devices using the `catt` CLI.
 
 %install
 %cmake_install
-%find_lang plasma_applet_de.agundur.kcast
-
-%files -f plasma_applet_de.agundur.kcast.lang
+%files
 %license LICENSE
 %doc README.md
 %{_datadir}/plasma/plasmoids/de.agundur.kcast/
@@ -44,6 +42,7 @@ to Google Chromecast devices using the `catt` CLI.
 %dir %{_datadir}/kio
 %dir %{_datadir}/kio/servicemenus
 %{_datadir}/kio/servicemenus/kcast_stream.desktop
+%{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
 * Mon Jun 22 2026 Alec <info@agundur.de> - 0.2.6-1
