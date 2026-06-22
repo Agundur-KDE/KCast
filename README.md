@@ -187,12 +187,12 @@ _______________________
 
 KCast has been tested successfully with the 
 
-🛒[JMGO N1S Pro 4K Triple Laser Projector](https://amzn.to/43SSX1U) (Affiliate link).
+🛒[JMGO N1S Pro 4K Triple Laser Projector](https://www.amazon.de/dp/B0D9BLQPWK) .
 
 This projector supports high-quality Chromecast streaming and works reliably with KCast.
 Using this link helps support the development of KCast at no additional cost to you.
 
-🛒[Samsung HW-Q935GD 9.1.4-Kanal Q-Soundbar](https://amzn.to/4enDRX7) (Affiliate link).
+🛒[Samsung HW-Q935GD 9.1.4-Kanal Q-Soundbar](https://www.amazon.de/dp/B0D1GPLDXG) .
 
 
 ## Support
