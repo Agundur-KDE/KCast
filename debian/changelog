@@ -1,3 +1,15 @@
+kcast (0.2.7-1) unstable; urgency=medium
+
+  * Fixed install(DIRECTORY package/...) shipping raw C++ source/CMakeLists
+    as installed plasmoid data.
+  * Fixed panel-icon scroll-to-change-volume, dead cursor styling, and a
+    non-existent scanDevicesWithCatt() call in Settings' device search.
+  * Fixed the bridge's mediaUrl going stale after a drag-and-drop or
+    file-picker selection.
+  * Now also builds and releases RPMs via OBS (previously .deb only).
+
+ -- Agundur <info@agundur.de>  Thu, 09 Jul 2026 10:35:00 +0200
+
 kcast (0.2.1-1) unstable; urgency=medium
 
   * Initial minimal Debian packaging for KF6/Qt6 (OBS builds for Debian/Ubuntu).

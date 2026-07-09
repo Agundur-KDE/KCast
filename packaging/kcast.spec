@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.6
+Version:        0.2.7
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -45,6 +45,21 @@ to Google Chromecast devices using the `catt` CLI.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.7-1
+- Fixed install(DIRECTORY package/...) shipping raw C++ source/CMakeLists
+  as installed plasmoid data
+- Fixed panel-icon scroll-to-change-volume (referenced a QML id that
+  doesn't exist in that scope, threw a ReferenceError every time)
+- Fixed dead cursor styling and a non-existent scanDevicesWithCatt()
+  call in Settings' device search button
+- Fixed the bridge's mediaUrl going stale after a drag-and-drop or
+  file-picker selection
+- Removed dead/never-installed log message handler
+- README: fixed a broken link, several typos, stale version banners,
+  removed expired Amazon affiliate links, corrected the local-file
+  firewall port range (45000-47000, not 8000)
+- Added an OBS RPM build pipeline (previously .deb only)
+
 * Mon Jun 22 2026 Alec <info@agundur.de> - 0.2.6-1
 - Add Catalan localization
 * Sun Jun 21 2026 Alec <info@agundur.de> - 0.2.5-1

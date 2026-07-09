@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 
 project(KCast)
 
-set(PROJECT_VERSION "0.2.6")
+set(PROJECT_VERSION "0.2.7")
 set(QT_MIN_VERSION "6.7.0")
 set(KF6_MIN_VERSION "6.10.0")
 
