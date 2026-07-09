@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.9
+Version:        0.2.10
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -48,7 +48,7 @@ else
 fi
 
 %build
-%cmake -S . \
+%cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DKDE_INSTALL_USE_QT_SYS_PATHS=ON \
   -DKDE_INSTALL_QMLDIR=%{_qt6_qmldir} \
@@ -68,6 +68,13 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.10-1
+- Fixed %build: openSUSE's %cmake macro already does mkdir+cd build and
+  passes the correct source dir implicitly — the spec's own extra
+  "-S ." got appended after it and pointed cmake at the build/
+  directory itself instead of the project root ("does not appear to
+  contain CMakeLists.txt"). Removed, matching kfritz/KClaude's %build.
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.9-1
 - Fixed Source0/%prep: still used the old tar_scm-era pattern (fixed
   GitHub-release tarball URL/name), incompatible with obs_scm — v0.2.8's
