@@ -8,60 +8,22 @@
 #include "kcastinterface.h"
 #include <QDBusConnection>
 #include <QDBusError>
-#include <QDateTime>
 #include <QDebug>
-#include <QDir>
-#include <QFile>
 #include <QFileInfo>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QString>
 #include <QStringList>
 #include <QStringLiteral>
-#include <QTextStream>
 #include <QTimer>
 #include <QUrl>
 #include <algorithm>
 
 using namespace Qt::StringLiterals;
 
-void customMessageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
-{
-    static QFile logFile(QDir::homePath() + QStringLiteral("/.local/share/kcast.log"));
-    if (!logFile.isOpen()) {
-        logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
-    }
-
-    QTextStream out(&logFile);
-
-    QString prefix;
-    switch (type) {
-    case QtDebugMsg:
-        prefix = QStringLiteral("[DEBUG]");
-        break;
-    case QtWarningMsg:
-        prefix = QStringLiteral("[WARN] ");
-        break;
-    case QtCriticalMsg:
-        prefix = QStringLiteral("[CRIT] ");
-        break;
-    case QtFatalMsg:
-        prefix = QStringLiteral("[FATAL]");
-        break;
-    case QtInfoMsg:
-        prefix = QStringLiteral("[INFO] ");
-        break;
-    }
-
-    out << QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd hh:mm:ss.zzz")) << " " << prefix << " " << msg << '\n';
-    out.flush();
-}
-
 KCastBridge::KCastBridge(QObject *parent)
     : QObject(parent)
 {
-    // qInstallMessageHandler(customMessageHandler);
-
     // kurze Bündel-Zeit: UI darf „ausrauschen“, dann 1x senden
     m_coalesceTimer.setSingleShot(true);
     m_coalesceTimer.setInterval(90); // 80–120 ms fühlt sich snappy an

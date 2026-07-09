@@ -150,6 +150,11 @@ Item {
             if (url !== "") {
                 console.log(i18n("URL detected: %1").arg(url));
                 mediaUrl.text = url;
+                // setting .text directly doesn't fire onTextEdited (that's
+                // only for user-driven edits), so the bridge's mediaUrl
+                // property — read by D-Bus callers and the Dolphin service
+                // menu — would otherwise stay stale after a drop.
+                kcast.setMediaUrl(url);
             } else {
                 console.log(i18n("Not a valid url"));
                 drop.accept(Qt.IgnoreAction);
@@ -472,6 +477,7 @@ Item {
             nameFilters: ["Media (*.mp4 *.mkv *.webm *.mp3)", "Alle Dateien (*)"]
             onAccepted: {
                 mediaUrl.text = file;
+                kcast.setMediaUrl(file);
             }
         }
 
