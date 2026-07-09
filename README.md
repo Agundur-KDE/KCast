@@ -42,7 +42,12 @@ If you’d like to support ongoing development, consider sponsoring the project:
 
 -  **Chromecast discovery** using Avahi (mDNS)
 -  **Media playback controls**: Play, Pause, Resume, Stop
--  **Support for local media files** via built-in HTTP server
+-  **Local media files**, served to the Chromecast via `catt`'s own
+   temporary local HTTP server
+-  **YouTube and thousands of other sites**, plus direct HLS (`.m3u8`)
+   stream URLs — `catt` resolves these via `yt-dlp` under the hood. If
+   a site stops working, update yt-dlp inside catt's own environment:
+   `pipx inject catt yt-dlp --force`
 -  **Drag & Drop** from Firefox, Chrome, or Dolphin
 
 
