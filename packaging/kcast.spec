@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.7
+Version:        0.2.8
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -45,6 +45,11 @@ to Google Chromecast devices using the `catt` CLI.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.8-1
+- Fixed BuildRequires: qt6-qtbase-devel etc. are Fedora package names,
+  don't exist on openSUSE (qt6-base-devel etc.) — v0.2.7's OBS build
+  was unresolvable on both architectures because of this
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.7-1
 - Fixed install(DIRECTORY package/...) shipping raw C++ source/CMakeLists
   as installed plasmoid data
