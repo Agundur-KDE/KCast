@@ -1,0 +1,135 @@
+name: obs-submit
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Determine version from tag
+        id: ver
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install osc
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends osc
+
+      - name: Configure osc credentials
+        env:
+          OBS_USER: ${{ secrets.OBS_USER }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/osc
+          cat > ~/.config/osc/oscrc <<OSCRC
+          [general]
+          apiurl = https://api.opensuse.org
+
+          [https://api.opensuse.org]
+          user = ${OBS_USER}
+          pass = ${OBS_PASSWORD}
+          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
+          OSCRC
+          chmod 600 ~/.config/osc/oscrc
+
+      - name: Checkout OBS package
+        run: osc checkout home:Agundur/kcast -o obs-pkg
+
+      - name: Sync spec from repo and pin _service to this tag
+        # The spec/_service in obs-pkg/ are separate copies OBS keeps — they
+        # do not auto-update just because packaging/ changed in git. Copy the
+        # spec wholesale, and rewrite _service to pin the obs_scm git service
+        # to this exact tag, same pattern as KFritz/KClaude.
+        run: |
+          set -euo pipefail
+          cp packaging/kcast.spec obs-pkg/kcast.spec
+          cd obs-pkg
+          cat > _service <<SERVICE
+          <services>
+            <service name="obs_scm">
+              <param name="url">https://github.com/Agundur-KDE/KCast.git</param>
+              <param name="scm">git</param>
+              <param name="revision">${{ steps.ver.outputs.tag }}</param>
+            </service>
+          </services>
+          SERVICE
+          sed -i "s/^Version:.*/Version:        ${{ steps.ver.outputs.version }}/" kcast.spec
+          cat _service
+
+      - name: Commit to OBS
+        # osc exits non-zero for a genuine no-op commit too (same tag already
+        # submitted, needs -f to force an empty commit) — that case is fine to
+        # swallow. A real API error (e.g. transient 5xx) also exits non-zero
+        # and looks the same unless we check the actual output for it.
+        run: |
+          set -euo pipefail
+          cd obs-pkg
+          if ! osc commit -m "Update to ${{ steps.ver.outputs.tag }}" 2>&1 | tee /tmp/osc-commit.log; then
+            if grep -qE "Server returned an error|HTTP Error" /tmp/osc-commit.log; then
+              echo "osc commit failed against the OBS API, see log above" >&2
+              exit 1
+            fi
+            echo "nothing to commit, continuing"
+          fi
+
+      - name: Force source service rerun
+        # A commit with no file changes (e.g. tag == already-configured revision)
+        # does not trigger OBS to re-run the obs_scm service on its own.
+        run: osc api -X POST "/source/home:Agundur/kcast?cmd=runservice"
+
+      - name: Wait for OBS build to settle
+        run: |
+          set -euo pipefail
+          cd obs-pkg
+          for i in $(seq 1 60); do
+            out="$(osc results)"
+            echo "$out"
+            if ! grep -qE "broken|blocked|scheduled|building|dispatching|signing|finished\*" <<<"$out"; then
+              break
+            fi
+            sleep 20
+          done
+          echo "$out"
+          if grep -qE "failed|broken|unresolvable" <<<"$out"; then
+            echo "OBS build did not succeed, see log above" >&2
+            exit 1
+          fi
+
+      - name: Download RPMs
+        run: |
+          set -euo pipefail
+          cd obs-pkg
+          mkdir -p ../rpms
+          osc getbinaries openSUSE_Tumbleweed x86_64 -d ../rpms
+          osc getbinaries openSUSE_Tumbleweed i586 -d ../rpms
+          rm -f ../rpms/*.src.rpm ../rpms/_buildenv ../rpms/_statistics ../rpms/rpmlint.log
+          ls -la ../rpms
+
+      - name: Create or update GitHub Release with RPMs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.ver.outputs.tag }}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          gh release upload "$TAG" rpms/*.rpm --repo "$GITHUB_REPOSITORY" --clobber

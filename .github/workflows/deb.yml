@@ -6,6 +6,9 @@ on:
       - 'v*'     # läuft nur bei Tags wie v0.1.0, v1.2.3
   workflow_dispatch:  # optional: manuell startbar
 
+permissions:
+  contents: write
+
 jobs:
   deb:
     runs-on: ubuntu-latest
@@ -97,3 +100,27 @@ jobs:
           for f in obj-*/CMakeCache.txt; do [ -f "$f" ] && { echo ">>> $f"; sed -n '1,120p' "$f"; }; done
           echo "---- debhelper logs (tail) ----"
           find ./debian -maxdepth 2 -type f -name '*.log' -print0 | xargs -0 -r -I{} sh -c 'echo ">>> {}"; tail -n 200 "{}"'
+
+  release:
+    needs: deb
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download .deb artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kcast-trixie
+          path: dist
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          gh release upload "$TAG" dist/dist/*.deb --repo "$GITHUB_REPOSITORY" --clobber
