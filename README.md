@@ -20,8 +20,8 @@
 
 
 ## Description
-**KCast** is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a  Chromecast devices in your local network.
-It supports device discovery, local media playback via an embedded HTTP server, and drag-and-drop integration with browsers and file managers like Dolphin.
+**KCast** is a KDE Plasma 6 widget that lets you cast video files or YouTube URLs to a Chromecast device in your local network.
+It supports device discovery, local media playback (served via `catt`'s own temporary HTTP server), and drag-and-drop integration with browsers and file managers like Dolphin.
 
 **Caution!** starting with version 0.0.2 we need [catt](https://github.com/skorokithakis/catt) installed.
 
@@ -45,9 +45,12 @@ If you’d like to support ongoing development, consider sponsoring the project:
 -  **Local media files**, served to the Chromecast via `catt`'s own
    temporary local HTTP server
 -  **YouTube and thousands of other sites**, plus direct HLS (`.m3u8`)
-   stream URLs — `catt` resolves these via `yt-dlp` under the hood. If
-   a site stops working, update yt-dlp inside catt's own environment:
-   `pipx inject catt yt-dlp --force`
+   stream URLs — `catt` resolves these via `yt-dlp` under the hood.
+   Live-tested and confirmed working end to end. If a
+   site stops working, update yt-dlp (`pipx inject catt yt-dlp --force`
+   for a pipx install, or just update your `catt` package on RPM-based
+   distros — it depends on your system `yt-dlp`, which stays current
+   through normal updates)
 -  **Drag & Drop** from Firefox, Chrome, or Dolphin
 
 
@@ -113,6 +116,9 @@ sudo zypper ref
 sudo zypper in kcast
 ```
 
+`catt` is packaged in the same `home:Agundur` repository and pulled in
+automatically as a dependency — no extra step needed.
+
 ###  Installing KCast via my COPR repository (Fedora)
 
 ```bash
@@ -121,6 +127,15 @@ sudo dnf copr enable agundur/KCast
 
 # Install package
 sudo dnf install kcast
+```
+
+Fedora has no `catt` package (COPR or official), so install it separately:
+
+```bash
+sudo dnf install -y pipx
+pipx ensurepath
+pipx install catt
+catt --version
 ```
 
 
@@ -154,9 +169,9 @@ To run KCast successfully, the following software must be installed:
 
 KCast is based on:
 
-- [catt](https://github.com/skorokithakis/catt)
-
-  $ pipx install catt
+- [catt](https://github.com/skorokithakis/catt) — on openSUSE this comes
+  automatically as an RPM dependency from the same repo. On Fedora/Debian
+  there's no distro package for it, install via `pipx install catt`.
 
 - [Python 3](https://www.python.org/)
 
@@ -203,10 +218,6 @@ HW-Q935GD 9.1.4-channel Q-Soundbar.
 
 [KCast Issues](https://github.com/Agundur-KDE/KCast/issues)
 
-
-## Roadmap
-
-- YouTube URL support
 
 ## UPnP/DLNA (Kodi etc.)
 
