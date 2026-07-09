@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kcast 0.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 13:46+0200\n"
+"POT-Creation-Date: 2026-07-09 12:22+0200\n"
 "PO-Revision-Date: 2025-07-23 13:48+0200\n"
 "Last-Translator: alec <info@agundur.de>\n"
 "Language-Team: French <translation-team-fr@lists.sourceforge.net>\n"
@@ -17,69 +17,112 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: contents/ui/configNetwork.qml:25
+#: package/contents/ui/configNetwork.qml:25
 msgid "Search"
 msgstr "chercher"
 
+#: package/contents/ui/configNetwork.qml:27
 msgid "Devices"
 msgstr "Appareils"
 
+#: package/contents/ui/configNetwork.qml:52
 msgid "Default"
 msgstr "Par défaut"
 
-msgid "refreashing"
+#: package/contents/ui/FullRepresentation.qml:59
+msgid "refreshing"
 msgstr "actualisation"
 
+#: package/contents/ui/FullRepresentation.qml:101
 msgid "Plugin not available!"
 msgstr "Module non disponible !"
 
+#: package/contents/ui/FullRepresentation.qml:105
 msgid "You need to install 'catt' first!"
 msgstr "Vous devez d'abord installer 'catt' !"
 
+#: package/contents/ui/FullRepresentation.qml:155
 msgid "URL detected: %1"
 msgstr "URL détectée : %1"
 
+#: package/contents/ui/FullRepresentation.qml:163
 msgid "Not a valid url"
 msgstr "URL non valide"
 
+#: package/contents/ui/FullRepresentation.qml:206
+#: package/contents/ui/main.qml:23
 msgid "KCast"
 msgstr "KCast"
 
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "Select device:"
 msgstr "Sélectionner un appareil :"
 
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "No device found"
 msgstr "Aucun appareil trouvé"
 
+#: package/contents/ui/FullRepresentation.qml:239
 msgid "search devices"
 msgstr "chercher des appareils"
 
+#: package/contents/ui/FullRepresentation.qml:254
 msgid "http://... or /path/to/file.mp4"
 msgstr "http://... ou /chemin/vers/fichier.mp4"
 
+#: package/contents/ui/FullRepresentation.qml:282
 msgid "copy"
 msgstr "copier"
 
+#: package/contents/ui/FullRepresentation.qml:288
 msgid "paste"
 msgstr "coller"
 
+#: package/contents/ui/FullRepresentation.qml:293
 msgid "cut"
 msgstr "couper"
 
+#: package/contents/ui/FullRepresentation.qml:299
 msgid "select all"
 msgstr "tout sélectionner"
 
+#: package/contents/ui/FullRepresentation.qml:310
 msgid "open"
 msgstr "ouvrir"
 
+#: package/contents/ui/FullRepresentation.qml:328
 msgid "Play"
 msgstr "Lecture"
 
-msgid "Resume"
-msgstr "Reprendre"
-
+#: package/contents/ui/FullRepresentation.qml:340
 msgid "Pause"
 msgstr "Pause"
 
+#: package/contents/ui/FullRepresentation.qml:340
+msgid "Resume"
+msgstr "Reprendre"
+
+#: package/contents/ui/FullRepresentation.qml:355
+msgid "Stop"
+msgstr "Arrêter"
+
+#: package/contents/ui/FullRepresentation.qml:389
+msgid "-"
+msgstr "-"
+
+#: package/contents/ui/FullRepresentation.qml:460
+msgid "Volume in %"
+msgstr "Volume en %"
+
+#: package/contents/ui/FullRepresentation.qml:466
+msgid "+"
+msgstr "+"
+
+#: package/contents/ui/FullRepresentation.qml:480
 msgid "Open file"
 msgstr "Ouvrir un fichier"
+
+#: package/contents/config/config.qml:13
+msgctxt "@title"
+msgid "Network"
+msgstr "Réseau"

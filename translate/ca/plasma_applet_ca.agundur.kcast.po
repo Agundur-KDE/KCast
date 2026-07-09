@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 13:46+0200\n"
+"POT-Creation-Date: 2026-07-09 12:22+0200\n"
 "PO-Revision-Date: 2025-10-27 20:46+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,90 +18,112 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.4.2\n"
 
-#: contents/ui/configNetwork.qml:25
+#: package/contents/ui/configNetwork.qml:25
 msgid "Search"
 msgstr "Cerca"
 
-#: contents/ui/configNetwork.qml:27
+#: package/contents/ui/configNetwork.qml:27
 msgid "Devices"
 msgstr "Dispositius"
 
-#: contents/ui/configNetwork.qml:48
+#: package/contents/ui/configNetwork.qml:52
 msgid "Default"
 msgstr "Per defecte"
 
-#: contents/ui/FullRepresentation.qml:27
-msgid "refreashing"
-msgstr "S'actualitza"
+#: package/contents/ui/FullRepresentation.qml:59
+msgid "refreshing"
+msgstr "actualitzant"
 
-#: contents/ui/FullRepresentation.qml:50
+#: package/contents/ui/FullRepresentation.qml:101
 msgid "Plugin not available!"
 msgstr "Complement no disponible"
 
-#: contents/ui/FullRepresentation.qml:54
+#: package/contents/ui/FullRepresentation.qml:105
 msgid "You need to install 'catt' first!"
 msgstr "Abans cal instal·lar el «catt»!"
 
-#: contents/ui/FullRepresentation.qml:78
+#: package/contents/ui/FullRepresentation.qml:155
 msgid "URL detected: %1"
 msgstr "URL detectada: %1"
 
-#: contents/ui/FullRepresentation.qml:81
+#: package/contents/ui/FullRepresentation.qml:163
 msgid "Not a valid url"
 msgstr "No és una URL vàlida"
 
-#: contents/ui/FullRepresentation.qml:128 contents/ui/main.qml:23
+#: package/contents/ui/FullRepresentation.qml:206
+#: package/contents/ui/main.qml:23
 msgid "KCast"
 msgstr "KCast"
 
-#: contents/ui/FullRepresentation.qml:136
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "Select device:"
 msgstr "Tria un dispositiu:"
 
-#: contents/ui/FullRepresentation.qml:136
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "No device found"
 msgstr "No s'ha trobat cap dispositiu."
 
-#: contents/ui/FullRepresentation.qml:161
+#: package/contents/ui/FullRepresentation.qml:239
 msgid "search devices"
 msgstr "Cerca dispositius"
 
-#: contents/ui/FullRepresentation.qml:176
+#: package/contents/ui/FullRepresentation.qml:254
 msgid "http://... or /path/to/file.mp4"
 msgstr "http://... o bé /camí/del/fitxer.mp4"
 
-#: contents/ui/FullRepresentation.qml:193
+#: package/contents/ui/FullRepresentation.qml:282
 msgid "copy"
 msgstr "Copia"
 
-#: contents/ui/FullRepresentation.qml:199
+#: package/contents/ui/FullRepresentation.qml:288
 msgid "paste"
 msgstr "Enganxa"
 
-#: contents/ui/FullRepresentation.qml:205
+#: package/contents/ui/FullRepresentation.qml:293
 msgid "cut"
 msgstr "Retalla"
 
-#: contents/ui/FullRepresentation.qml:211
+#: package/contents/ui/FullRepresentation.qml:299
 msgid "select all"
 msgstr "Selecciona-ho tot"
 
-#: contents/ui/FullRepresentation.qml:222
+#: package/contents/ui/FullRepresentation.qml:310
 msgid "open"
 msgstr "Obre"
 
-#: contents/ui/FullRepresentation.qml:240
+#: package/contents/ui/FullRepresentation.qml:328
 msgid "Play"
 msgstr "Reprodueix"
 
-#: contents/ui/FullRepresentation.qml:261
-msgid "Resume"
-msgstr "Reprèn"
-
-#: contents/ui/FullRepresentation.qml:261
+#: package/contents/ui/FullRepresentation.qml:340
 msgid "Pause"
 msgstr "Posa en pausa"
 
-#: contents/ui/FullRepresentation.qml:297
+#: package/contents/ui/FullRepresentation.qml:340
+msgid "Resume"
+msgstr "Reprèn"
+
+#: package/contents/ui/FullRepresentation.qml:355
+msgid "Stop"
+msgstr "Atura"
+
+#: package/contents/ui/FullRepresentation.qml:389
+msgid "-"
+msgstr "-"
+
+#: package/contents/ui/FullRepresentation.qml:460
+msgid "Volume in %"
+msgstr "Volum en %"
+
+#: package/contents/ui/FullRepresentation.qml:466
+msgid "+"
+msgstr "+"
+
+#: package/contents/ui/FullRepresentation.qml:480
 msgid "Open file"
 msgstr "Obre un fitxer"
+
+#: package/contents/config/config.qml:13
+msgctxt "@title"
+msgid "Network"
+msgstr "Xarxa"

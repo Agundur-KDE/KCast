@@ -1,14 +1,14 @@
 #ifndef KCASTINTERFACE_H
 #define KCASTINTERFACE_H
 
-#include <QByteArray>
 #include <QObject>
 #include <QProcess>
 #include <QQmlEngine>
-#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QTimer>
+#include <algorithm>
+#include <optional>
 
 class KCastBridge : public QObject
 {
@@ -69,9 +69,9 @@ public Q_SLOTS: // —> per D-Bus aufrufbar
     void CastFiles(const QStringList &urls);
 
 Q_SIGNALS:
-    void deviceFound(QString name); // <— neu
-    void devicesScanned(QStringList names); // falls noch nicht vorhanden
-    void devicesChanged(QStringList); // existiert?
+    void deviceFound(QString name);
+    void devicesScanned(QStringList names);
+    void devicesChanged(QStringList);
     void defaultDeviceChanged(QString);
 
     void mediaUrlChanged();
@@ -87,9 +87,9 @@ private:
     QString m_mediaUrl;
     QString pickDefaultDevice() const;
     QString normalizeUrlForCasting(const QString &in) const;
-    bool m_playing = false; // ← NEU
+    bool m_playing = false;
     void setPlaying(bool on)
-    { // ← NEU
+    {
         if (m_playing == on)
             return;
         m_playing = on;

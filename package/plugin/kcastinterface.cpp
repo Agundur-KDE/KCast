@@ -280,7 +280,6 @@ void KCastBridge::setDefaultDevice(const QString &name)
     if (m_defaultDevice == name)
         return;
     m_defaultDevice = name;
-    // <<< NEU: Default immer in Liste aufnehmen >>>
     if (!m_devices.contains(name)) {
         m_devices.append(name);
         Q_EMIT devicesChanged(m_devices);

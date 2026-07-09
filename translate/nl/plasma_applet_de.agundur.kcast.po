@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 13:46+0200\n"
+"POT-Creation-Date: 2026-07-09 12:22+0200\n"
 "PO-Revision-Date: 2025-07-23 22:17+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: \n"
@@ -18,90 +18,112 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.6\n"
 
-#: contents/ui/configNetwork.qml:25
+#: package/contents/ui/configNetwork.qml:25
 msgid "Search"
 msgstr "Zoeken"
 
-#: contents/ui/configNetwork.qml:27
+#: package/contents/ui/configNetwork.qml:27
 msgid "Devices"
 msgstr "Apparaten"
 
-#: contents/ui/configNetwork.qml:48
+#: package/contents/ui/configNetwork.qml:52
 msgid "Default"
 msgstr "Standaard"
 
-#: contents/ui/FullRepresentation.qml:27
-msgid "refreashing"
-msgstr "Bezig met herladen…"
+#: package/contents/ui/FullRepresentation.qml:59
+msgid "refreshing"
+msgstr "vernieuwen"
 
-#: contents/ui/FullRepresentation.qml:50
+#: package/contents/ui/FullRepresentation.qml:101
 msgid "Plugin not available!"
 msgstr "De plug-in ontbreekt!"
 
-#: contents/ui/FullRepresentation.qml:54
+#: package/contents/ui/FullRepresentation.qml:105
 msgid "You need to install 'catt' first!"
 msgstr "Installeer ‘catt’."
 
-#: contents/ui/FullRepresentation.qml:78
+#: package/contents/ui/FullRepresentation.qml:155
 msgid "URL detected: %1"
 msgstr "Aangetroffen url: %1"
 
-#: contents/ui/FullRepresentation.qml:81
+#: package/contents/ui/FullRepresentation.qml:163
 msgid "Not a valid url"
 msgstr "De url is ongeldig"
 
-#: contents/ui/FullRepresentation.qml:128 contents/ui/main.qml:23
+#: package/contents/ui/FullRepresentation.qml:206
+#: package/contents/ui/main.qml:23
 msgid "KCast"
 msgstr "KCast"
 
-#: contents/ui/FullRepresentation.qml:136
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "Select device:"
 msgstr "Kies een apparaat:"
 
-#: contents/ui/FullRepresentation.qml:136
+#: package/contents/ui/FullRepresentation.qml:214
 msgid "No device found"
 msgstr "Er zijn geen apparaten aangetroffen"
 
-#: contents/ui/FullRepresentation.qml:161
+#: package/contents/ui/FullRepresentation.qml:239
 msgid "search devices"
 msgstr "Zoeken naar apparaten"
 
-#: contents/ui/FullRepresentation.qml:176
+#: package/contents/ui/FullRepresentation.qml:254
 msgid "http://... or /path/to/file.mp4"
 msgstr "https://… of /locatie/van/bestand.mp4"
 
-#: contents/ui/FullRepresentation.qml:193
+#: package/contents/ui/FullRepresentation.qml:282
 msgid "copy"
 msgstr "Kopiëren"
 
-#: contents/ui/FullRepresentation.qml:199
+#: package/contents/ui/FullRepresentation.qml:288
 msgid "paste"
 msgstr "Plakken"
 
-#: contents/ui/FullRepresentation.qml:205
+#: package/contents/ui/FullRepresentation.qml:293
 msgid "cut"
 msgstr "Knippen"
 
-#: contents/ui/FullRepresentation.qml:211
+#: package/contents/ui/FullRepresentation.qml:299
 msgid "select all"
 msgstr "Alles selecteren"
 
-#: contents/ui/FullRepresentation.qml:222
+#: package/contents/ui/FullRepresentation.qml:310
 msgid "open"
 msgstr "Openen"
 
-#: contents/ui/FullRepresentation.qml:240
+#: package/contents/ui/FullRepresentation.qml:328
 msgid "Play"
 msgstr "Afspelen"
 
-#: contents/ui/FullRepresentation.qml:261
-msgid "Resume"
-msgstr "Hervatten"
-
-#: contents/ui/FullRepresentation.qml:261
+#: package/contents/ui/FullRepresentation.qml:340
 msgid "Pause"
 msgstr "Pauzeren"
 
-#: contents/ui/FullRepresentation.qml:297
+#: package/contents/ui/FullRepresentation.qml:340
+msgid "Resume"
+msgstr "Hervatten"
+
+#: package/contents/ui/FullRepresentation.qml:355
+msgid "Stop"
+msgstr "Stoppen"
+
+#: package/contents/ui/FullRepresentation.qml:389
+msgid "-"
+msgstr "-"
+
+#: package/contents/ui/FullRepresentation.qml:460
+msgid "Volume in %"
+msgstr "Volume in %"
+
+#: package/contents/ui/FullRepresentation.qml:466
+msgid "+"
+msgstr "+"
+
+#: package/contents/ui/FullRepresentation.qml:480
 msgid "Open file"
 msgstr "Bestand openen"
+
+#: package/contents/config/config.qml:13
+msgctxt "@title"
+msgid "Network"
+msgstr "Netwerk"
