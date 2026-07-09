@@ -1,8 +1,8 @@
 
 <div align="center">
 
-<img src="/package/contents/icons/Logo.png" width="80" alt="KCast Logo" /> 
-  <h1>KCast</h1> <p><strong>Version: 0.3.0</strong></p>
+<img src="/package/contents/icons/Logo.png" width="80" alt="KCast Logo" />
+  <h1>KCast</h1>
   <a href="https://kde.org/de/">
   <img src="https://img.shields.io/badge/KDE_Plasma-6.1+-blue?style=flat&logo=kde" alt="KCast">
 </a>
@@ -12,22 +12,22 @@
   <a href="https://paypal.me/agundur">
   <img src="https://img.shields.io/badge/donate-PayPal-%2337a556" alt="PayPal">
 </a>
-  </a>
   <a href="https://store.kde.org/p/2290729">
   <img src="https://img.shields.io/badge/KDE%20Plasma-1D99F3?logo=kdeplasma&logoColor=fff" alt="kdeplasma">
+</a>
 
 </div>
 
 
 ## Description
-**KCast** **Version:** 0.3.0 is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a  Chromecast devices in your local network.
+**KCast** is a KDE Plasma 6 widget that lets you cast video files or youtube URLs to a  Chromecast devices in your local network.
 It supports device discovery, local media playback via an embedded HTTP server, and drag-and-drop integration with browsers and file managers like Dolphin.
 
 **Caution!** starting with version 0.0.2 we need [catt](https://github.com/skorokithakis/catt) installed.
 
 ## Community reception
 
-KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **28,000 views** and **295 upvotes** (99% positive).
+KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **38,000 views** and **305 upvotes** (99% positive).
 Thanks to everyone for the amazing feedback, ideas, and testing!
 
 If you’d like to support ongoing development, consider sponsoring the project:  
@@ -134,10 +134,10 @@ pipx ensurepath   # add ~/.local/bin to PATH (log out/in if prompted)
 pipx install catt
 catt --version
 ```
-Download the .deb from the project’s GitHub Release page, then:
+Download the .deb from the [latest release](https://github.com/Agundur-KDE/KCast/releases/latest), then:
 
 ```bash
-sudo apt install ./kcast_0.3.0-1_amd64.deb 
+sudo apt install ./kcast_*.deb
 ```
 
 
@@ -166,7 +166,8 @@ Networking & Firewall:
 
 - mDNS must be allowed through the firewall
 
-- The internal HTTP server uses TCP port 8000 to serve local files
+- Local files aren't served by KCast itself — `catt` spins up its own
+  temporary local HTTP server on a random port to serve them, see below.
 
 To allow via firewalld:
 _______________________
@@ -175,7 +176,7 @@ _______________________
 - sudo firewall-cmd --permanent --add-port=8009/tcp
 - sudo firewall-cmd --reload
 
-- For the casting of local files to work you need to allow in the port range 45000-47000 over tcp.
+- For the casting of local files to work you need to allow the port range 45000-47000 over tcp (catt's local file server picks a port in this range).
 
 ## Usage
 
@@ -185,14 +186,9 @@ _______________________
 
 ## Tested Hardware
 
-KCast has been tested successfully with the 
-
-🛒[JMGO N1S Pro 4K Triple Laser Projector](https://amzn.to/43SSX1U) (Affiliate link).
-
-This projector supports high-quality Chromecast streaming and works reliably with KCast.
-Using this link helps support the development of KCast at no additional cost to you.
-
-🛒[Samsung HW-Q935GD 9.1.4-Kanal Q-Soundbar](https://amzn.to/4enDRX7) (Affiliate link).
+KCast has been tested successfully with the JMGO N1S Pro 4K Triple Laser
+Projector (supports high-quality Chromecast streaming) and a Samsung
+HW-Q935GD 9.1.4-channel Q-Soundbar.
 
 
 ## Support
@@ -205,21 +201,25 @@ Using this link helps support the development of KCast at no additional cost to 
 
 ## Roadmap
 
-- Add config options like default devie
-- Try add youtube support
+- YouTube URL support
+
+## UPnP/DLNA (Kodi etc.)
+
+Under consideration for a future release, tracked in
+[#8](https://github.com/Agundur-KDE/KCast/issues/8) — not started yet.
 
 
 ## Contributing
 accepting contributions ...
 
-[KCast](hhttps://github.com/Agundur-KDE/KCast)
+[KCast](https://github.com/Agundur-KDE/KCast)
 
 
 ## Authors and acknowledgment
 Alec
 
 ## License
-GPL
+GPL-3.0-or-later
 
 
 ## Project status
