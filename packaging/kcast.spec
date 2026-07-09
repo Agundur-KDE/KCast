@@ -1,10 +1,10 @@
 Name:           kcast
-Version:        0.2.8
+Version:        0.2.9
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
 License:        GPL-3.0-or-later
-Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/KCast-%{version}.tar.gz
+Source0: _service
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -22,7 +22,30 @@ KCast is a KDE Plasma 6 applet (plasmoid) with a C++ plugin to cast local/remote
 to Google Chromecast devices using the `catt` CLI.
 
 %prep
-%autosetup -n KCast-%{version}
+
+rm -rf ./*
+
+shopt -s nullglob
+picked=""
+for d in %{_sourcedir}/kcast-* %{_sourcedir}/KCast-* %{_sourcedir}/kcast ; do
+  if [ -d "$d" ] && [ -f "$d/CMakeLists.txt" ]; then
+    picked="$d"
+    break
+  fi
+done
+
+if [ -n "$picked" ]; then
+  cp -a "$picked"/. .
+else
+  for f in %{_sourcedir}/* ; do
+    base="$(basename "$f")"
+    case "$base" in
+      *.spec|*.dsc|*.changes|*.obsinfo|_service|service_attic|screenshot|*.patch)
+        continue ;;
+    esac
+    cp -a "$f" .
+  done
+fi
 
 %build
 %cmake -S . \
@@ -45,6 +68,13 @@ to Google Chromecast devices using the `catt` CLI.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.9-1
+- Fixed Source0/%prep: still used the old tar_scm-era pattern (fixed
+  GitHub-release tarball URL/name), incompatible with obs_scm — v0.2.8's
+  build failed because rpmbuild looked for a tarball name that obs_scm
+  never produces. Now Source0: _service + the same directory-detection
+  %prep already proven working on kfritz/KClaude.
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.8-1
 - Fixed BuildRequires: qt6-qtbase-devel etc. are Fedora package names,
   don't exist on openSUSE (qt6-base-devel etc.) — v0.2.7's OBS build
