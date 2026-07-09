@@ -1,0 +1,44 @@
+name: catt-refresh
+
+# home:Agundur/catt packages a third-party dependency (catt) straight from
+# its upstream git via obs_scm with no pinned revision. obs_scm only
+# re-fetches when the source service is explicitly re-triggered — it does
+# not poll upstream on its own, so without this the RPM silently drifts
+# behind (it sat 1+ year stale before this was added). Runs weekly since
+# upstream cuts patch tags often but rarely a formal GitHub "Release".
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install osc
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends osc
+
+      - name: Configure osc credentials
+        env:
+          OBS_USER: ${{ secrets.OBS_USER }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/osc
+          cat > ~/.config/osc/oscrc <<OSCRC
+          [general]
+          apiurl = https://api.opensuse.org
+
+          [https://api.opensuse.org]
+          user = ${OBS_USER}
+          pass = ${OBS_PASSWORD}
+          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
+          OSCRC
+          chmod 600 ~/.config/osc/oscrc
+
+      - name: Re-trigger source service (re-clone upstream git, rebuild)
+        run: osc api -X POST "/source/home:Agundur/catt?cmd=runservice"
