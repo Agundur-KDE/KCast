@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.11
+Version:        0.2.12
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -61,13 +61,20 @@ fi
 %license LICENSE
 %doc README.md
 %{_datadir}/plasma/plasmoids/de.agundur.kcast/
-%{_libdir}/qt6/qml/de/agundur/kcast/
+%dir %{_qt6_qmldir}/de
+%dir %{_qt6_qmldir}/de/agundur
+%{_qt6_qmldir}/de/agundur/kcast/
 %dir %{_datadir}/kio
 %dir %{_datadir}/kio/servicemenus
 %{_datadir}/kio/servicemenus/kcast_stream.desktop
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.12-1
+- Fixed rpmlint "directories not owned by a package" for the QML install
+  path: added dir ownership markers for the qmldir parent directories
+  and switched to the qt6 qmldir macro (was a hardcoded libdir path).
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.11-1
 - Fixed %changelog itself: the v0.2.9 entry had a line starting with
   "%prep" (mid-sentence, after indentation) — rpm's section-boundary
