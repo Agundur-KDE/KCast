@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.10
+Version:        0.2.11
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -68,6 +68,15 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.11-1
+- Fixed %changelog itself: the v0.2.9 entry had a line starting with
+  "%prep" (mid-sentence, after indentation) — rpm's section-boundary
+  scanner mistook it for an actual %prep section marker even inside
+  %changelog body text, and everything from there through the next few
+  entries got swallowed into %files as bogus "file" tokens ("File must
+  begin with '/'" for every word). Reworded. Verified this time with
+  `rpmspec --parse` locally before pushing, not just eyeballing it.
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.10-1
 - Fixed %build: openSUSE's %cmake macro already does mkdir+cd build and
   passes the correct source dir implicitly — the spec's own extra
@@ -76,11 +85,12 @@ fi
   contain CMakeLists.txt"). Removed, matching kfritz/KClaude's %build.
 
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.9-1
-- Fixed Source0/%prep: still used the old tar_scm-era pattern (fixed
-  GitHub-release tarball URL/name), incompatible with obs_scm — v0.2.8's
-  build failed because rpmbuild looked for a tarball name that obs_scm
-  never produces. Now Source0: _service + the same directory-detection
-  %prep already proven working on kfritz/KClaude.
+- Fixed source unpacking: still used the old tar_scm-era Source0
+  pattern (fixed GitHub-release tarball URL/name), incompatible with
+  obs_scm — v0.2.8's build failed because rpmbuild looked for a
+  tarball name that obs_scm never produces. Now Source0: _service plus
+  the same source-directory auto-detection already proven working on
+  kfritz/KClaude.
 
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.8-1
 - Fixed BuildRequires: qt6-qtbase-devel etc. are Fedora package names,
