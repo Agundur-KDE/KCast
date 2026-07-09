@@ -9,9 +9,9 @@ Source0:        %{url}/archive/refs/tags/v%{version}.tar.gz#/KCast-%{version}.ta
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
 BuildRequires:  extra-cmake-modules
-BuildRequires:  qt6-qtbase-devel
-BuildRequires:  qt6-qtdeclarative-devel
-BuildRequires:  qt6-qttools-devel
+BuildRequires:  qt6-base-devel
+BuildRequires:  qt6-declarative-devel
+BuildRequires:  qt6-tools-devel
 BuildRequires:  kf6-ki18n-devel
 
 Requires:       catt
