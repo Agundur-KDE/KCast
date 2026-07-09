@@ -56,8 +56,12 @@ Item {
     }
 
     function refreshDevices() {
-        console.log(i18n("refreashing"));
-        devices = kcast.scanDevicesAsync();
+        console.log(i18n("refreshing"));
+        // scanDevicesAsync() is void — the real update comes from the
+        // onDevicesScanned Connections handler below once the scan
+        // finishes. Assigning its return value here just clobbered
+        // devices with undefined for the brief window until then.
+        kcast.scanDevicesAsync();
     }
 
     function devs() {

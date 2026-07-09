@@ -33,17 +33,23 @@ PlasmoidItem {
     compactRepresentation: MouseArea {
         id: compact
 
+        // Own instance: the compact representation is a separate QML tree
+        // from FullRepresentation.qml (which has its own "kcast" id) and
+        // can't reach into it. Both ultimately just shell out to catt using
+        // the same persisted default device, so two instances don't cause
+        // any state-sync issue for a volumeUp/volumeDown-only use here.
+        KCastBridge {
+            id: kcast
+        }
+
         WheelHandler {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
             onWheel: (ev) => {
-                if (!kcast)
-                    return ;
-
                 const d = ev.angleDelta.y > 0 ? 1 : -1;
-                if (d > 0 && kcast.volumeUp)
+                if (d > 0)
                     kcast.volumeUp(1);
 
-                if (d < 0 && kcast.volumeDown)
+                if (d < 0)
                     kcast.volumeDown(1);
 
                 ev.accepted = true;
@@ -66,10 +72,9 @@ PlasmoidItem {
         MouseArea {
             anchors.fill: parent
             z: 0
+            cursorShape: Qt.PointingHandCursor
             onClicked: {
                 expanded = !expanded;
-                cursorShape:
-                Qt.PointingHandCursor;
             }
         }
 

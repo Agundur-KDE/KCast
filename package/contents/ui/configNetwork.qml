@@ -25,21 +25,23 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Search") + " :"
             icon.name: "view-refresh"
             text: i18n("Devices")
-            onClicked: {
-                pressed:
-                true;
-                var result = kcast.scanDevicesWithCatt();
-                pressed:
-                false;
-                if (result && result.length > 0) {
-                    availableDevices = result;
-                    // Fallback wenn aktuelles Gerät nicht dabei ist
-                    if (!availableDevices.includes(selectedDevice)) {
-                        selectedDevice = availableDevices[0];
-                        cfg_DefaultDevice = selectedDevice;
-                    }
+            onClicked: kcast.scanDevicesAsync()
+        }
+
+        Connections {
+            function onDevicesScanned(list) {
+                if (!list || list.length === 0)
+                    return;
+
+                availableDevices = list;
+                // Fallback wenn aktuelles Gerät nicht dabei ist
+                if (!availableDevices.includes(selectedDevice)) {
+                    selectedDevice = availableDevices[0];
+                    cfg_DefaultDevice = selectedDevice;
                 }
             }
+
+            target: kcast
         }
 
         QtControls.ComboBox {
