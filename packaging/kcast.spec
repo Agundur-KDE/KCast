@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.12
+Version:        0.2.13
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -15,7 +15,7 @@ BuildRequires:  qt6-tools-devel
 BuildRequires:  kf6-ki18n-devel
 
 Requires:       catt
-Requires:       plasma-workspace >= 6
+Requires:       plasma6-workspace
 
 %description
 KCast is a KDE Plasma 6 applet (plasmoid) with a C++ plugin to cast local/remote media
@@ -70,6 +70,12 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Fri Jul 10 2026 Alec <info@agundur.de> - 0.2.13-1
+- Fixed unresolvable zypper dependency: "Requires: plasma-workspace >= 6"
+  doesn't exist as a package name on openSUSE — that distro's package is
+  called plasma6-workspace (matching kfritz's spec). Every zypper install
+  was failing with "nichts stellt 'plasma-workspace >= 6' bereit".
+
 * Thu Jul 09 2026 Alec <info@agundur.de> - 0.2.12-1
 - Fixed rpmlint "directories not owned by a package" for the QML install
   path: added dir ownership markers for the qmldir parent directories
