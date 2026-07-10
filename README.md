@@ -56,7 +56,7 @@ If you’d like to support ongoing development, consider sponsoring the project:
 
 ## Visuals
 ![KCast Plasmoid](KCast2.png)
-![KCast Plasmoid config](KCast_ready.png)
+![KCast Plasmoid config](KCast3.png)
 
 ## 🛠️ Installation
 
