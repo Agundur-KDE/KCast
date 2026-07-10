@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.2.13
+Version:        0.2.14
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
@@ -70,6 +70,14 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Fri Jul 10 2026 Alec <info@agundur.de> - 0.2.14-1
+- Fixed "KCastBridge is not a type" applet load failure: main.qml uses
+  KCastBridge directly in compactRepresentation but never imported
+  de.agundur.kcast — dropped during a refactor over a year ago (commit
+  e32116f, "about to rebuild") and never caught because a stale local
+  dev copy in ~/.local/share/plasma/plasmoids/ kept shadowing the real
+  installed file on this machine the whole time.
+
 * Fri Jul 10 2026 Alec <info@agundur.de> - 0.2.13-1
 - Fixed unresolvable zypper dependency: "Requires: plasma-workspace >= 6"
   doesn't exist as a package name on openSUSE — that distro's package is

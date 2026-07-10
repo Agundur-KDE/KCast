@@ -1,6 +1,7 @@
 import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
+import de.agundur.kcast 1.0
 import org.kde.activities as Activities
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.activityswitcher as ActivitySwitcher
