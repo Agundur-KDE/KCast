@@ -73,27 +73,10 @@ make
 make install (as root) 
 ```
 
-### Arch Linux Installation
-KCast is available in the [Arch User Repository (AUR)](https://aur.archlinux.org/packages/kcast).
-
-If you use an AUR helper like `yay` or `paru`, you can install it with:
-
-```bash
-yay -S kcast
-paru -S kcast
-```
-
-If you prefer to build manually from the AUR package:
-
-```bash
-git clone https://aur.archlinux.org/kcast.git
-cd kcast
-makepkg -si
-```
-
-**Note:** The AUR package is community-maintained by a third party
-Special thanks for creating and keeping it up to date.
-
+KCast is officially packaged and maintained for openSUSE (RPM) and
+Debian (.deb) only. COPR (Fedora) and AUR (Arch) are not currently
+maintained — both were more than we could keep up to date alongside
+the two supported channels.
 
 ###  Installing KCast via the openSUSE Build Service Repository
 
@@ -118,25 +101,14 @@ sudo zypper in kcast
 `catt` is packaged in the same `home:Agundur` repository and pulled in
 automatically as a dependency — no extra step needed.
 
-###  Installing KCast via my COPR repository (Fedora)
+Firewall (firewalld, default on openSUSE):
 
 ```bash
-# Enable repository
-sudo dnf copr enable agundur/KCast
-
-# Install package
-sudo dnf install kcast
+sudo firewall-cmd --permanent --add-service=mdns
+sudo firewall-cmd --permanent --add-port=8009/tcp
+sudo firewall-cmd --permanent --add-port=45000-47000/tcp
+sudo firewall-cmd --reload
 ```
-
-Fedora has no `catt` package (COPR or official), so install it separately:
-
-```bash
-sudo dnf install -y pipx
-pipx ensurepath
-pipx install catt
-catt --version
-```
-
 
 ### Install on Debian (Trixie)
 
@@ -169,7 +141,7 @@ To run KCast successfully, the following software must be installed:
 KCast is based on:
 
 - [catt](https://github.com/skorokithakis/catt) — on openSUSE this comes
-  automatically as an RPM dependency from the same repo. On Fedora/Debian
+  automatically as an RPM dependency from the same repo. On Debian
   there's no distro package for it, install via `pipx install catt`.
 
 - [Python 3](https://www.python.org/)
