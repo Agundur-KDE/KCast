@@ -74,9 +74,10 @@ make install (as root)
 ```
 
 KCast is officially packaged and maintained for openSUSE (RPM) and
-Debian (.deb) only. COPR (Fedora) and AUR (Arch) are not currently
+Debian (.deb) only. COPR (Fedora) and AUR (Arch) are no longer
 maintained — both were more than we could keep up to date alongside
-the two supported channels.
+the two supported channels. If you'd like to take over maintaining
+either one, please [open an issue](https://github.com/Agundur-KDE/KCast/issues).
 
 ###  Installing KCast via the openSUSE Build Service Repository
 
