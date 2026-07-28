@@ -23,7 +23,7 @@ ColumnLayout {
     property string loopMode: "off" // "off" | "all" | "one"
     property bool shuffle: false
     property bool expanded: entries.length > 0
-    property bool requireDoubleClickToPlay: false
+    property string playState: "idle" // "idle" | "playing" | "paused" — for the current-track icon
 
     signal entryActivated(int index)
 
@@ -120,7 +120,13 @@ ColumnLayout {
                     spacing: Kirigami.Units.smallSpacing
 
                     Kirigami.Icon {
-                        source: delegateRoot.modelData === root.currentIndex ? "media-playback-start" : "audio-x-generic"
+                        source: {
+                            if (delegateRoot.modelData !== root.currentIndex)
+                                return "audio-x-generic";
+                            if (root.playState === "playing") return "media-playback-start";
+                            if (root.playState === "paused") return "media-playback-pause";
+                            return "audio-x-generic"; // idle/stopped: no special "now playing" cue
+                        }
                         Layout.preferredWidth: Kirigami.Units.iconSizes.small
                         Layout.preferredHeight: Kirigami.Units.iconSizes.small
                     }
@@ -137,20 +143,13 @@ ColumnLayout {
                     }
                 }
 
-                // While something is already playing, a single click jumps
-                // straight to that track (low-risk, audio's already going).
-                // While paused/stopped, require a double-click so browsing
-                // the list doesn't accidentally start blaring audio.
+                // Always double-click (the iTunes/VLC/foobar2000 playlist
+                // convention) — a single, state-independent rule, so
+                // browsing the list never accidentally starts playback
+                // and behavior never silently changes underfoot.
                 TapHandler {
                     acceptedButtons: Qt.LeftButton
-                    onTapped: {
-                        if (!root.requireDoubleClickToPlay)
-                            root.entryActivated(delegateRoot.modelData);
-                    }
-                    onDoubleTapped: {
-                        if (root.requireDoubleClickToPlay)
-                            root.entryActivated(delegateRoot.modelData);
-                    }
+                    onDoubleTapped: root.entryActivated(delegateRoot.modelData)
                 }
             }
         }

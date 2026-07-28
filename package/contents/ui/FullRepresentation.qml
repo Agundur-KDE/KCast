@@ -18,6 +18,8 @@ import org.kde.plasma.plasmoid
 import "playlistparser.js" as Parser
 
 Item {
+    id: fullRep
+
     property string defaultDevice: Plasmoid.configuration.DefaultDevice
     property var devices: []
     property bool scanning: false
@@ -750,7 +752,7 @@ Item {
             Layout.fillWidth: true
             entries: playlist
             currentIndex: playlistIndex
-            requireDoubleClickToPlay: playState !== "playing"
+            playState: fullRep.playState
             onEntryActivated: (index) => playPlaylistEntry(index)
         }
 
