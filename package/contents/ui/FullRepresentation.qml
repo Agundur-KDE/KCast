@@ -10,7 +10,6 @@ import QtCore
 import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
-import de.agundur.kcast 1.0
 import org.kde.kirigami 2.20 as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
@@ -26,20 +25,19 @@ Item {
     property int currentVolume: 5
     property bool muted: false
     property string playState: "idle"   // "idle" | "playing" | "paused"
-    readonly property bool deviceReady: !!(kcast && kcast.defaultDevice && kcast.defaultDevice.length > 0)
-    readonly property bool controlsEnabled: !!(kcast.defaultDevice && kcast.defaultDevice.length > 0)
+    readonly property bool deviceReady: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
+    readonly property bool controlsEnabled: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
     property var deviceListModel: {
-        var def = kcast.defaultDevice || defaultDevice || "";
-        var found = (kcast && kcast.devices) ? kcast.devices : [];
+        var def = defaultDevice || "";
         var list = (def.length > 0 && def !== "-") ? [def] : [];
-        for (var i = 0; i < found.length; i++) {
-            if (found[i] !== def) list.push(found[i]);
+        for (var i = 0; i < devices.length; i++) {
+            if (devices[i] !== def) list.push(devices[i]);
         }
         return list;
     }
     // Editing the URL / dropping something new no longer requires an
-    // explicit Stop first — CastFile() just replaces whatever the device
+    // explicit Stop first — casting just replaces whatever the device
     // is currently playing, so Play can stay enabled regardless of playState.
     readonly property bool canPlay: controlsEnabled && hasMedia
 
@@ -66,52 +64,58 @@ Item {
         } catch(e) {}
     }
 
-    function refreshDevices() {
-        console.log(i18n("refreshing"));
-        // scanDevicesAsync() is void — the real update comes from the
-        // onDevicesScanned Connections handler below once the scan
-        // finishes. Assigning its return value here just clobbered
-        // devices with undefined for the brief window until then.
-        kcast.scanDevicesAsync();
+    function setDefaultDevice(name) {
+        defaultDevice = name;
+        Plasmoid.configuration.DefaultDevice = name;
+        if (devices.indexOf(name) === -1)
+            devices = devices.concat([name]);
     }
 
-    function devs() {
-        return (kcast && kcast.devices) ? kcast.devices : [];
+    // Quotes a path/argument for safe use inside a shell command string
+    // (single quotes, embedded single quotes escaped the POSIX way).
+    function shellQuote(s) {
+        return "'" + s.replace(/'/g, "'\\''") + "'";
+    }
+
+    // Fire-and-forget catt invocation (cast/pause/play/stop/volume/mute)
+    // via Plasma5Support's "executable" engine — no compiled C++ plugin
+    // needed to spawn catt, see cattSource below.
+    function catt(args) {
+        cattSource.connectSource("catt " + args.map(shellQuote).join(" "));
+    }
+
+    function refreshDevices() {
+        devices = [];
+        // catt scan has its own ~5s discovery window and then exits on
+        // its own (verified: `time catt scan` in this environment) — a
+        // one-shot executable-engine call, no incremental/live discovery.
+        scanSource.connectSource("catt scan -j");
     }
 
     function startScan() {
-        devices = [];
-        kcast.scanDevicesAsync();
+        refreshDevices();
     }
 
-    function _play() {
-        let url = mediaUrl.text || "";
-        if (url.startsWith("file://"))
-            url = url.replace(/^file:\/\//, "");
-
-        kcast.CastFile(url);
+    // catt's own cast command wants a plain local path, not a file://
+    // URL (matches the previous C++ normalizeUrlForCasting behavior).
+    function normalizeUrlForCasting(input) {
+        return input.replace(/^file:\/\//, "");
     }
 
-    function _pause() {
-        kcast.pauseMedia(deviceSelector.currentText);
-    }
-
-    function _resume() {
-        kcast.resumeMedia(deviceSelector.currentText);
-    }
-
-    function _stop() {
-        kcast.stopMedia(deviceSelector.currentText);
+    function castUrl(url) {
+        if (!defaultDevice || defaultDevice === "-") {
+            console.warn("[KCast] No device available for cast");
+            return;
+        }
+        catt(["-d", defaultDevice, "cast", normalizeUrlForCasting(url)]);
+        playState = "playing";
     }
 
     function playPlaylistEntry(index) {
         if (index < 0 || index >= playlist.length) return;
         playlistIndex = index;
-        var url = playlist[index].url.replace(/^file:\/\//, "");
         mediaUrl.text = playlist[index].url;
-        kcast.mediaUrl = playlist[index].url;
-        kcast.CastFile(url);
-        playState = "playing";
+        castUrl(playlist[index].url);
     }
 
     function nextTrackIndex() {
@@ -143,12 +147,6 @@ Item {
         playPlaylistEntry(i);
     }
 
-    // Quotes a path for safe use inside a shell command string (single
-    // quotes, with embedded single quotes escaped the POSIX way).
-    function shellQuote(s) {
-        return "'" + s.replace(/'/g, "'\\''") + "'";
-    }
-
     // Builds an ad-hoc playlist from a multi-file drop, or parses a
     // dropped .m3u/.m3u8 file — which, confusingly, can also be an HLS
     // *stream* manifest rather than a playlist (see playlistparser.js).
@@ -177,29 +175,19 @@ Item {
 
 
     Component.onCompleted: {
-        mediaUrl.text = kcast.mediaUrl;
-        if (!kcast) {
-            console.warn(i18n("Plugin not available!"));
-            return ;
-        }
-        if (!kcast.isCattInstalled()) {
-            console.warn(i18n("You need to install 'catt' first!"));
-            return ;
-        }
-        console.log("[KCast] DBus registration started");
-        const ok = kcast.registerDBus();
-        if (!ok)
-            console.warn("[KCast] DBus registration failed");
+        cattCheckSource.connectSource("command -v catt");
 
         if (defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
-            kcast.setDefaultDevice(defaultDevice);
+            setDefaultDevice(defaultDevice);
 
-        loadVolumeForDevice(defaultDevice || kcast.defaultDevice);
+        loadVolumeForDevice(defaultDevice);
 
-        if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
+        if (!defaultDevice || defaultDevice.length === 0 || defaultDevice === "-")
             startScan();
 
     }
+
+
     Layout.minimumWidth: deviceList.implicitWidth + 100
     Layout.minimumHeight: logoWrapper.implicitHeight + deviceList.implicitHeight + mediaUrl.implicitHeight + mediaControls.implicitHeight + volumeControls.implicitHeight + playlistView.implicitHeight + 150
     implicitWidth: FullRepresentation.implicitWidth > 0 ? FullRepresentation.implicitWidth : 320
@@ -211,15 +199,51 @@ Item {
         interval: 80
         repeat: false
         onTriggered: {
-            if (kcast && kcast.setVolume) {
-                kcast.setVolume(currentVolume);
-                saveVolumeForDevice(kcast.defaultDevice, currentVolume);
-            }
+            if (!defaultDevice) return;
+            catt(["-d", defaultDevice, "volume", String(currentVolume)]);
+            saveVolumeForDevice(defaultDevice, currentVolume);
         }
     }
 
-    KCastBridge {
-        id: kcast
+    // Fire-and-forget catt commands (cast/pause/play/stop/volume/mute) —
+    // see the catt() function above.
+    Plasma5Support.DataSource {
+        id: cattSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => disconnectSource(sourceName)
+    }
+
+    Plasma5Support.DataSource {
+        id: cattCheckSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            if ((data["exit code"] || 0) !== 0)
+                console.warn(i18n("You need to install 'catt' first!"));
+        }
+    }
+
+    // `catt scan -j` prints one JSON object (keyed by device name) after
+    // its own ~5s discovery window, then exits — no incremental/live
+    // discovery like the old QProcess::readyReadStandardOutput did.
+    Plasma5Support.DataSource {
+        id: scanSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            var found = [];
+            try {
+                found = Object.keys(JSON.parse(data["stdout"] || "{}"));
+            } catch (e) {
+                found = [];
+            }
+            devices = found;
+            if ((!defaultDevice || defaultDevice.length === 0) && found.length > 0)
+                setDefaultDevice(found[0]);
+        }
     }
 
     DropArea {
@@ -283,11 +307,6 @@ Item {
         playlist = [];
         playlistIndex = -1;
         mediaUrl.text = url;
-        // setting .text directly doesn't fire onTextEdited (that's
-        // only for user-driven edits), so the bridge's mediaUrl
-        // property — read by the Dolphin service menu's file handoff
-        // (see dolphinHandoffTimer below) — would otherwise stay stale.
-        kcast.mediaUrl = url;
     }
 
     // Replaces the old D-Bus self-registration: the Dolphin service menu
@@ -318,7 +337,6 @@ Item {
             } else {
                 // "hls" or "empty": not a queue, cast the manifest URL directly
                 mediaUrl.text = fileUrl;
-                kcast.mediaUrl = fileUrl;
             }
         }
     }
@@ -424,7 +442,7 @@ Item {
                 model: deviceListModel
                 onActivated: (i) => {
                     if (i >= 0 && i < model.length) {
-                        kcast.setDefaultDevice(model[i]);
+                        setDefaultDevice(model[i]);
                         loadVolumeForDevice(model[i]);
                     }
                 }
@@ -447,19 +465,6 @@ Item {
 
                 Layout.fillWidth: true
                 placeholderText: i18n("http://... or /path/to/file.mp4")
-                // 1) UI initial mit Bridge befüllen
-                Component.onCompleted: mediaUrl.text = kcast.mediaUrl
-                // 3) Wenn der Nutzer tippt → zurück in die Bridge spiegeln
-                onTextEdited: kcast.mediaUrl = text
-
-                // 2) Wenn die Bridge (z.B. via D-Bus) mediaUrl ändert → UI nachziehen
-                Connections {
-                    function onMediaUrlChanged() {
-                        mediaUrl.text = kcast.mediaUrl;
-                    }
-
-                    target: kcast
-                }
 
                 MouseArea {
                     anchors.fill: parent
@@ -549,8 +554,7 @@ Item {
                     }
                     var url = mediaUrl.text.replace(/^file:\/\//, "");
                     mediaUrl.text = url;
-                    kcast.CastFile(url);
-                    playState = "playing";
+                    castUrl(url);
                 }
             }
 
@@ -568,10 +572,10 @@ Item {
                 enabled: controlsEnabled && playState !== "idle"
                 onClicked: {
                     if (playState === "playing") {
-                        kcast.pauseMedia(kcast.defaultDevice);
+                        catt(["-d", defaultDevice, "pause"]);
                         playState = "paused";
                     } else if (playState === "paused") {
-                        kcast.resumeMedia(kcast.defaultDevice);
+                        catt(["-d", defaultDevice, "play"]);
                         playState = "playing";
                     }
                 }
@@ -582,7 +586,7 @@ Item {
                 icon.name: "media-playback-stop"
                 enabled: controlsEnabled && playState !== "idle"
                 onClicked: {
-                    kcast.stopMedia(kcast.defaultDevice);
+                    catt(["-d", defaultDevice, "stop"]);
                     playState = "idle";
                 }
             }
@@ -606,7 +610,8 @@ Item {
                 // text: muted ? i18n("Unmute") : i18n("Mute")
                 Accessible.name: checked ? "Unmute" : "Mute"
                 onClicked: {
-                    kcast.setMuted(muteBtn.checked);
+                    muted = muteBtn.checked;
+                    catt(["-d", defaultDevice, "volumemute", muted ? "true" : "false"]);
                 }
             }
 
@@ -646,12 +651,12 @@ Item {
                         return ;
 
                     // wird false => Finger/Maus losgelassen
-                    if (!kcast || !kcast.setVolume)
+                    if (!defaultDevice)
                         return ;
 
                     currentVolume = Math.round(value);
-                    kcast.setVolume(currentVolume);
-                    saveVolumeForDevice(kcast.defaultDevice, currentVolume);
+                    catt(["-d", defaultDevice, "volume", String(currentVolume)]);
+                    saveVolumeForDevice(defaultDevice, currentVolume);
                 }
                 Keys.onPressed: (ev) => {
                     if (ev.key === Qt.Key_Left) {
@@ -709,7 +714,6 @@ Item {
                 playlist = [];
                 playlistIndex = -1;
                 mediaUrl.text = file;
-                kcast.mediaUrl = file;
             }
         }
 
@@ -731,60 +735,6 @@ Item {
 
         Item {
             Layout.fillHeight: true
-        }
-
-        Connections {
-            target: kcast
-            function onPlayingChanged() {
-                if (!kcast.playing && playState === "playing") {
-                    playState = "idle";
-                    // Track ended on the device: auto-advance if a
-                    // playlist is active and loop/shuffle says to continue.
-                    if (playlist.length > 0)
-                        playNext();
-                }
-            }
-        }
-
-        Connections {
-            function onVolumeCommandSent(command, value) {
-                if (command === "set")
-                    currentVolume = value;
-
-                if (command === "up")
-                    currentVolume = Math.max(0, Math.min(100, currentVolume + value));
-
-                if (command === "down")
-                    currentVolume = Math.max(0, Math.min(100, currentVolume - value));
-
-            }
-
-            function onMuteCommandSent(on) {
-                muted = on;
-            }
-
-            target: kcast
-        }
-
-        Connections {
-            // erstes gefundenes nehmen
-            // z.B. eine Fehlermeldung sichtbar schalten
-
-            function onDeviceFound(name) {
-                if (devices.indexOf(name) === -1)
-                    devices = devices.concat([name]);
-
-                // trigger Bindings
-                if (!kcast.defaultDevice || kcast.defaultDevice.length === 0)
-                    kcast.setDefaultDevice(name);
-
-            }
-
-            function onDevicesScanned(list) {
-                devices = Array.isArray(list) ? list : [];
-            }
-
-            target: kcast
         }
 
     }
