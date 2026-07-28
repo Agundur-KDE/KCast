@@ -114,8 +114,13 @@ Item {
         // previous one leaves it running, and the next cast can then
         // silently lose a port/race against it. Kill any leftover cast
         // process for this device first, in the same shell invocation so
-        // ordering is guaranteed.
-        var killAndCast = "pkill -f " + shellQuote("catt -d " + defaultDevice + " cast") + " 2>/dev/null; catt "
+        // ordering is guaranteed. The pattern MUST be anchored with ^ —
+        // unanchored, `pkill -f` also matches this very `sh -c "..."`
+        // wrapper's own command line (it literally contains the search
+        // string as text) and kills itself before `catt cast` ever runs.
+        // Verified live: unanchored, the cast silently never started;
+        // anchored, it works every time.
+        var killAndCast = "pkill -f " + shellQuote("^catt -d " + defaultDevice + " cast") + " 2>/dev/null; catt "
             + ["-d", defaultDevice, "cast", normalizeUrlForCasting(url)].map(shellQuote).join(" ");
         cattSource.connectSource(killAndCast);
         playState = "playing";
