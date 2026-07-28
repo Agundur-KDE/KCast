@@ -241,7 +241,7 @@ Item {
                 found = [];
             }
             devices = found;
-            if ((!defaultDevice || defaultDevice.length === 0) && found.length > 0)
+            if ((!defaultDevice || defaultDevice.length === 0 || defaultDevice === "-") && found.length > 0)
                 setDefaultDevice(found[0]);
         }
     }
