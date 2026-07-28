@@ -110,17 +110,18 @@ Item {
             return;
         }
         // `catt cast` on a local file blocks forever (it runs a local HTTP
-        // server to serve the file) — switching tracks without killing the
-        // previous one leaves it running, and the next cast can then
-        // silently lose a port/race against it. Kill any leftover cast
-        // process for this device first, in the same shell invocation so
-        // ordering is guaranteed. The pattern MUST be anchored with ^ —
-        // unanchored, `pkill -f` also matches this very `sh -c "..."`
-        // wrapper's own command line (it literally contains the search
-        // string as text) and kills itself before `catt cast` ever runs.
-        // Verified live: unanchored, the cast silently never started;
-        // anchored, it works every time.
-        var killAndCast = "pkill -f " + shellQuote("^catt -d " + defaultDevice + " cast") + " 2>/dev/null; catt "
+        // server to serve the file) — switching tracks without tearing the
+        // previous one down first is flaky (confirmed live: rapid re-cast
+        // without a real device-level stop plays every other track,
+        // silently no-ops the rest). Sequence: tell the device to stop
+        // (clean teardown, not just killing our local process), kill any
+        // leftover local server process for this device (pattern anchored
+        // with ^ — unanchored also matches this very `sh -c "..."`
+        // wrapper's own command line and kills itself), then a short
+        // safety delay before the new cast so the receiver has time to
+        // actually reset.
+        var killAndCast = "catt -d " + shellQuote(defaultDevice) + " stop 2>/dev/null; pkill -f "
+            + shellQuote("^catt -d " + defaultDevice + " cast") + " 2>/dev/null; sleep 1; catt "
             + ["-d", defaultDevice, "cast", normalizeUrlForCasting(url)].map(shellQuote).join(" ");
         cattSource.connectSource(killAndCast);
         playState = "playing";
