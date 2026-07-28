@@ -20,6 +20,7 @@ import "playlistparser.js" as Parser
 Item {
     property string defaultDevice: Plasmoid.configuration.DefaultDevice
     property var devices: []
+    property bool scanning: false
     property int volumeStepBig: 5
     property int volumeStepSmall: 1
     property int currentVolume: 5
@@ -86,6 +87,7 @@ Item {
 
     function refreshDevices() {
         devices = [];
+        scanning = true;
         // catt scan has its own ~5s discovery window and then exits on
         // its own (verified: `time catt scan` in this environment) — a
         // one-shot executable-engine call, no incremental/live discovery.
@@ -234,6 +236,7 @@ Item {
         engine: "executable"
         onNewData: (sourceName, data) => {
             disconnectSource(sourceName);
+            scanning = false;
             var found = [];
             try {
                 found = Object.keys(JSON.parse(data["stdout"] || "{}"));
@@ -424,7 +427,10 @@ Item {
         }
 
         PlasmaComponents.Label {
-            text: devices.length > 0 ? i18n("Select device:") : i18n("No device found")
+            text: scanning ? i18n("Searching devices…")
+                : devices.length > 0 ? i18n("Select device:")
+                : i18n("No device found")
+            color: (!scanning && devices.length === 0) ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
         }
