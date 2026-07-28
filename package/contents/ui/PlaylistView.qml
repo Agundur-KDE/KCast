@@ -23,6 +23,7 @@ ColumnLayout {
     property string loopMode: "off" // "off" | "all" | "one"
     property bool shuffle: false
     property bool expanded: entries.length > 0
+    property bool requireDoubleClickToPlay: false
 
     signal entryActivated(int index)
 
@@ -136,7 +137,21 @@ ColumnLayout {
                     }
                 }
 
-                onClicked: root.entryActivated(delegateRoot.modelData)
+                // While something is already playing, a single click jumps
+                // straight to that track (low-risk, audio's already going).
+                // While paused/stopped, require a double-click so browsing
+                // the list doesn't accidentally start blaring audio.
+                TapHandler {
+                    acceptedButtons: Qt.LeftButton
+                    onTapped: {
+                        if (!root.requireDoubleClickToPlay)
+                            root.entryActivated(delegateRoot.modelData);
+                    }
+                    onDoubleTapped: {
+                        if (root.requireDoubleClickToPlay)
+                            root.entryActivated(delegateRoot.modelData);
+                    }
+                }
             }
         }
     }

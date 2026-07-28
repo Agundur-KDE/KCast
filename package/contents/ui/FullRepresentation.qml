@@ -109,7 +109,15 @@ Item {
             console.warn("[KCast] No device available for cast");
             return;
         }
-        catt(["-d", defaultDevice, "cast", normalizeUrlForCasting(url)]);
+        // `catt cast` on a local file blocks forever (it runs a local HTTP
+        // server to serve the file) — switching tracks without killing the
+        // previous one leaves it running, and the next cast can then
+        // silently lose a port/race against it. Kill any leftover cast
+        // process for this device first, in the same shell invocation so
+        // ordering is guaranteed.
+        var killAndCast = "pkill -f " + shellQuote("catt -d " + defaultDevice + " cast") + " 2>/dev/null; catt "
+            + ["-d", defaultDevice, "cast", normalizeUrlForCasting(url)].map(shellQuote).join(" ");
+        cattSource.connectSource(killAndCast);
         playState = "playing";
     }
 
@@ -736,6 +744,7 @@ Item {
             Layout.fillWidth: true
             entries: playlist
             currentIndex: playlistIndex
+            requireDoubleClickToPlay: playState !== "playing"
             onEntryActivated: (index) => playPlaylistEntry(index)
         }
 
