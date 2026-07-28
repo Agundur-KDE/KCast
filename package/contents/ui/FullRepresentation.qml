@@ -549,20 +549,33 @@ Item {
                 onClicked: playPrevious()
             }
 
+            // Single toggle button, matching the near-universal media-player
+            // convention (VLC/Spotify/YouTube): shows the icon/label for the
+            // ACTION a click will perform, not the current state as text —
+            // "Pause" while playing, "Play" while idle/paused, never
+            // "Resume". Unlike VLC (icon-only, easy to misread at a glance),
+            // checkable+checked gives it a sunken/pressed look while
+            // playing, so the state itself is visible, not just the icon.
             PlasmaComponents.Button {
-                text: i18n("Play")
-                icon.name: "media-playback-start"
-                enabled: canPlay
+                text: playState === "playing" ? i18n("Pause") : i18n("Play")
+                icon.name: playState === "playing" ? "media-playback-pause" : "media-playback-start"
+                enabled: playState === "idle" ? canPlay : controlsEnabled
                 checkable: true
                 checked: playState === "playing"
                 onClicked: {
-                    if (playlistIndex >= 0) {
+                    if (playState === "playing") {
+                        catt(["-d", defaultDevice, "pause"]);
+                        playState = "paused";
+                    } else if (playState === "paused") {
+                        catt(["-d", defaultDevice, "play"]);
+                        playState = "playing";
+                    } else if (playlistIndex >= 0) {
                         playPlaylistEntry(playlistIndex);
-                        return;
+                    } else {
+                        var url = mediaUrl.text.replace(/^file:\/\//, "");
+                        mediaUrl.text = url;
+                        castUrl(url);
                     }
-                    var url = mediaUrl.text.replace(/^file:\/\//, "");
-                    mediaUrl.text = url;
-                    castUrl(url);
                 }
             }
 
@@ -572,23 +585,6 @@ Item {
                 visible: playlist.length > 0
                 enabled: playlist.length > 1 && playState !== "idle"
                 onClicked: playNext()
-            }
-
-            PlasmaComponents.Button {
-                text: playState === "playing" ? i18n("Pause") : i18n("Resume")
-                icon.name: playState === "playing" ? "media-playback-pause" : "media-playback-start"
-                enabled: controlsEnabled && playState !== "idle"
-                checkable: true
-                checked: playState === "paused"
-                onClicked: {
-                    if (playState === "playing") {
-                        catt(["-d", defaultDevice, "pause"]);
-                        playState = "paused";
-                    } else if (playState === "paused") {
-                        catt(["-d", defaultDevice, "play"]);
-                        playState = "playing";
-                    }
-                }
             }
 
             PlasmaComponents.Button {
