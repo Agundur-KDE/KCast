@@ -545,7 +545,7 @@ Item {
                 icon.name: "media-skip-backward"
                 display: PlasmaComponents.Button.IconOnly
                 visible: playlist.length > 0
-                enabled: playlist.length > 1
+                enabled: playlist.length > 1 && playState !== "idle"
                 onClicked: playPrevious()
             }
 
@@ -553,6 +553,8 @@ Item {
                 text: i18n("Play")
                 icon.name: "media-playback-start"
                 enabled: canPlay
+                checkable: true
+                checked: playState === "playing"
                 onClicked: {
                     if (playlistIndex >= 0) {
                         playPlaylistEntry(playlistIndex);
@@ -568,7 +570,7 @@ Item {
                 icon.name: "media-skip-forward"
                 display: PlasmaComponents.Button.IconOnly
                 visible: playlist.length > 0
-                enabled: playlist.length > 1
+                enabled: playlist.length > 1 && playState !== "idle"
                 onClicked: playNext()
             }
 
@@ -576,6 +578,8 @@ Item {
                 text: playState === "playing" ? i18n("Pause") : i18n("Resume")
                 icon.name: playState === "playing" ? "media-playback-pause" : "media-playback-start"
                 enabled: controlsEnabled && playState !== "idle"
+                checkable: true
+                checked: playState === "paused"
                 onClicked: {
                     if (playState === "playing") {
                         catt(["-d", defaultDevice, "pause"]);
