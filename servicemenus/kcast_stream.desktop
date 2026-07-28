@@ -13,4 +13,4 @@ Name[es]=Transmitir con KCast
 Name[ru]=Транслировать через KCast
 Name[nl]=Streamen met KCast
 Icon=media-playback-start
-Exec=dbus-send --session --dest=de.agundur.kcast --type=method_call /de/agundur/kcast de.agundur.kcast.CastFile string:"%u"
+Exec=sh -c 'mkdir -p "$HOME/.cache/kcast" && echo "$1" >> "$HOME/.cache/kcast/incoming"' _ %u
