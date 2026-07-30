@@ -28,6 +28,16 @@ Item {
     property int currentVolume: 5
     property bool muted: false
     property string playState: "idle"   // "idle" | "playing" | "paused"
+    property real mediaPosition: 0
+    property real mediaDuration: 0
+    property bool seekPending: false
+
+    function formatTime(seconds) {
+        var s = Math.max(0, Math.round(seconds));
+        var m = Math.floor(s / 60);
+        var r = s % 60;
+        return m + ":" + (r < 10 ? "0" : "") + r;
+    }
     readonly property bool deviceReady: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool controlsEnabled: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
@@ -127,6 +137,8 @@ Item {
             + ["-d", defaultDevice, "cast", normalizeUrlForCasting(url)].map(shellQuote).join(" ");
         cattSource.connectSource(killAndCast);
         playState = "playing";
+        mediaPosition = 0;
+        mediaDuration = 0;
     }
 
     function playPlaylistEntry(index) {
@@ -230,6 +242,56 @@ Item {
 
         engine: "executable"
         onNewData: (sourceName, data) => disconnectSource(sourceName)
+    }
+
+    // Polls playback position/duration for the seek bar. `catt info -j`
+    // is the only catt subcommand that reports current_time/duration —
+    // no push/event API, so a 1s poll is the simplest thing that works.
+    // Skipped while the slider is being dragged so the poll can't yank
+    // the handle back mid-drag.
+    Timer {
+        interval: 1000
+        running: playState !== "idle"
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            if (!defaultDevice || seekSlider.pressed || seekPending) return;
+            infoSource.connectSource("catt -d " + shellQuote(defaultDevice) + " info -j");
+        }
+    }
+
+    Plasma5Support.DataSource {
+        id: infoSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            // A poll started just before a seek was issued can still land
+            // after seekPending flips true, carrying the pre-seek position
+            // — applying it would yank the handle back before seekSource's
+            // completion snaps it forward again. Drop it, next poll is fine.
+            if (seekPending) return;
+            try {
+                var info = JSON.parse(data["stdout"] || "{}");
+                mediaPosition = info.current_time || 0;
+                mediaDuration = info.duration || 0;
+                if (info.player_state === "PAUSED") playState = "paused";
+                else if (info.player_state === "PLAYING" || info.player_state === "BUFFERING") playState = "playing";
+            } catch (e) {}
+        }
+    }
+
+    // catt's own seek completion signal — the process only exits once the
+    // device has actually acknowledged the seek, so it's a reliable point
+    // to resume trusting polled positions again.
+    Plasma5Support.DataSource {
+        id: seekSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            seekPending = false;
+        }
     }
 
     Plasma5Support.DataSource {
@@ -551,6 +613,40 @@ Item {
         }
 
         RowLayout {
+            id: seekControls
+
+            Layout.fillWidth: true
+            visible: playState !== "idle" && mediaDuration > 0
+            spacing: 8
+
+            PlasmaComponents.Label {
+                text: formatTime(seekSlider.pressed ? seekSlider.value : mediaPosition)
+            }
+
+            PlasmaComponents.Slider {
+                id: seekSlider
+
+                Layout.fillWidth: true
+                from: 0
+                to: Math.max(mediaDuration, 1)
+                value: mediaPosition
+                live: true
+                onPressedChanged: {
+                    if (pressed) return;
+                    var target = Math.round(value);
+                    mediaPosition = target;
+                    seekPending = true;
+                    seekSource.connectSource("catt -d " + shellQuote(defaultDevice) + " seek " + shellQuote(String(target)));
+                }
+            }
+
+            PlasmaComponents.Label {
+                text: formatTime(mediaDuration)
+            }
+
+        }
+
+        RowLayout {
             id: mediaControls
 
             Layout.fillWidth: true
@@ -563,6 +659,13 @@ Item {
                 visible: playlist.length > 0
                 enabled: playlist.length > 1 && playState !== "idle"
                 onClicked: playPrevious()
+            }
+
+            PlasmaComponents.Button {
+                text: "-10s"
+                display: PlasmaComponents.Button.TextOnly
+                enabled: controlsEnabled && playState !== "idle"
+                onClicked: catt(["-d", defaultDevice, "rewind", "10"])
             }
 
             // Single toggle button, matching the near-universal media-player
@@ -596,6 +699,13 @@ Item {
             }
 
             PlasmaComponents.Button {
+                text: "+10s"
+                display: PlasmaComponents.Button.TextOnly
+                enabled: controlsEnabled && playState !== "idle"
+                onClicked: catt(["-d", defaultDevice, "ffwd", "10"])
+            }
+
+            PlasmaComponents.Button {
                 icon.name: "media-skip-forward"
                 display: PlasmaComponents.Button.IconOnly
                 visible: playlist.length > 0
@@ -610,6 +720,8 @@ Item {
                 onClicked: {
                     catt(["-d", defaultDevice, "stop"]);
                     playState = "idle";
+                    mediaPosition = 0;
+                    mediaDuration = 0;
                 }
             }
 
