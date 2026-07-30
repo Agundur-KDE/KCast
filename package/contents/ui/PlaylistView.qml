@@ -26,6 +26,7 @@ ColumnLayout {
     property string playState: "idle" // "idle" | "playing" | "paused" — for the current-track icon
 
     signal entryActivated(int index)
+    signal clearRequested
 
     readonly property var filteredIndices: {
         if (searchField.text.length === 0)
@@ -86,6 +87,14 @@ ColumnLayout {
             // cycles off -> all -> one -> off, one click at a time
             onClicked: root.loopMode = root.loopMode === "off" ? "all"
                      : root.loopMode === "all" ? "one" : "off"
+        }
+
+        PlasmaComponents.ToolButton {
+            icon.name: "edit-clear-list"
+            enabled: root.entries.length > 0
+            QQC.ToolTip.text: i18n("Clear playlist")
+            QQC.ToolTip.visible: hovered
+            onClicked: root.clearRequested()
         }
     }
 

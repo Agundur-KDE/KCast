@@ -12,8 +12,6 @@ import org.kde.plasma.plasmoid
 PlasmoidItem {
     id: root
 
-    property bool keepOpenDuringDrop: false
-
     preferredRepresentation: {
         const edge = Plasmoid.location;
         if (edge === PlasmaCore.Types.TopEdge || edge === PlasmaCore.Types.BottomEdge || edge === PlasmaCore.Types.LeftEdge || edge === PlasmaCore.Types.RightEdge)
@@ -89,6 +87,11 @@ PlasmoidItem {
             }
         }
 
+        // Quotes a path/argument for safe use inside a shell command string.
+        function shellQuote(s) {
+            return "'" + s.replace(/'/g, "'\\''") + "'";
+        }
+
         DropArea {
             id: compactDrop
 
@@ -96,10 +99,42 @@ PlasmoidItem {
             anchors.fill: parent
             onEntered: (drag) => {
                 if (drag.hasUrls) {
-                    root.keepOpenDuringDrop = true;
-                    expanded = !expanded;
+                    drag.accept(Qt.CopyAction);
+                    if (!expanded)
+                        expanded = true;
                 }
             }
+            onPositionChanged: (drag) => {
+                if (drag.hasUrls)
+                    drag.accept(Qt.CopyAction);
+            }
+            // The drag typically ends up released here, not inside the
+            // popup that onEntered just opened — the cursor doesn't
+            // automatically move into the new popup.
+            //
+            // full (FullRepresentation's id) is NOT reachable from here:
+            // `fullRepresentation` is a QQmlComponent-typed property, so
+            // `FullRepresentation { id: full }` gets implicitly wrapped in
+            // a Component and full's id is scoped inside it, invisible to
+            // this file. Route through the same incoming-queue file the
+            // Dolphin service menu already uses instead — FullRepresentation
+            // polls it every 800ms once instantiated (which the expanded
+            // change above just triggered).
+            onDropped: (drop) => {
+                var urls = drop.hasUrls ? drop.urls : (drop.hasText ? [drop.text] : []);
+                if (urls.length === 0) return;
+                var script = "mkdir -p \"$HOME/.cache/kcast\"";
+                for (var i = 0; i < urls.length; i++)
+                    script += " && echo " + compact.shellQuote(urls[i]) + " >> \"$HOME/.cache/kcast/incoming\"";
+                dropQueueSource.connectSource("sh -c " + compact.shellQuote(script));
+            }
+        }
+
+        Plasma5Support.DataSource {
+            id: dropQueueSource
+
+            engine: "executable"
+            onNewData: (sourceName, data) => disconnectSource(sourceName)
         }
 
         MouseArea {

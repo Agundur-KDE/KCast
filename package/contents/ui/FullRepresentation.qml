@@ -327,38 +327,58 @@ Item {
         }
     }
 
+    function handleDrop(drop) {
+        // drop.urls entries are QUrl objects, not JS strings — .replace()/
+        // .split() further down (resolveAndHandlePath, Parser.baseName)
+        // need real strings, so convert once here at the source.
+        if (drop.hasUrls && drop.urls.length > 1) {
+            loadPlaylistFromUrls(drop.urls.map(String));
+            return;
+        }
+
+        var url = "";
+        if (drop.hasUrls && drop.urls.length > 0)
+            url = String(drop.urls[0]);
+        else if (drop.hasText)
+            url = drop.text;
+
+        if (url === "") {
+            console.log(i18n("Not a valid url"));
+            drop.accept(Qt.IgnoreAction);
+            return;
+        }
+
+        // Single item could be a plain file or a folder — resolve it
+        // (folder → its media files become the playlist).
+        resolveAndHandlePath(url);
+    }
+
     DropArea {
-        // Optional: Timeout oder sofort schließen
-
+        // Same fix as main.qml's compactDrop: without z:1 this DropArea
+        // sits behind the ColumnLayout below (declared later = in front),
+        // so drags over any visible control (mediaUrl field, playlist,
+        // buttons) never reach it — only truly empty background would.
+        z: 1
         anchors.fill: parent
+        // Without this, cross-application drags (Dolphin/browser → KCast)
+        // are never actually accepted at the protocol level (XDND/Wayland
+        // wl_data_device negotiate acceptance continuously while hovering,
+        // not just at release) — the drop cursor shows "not allowed" and
+        // onDropped never fires at all, regardless of what it would do.
+        onEntered: (drag) => drag.accept(Qt.CopyAction)
+        onPositionChanged: (drag) => drag.accept(Qt.CopyAction)
         onDropped: function(drop) {
-            if (drop.hasUrls && drop.urls.length > 1) {
-                loadPlaylistFromUrls(drop.urls);
-                return;
-            }
-
-            var url = "";
-            if (drop.hasUrls && drop.urls.length > 0)
-                url = drop.urls[0];
-            else if (drop.hasText)
-                url = drop.text;
-
-            if (url === "") {
-                console.log(i18n("Not a valid url"));
-                drop.accept(Qt.IgnoreAction);
-                return;
-            }
-
-            // Single item could be a plain file or a folder — resolve it
-            // (folder → its media files become the playlist).
-            resolveAndHandlePath(url);
+            handleDrop(drop);
         }
         onExited: {
-            if (root.keepOpenDuringDrop)
-                Qt.callLater(() => {
-                root.plasmoidItem.expanded = false;
+            // Was gated on root.keepOpenDuringDrop — root was never a
+            // valid id in this file (no id: root here), a ReferenceError
+            // on every exit, so this never actually ran. Fixed to use the
+            // Plasma 6 attached property (Plasmoid.expanded, not
+            // plasmoid.expanded) instead of a nonexistent cross-file ref.
+            Qt.callLater(() => {
+                Plasmoid.expanded = false;
             });
-
         }
     }
 
@@ -866,6 +886,16 @@ Item {
             currentIndex: playlistIndex
             playState: fullRep.playState
             onEntryActivated: (index) => playPlaylistEntry(index)
+            onClearRequested: {
+                if (playState !== "idle" && defaultDevice)
+                    catt(["-d", defaultDevice, "stop"]);
+                playState = "idle";
+                mediaPosition = 0;
+                mediaDuration = 0;
+                playlist = [];
+                playlistIndex = -1;
+                mediaUrl.text = "";
+            }
         }
 
         Item {
