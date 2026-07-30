@@ -210,9 +210,13 @@ HW-Q935GD 9.1.4-channel Q-Soundbar.
 Before filing a bug, run the included diagnostic script — it checks catt,
 firewalld rules (mDNS service, Cast-Control port 8009, and the
 45000-47000/tcp range used for casting local files), and device discovery
-against your network directly, independent of the widget:
+against your network directly, independent of the widget. No need to clone
+the whole repo, download it directly:
 
 ```bash
+curl -O https://raw.githubusercontent.com/Agundur-KDE/KCast/main/setup_test.sh
+chmod +x setup_test.sh   # a plain download doesn't carry the executable bit
+
 ./setup_test.sh
 # or with a device IP, to also check the Cast-Control port directly:
 ./setup_test.sh <chromecast-ip>
