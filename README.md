@@ -25,15 +25,6 @@ It supports device discovery, local media playback (served via `catt`'s own temp
 
 **Caution!** starting with version 0.0.2 we need [catt](https://github.com/skorokithakis/catt) installed.
 
-## Community reception
-
-KCast was recently featured on [r/kde](https://www.reddit.com/r/kde/comments/1mmf4rb/kcast_chromecast_integration_for_kde_plasma/) and received over **38,000 views** and **305 upvotes** (99% positive).
-Thanks to everyone for the amazing feedback, ideas, and testing!
-
-If you’d like to support ongoing development, consider sponsoring the project:  
-💖 [GitHub Sponsors](https://github.com/sponsors/Agundur-KDE) 
-
-
 ## Homepage
 
  [https://www.agundur.de/](https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html)
