@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Checks the prerequisites KCast needs, before you go looking for a bug in
-# the widget itself: catt installed, a Chromecast actually discoverable
-# (mDNS), and the Cast control port reachable if you have a device IP handy.
+# the widget itself: catt installed, firewalld rules (if firewalld is the
+# active firewall), a Chromecast actually discoverable (mDNS), and the Cast
+# control port reachable if you have a device IP handy.
 
 set -uo pipefail
 
@@ -16,49 +17,84 @@ hint() { echo -e "    ${YELLOW}→${NC} $1"; }
 
 HOST="${1:-}"
 
-echo "KCast Setup-Check"
+echo "KCast Setup Check"
 echo
 
 # 1. catt installed
 if command -v catt >/dev/null 2>&1; then
-    ok "catt gefunden ($(command -v catt))"
+    ok "catt found ($(command -v catt))"
 else
-    fail "catt nicht installiert"
-    hint "pip install catt  (oder Distro-Paket, falls vorhanden)"
+    fail "catt not installed"
+    hint "pip install catt  (or your distro's package, if it has one)"
     exit 1
 fi
 
-# 2. mDNS/Zeroconf discovery actually finds a device — the real
+# 2. firewalld rules — the exact checks the README's firewall-cmd block
+# sets up: mDNS service, Cast-Control port, and the local-file HTTP
+# server's port range. Skipped entirely if firewalld isn't the active
+# firewall (nftables/ufw/none) — a false negative here would be worse
+# than no answer, see [[feedback_setup_test_single_cause_hint]].
+echo
+if command -v firewall-cmd >/dev/null 2>&1 && firewall-cmd --state >/dev/null 2>&1; then
+    FW_SERVICES=$(firewall-cmd --list-services 2>/dev/null)
+    FW_PORTS=$(firewall-cmd --list-ports 2>/dev/null)
+
+    if grep -qw "mdns" <<<"$FW_SERVICES"; then
+        ok "firewalld: mdns service allowed"
+    else
+        fail "firewalld: mdns service NOT allowed"
+        hint "sudo firewall-cmd --permanent --add-service=mdns && sudo firewall-cmd --reload"
+    fi
+
+    if grep -qw "8009/tcp" <<<"$FW_PORTS"; then
+        ok "firewalld: port 8009/tcp allowed"
+    else
+        fail "firewalld: port 8009/tcp NOT allowed"
+        hint "sudo firewall-cmd --permanent --add-port=8009/tcp && sudo firewall-cmd --reload"
+    fi
+
+    if grep -qw "45000-47000/tcp" <<<"$FW_PORTS"; then
+        ok "firewalld: port range 45000-47000/tcp allowed (for casting local files)"
+    else
+        fail "firewalld: port range 45000-47000/tcp NOT allowed"
+        hint "only needed for casting LOCAL files (catt spins up its own HTTP server for that)"
+        hint "sudo firewall-cmd --permanent --add-port=45000-47000/tcp && sudo firewall-cmd --reload"
+    fi
+else
+    echo "firewalld not active/installed — firewall check skipped (different firewall? check manually)."
+fi
+
+# 3. mDNS/Zeroconf discovery actually finds a device — the real
 # end-to-end check, catches firewall/multicast/VLAN issues in one go.
 echo
-echo "Scanne Netzwerk (catt scan, ~5s)…"
+echo "Scanning network (catt scan, ~5s)…"
 SCAN_JSON=$(timeout 10 catt scan -j 2>/dev/null)
 DEVICE_COUNT=$(echo "$SCAN_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" 2>/dev/null || echo 0)
 
 if [[ "$DEVICE_COUNT" -gt 0 ]]; then
     NAMES=$(echo "$SCAN_JSON" | python3 -c "import json,sys; print(', '.join(json.load(sys.stdin).keys()))" 2>/dev/null)
-    ok "$DEVICE_COUNT Gerät(e) gefunden: $NAMES"
+    ok "$DEVICE_COUNT device(s) found: $NAMES"
 else
-    fail "Kein Chromecast per mDNS gefunden"
-    hint "mDNS/UDP 5353 wird oft von Firewalls/VLANs geblockt — Gerät und Rechner müssen im selben Broadcast-Segment sein"
-    hint "systemctl status avahi-daemon prüfen, falls Zeroconf lokal nicht läuft"
+    fail "No Chromecast found via mDNS"
+    hint "mDNS/UDP 5353 is often blocked by firewalls/VLANs — device and PC must be on the same broadcast segment"
+    hint "check systemctl status avahi-daemon if Zeroconf isn't running locally"
 fi
 
 if [[ -z "$HOST" ]]; then
     echo
-    echo "Keine Geräte-IP angegeben — Port-Check übersprungen (Aufruf: $0 <chromecast-ip>)."
+    echo "No device IP given — port check skipped (usage: $0 <chromecast-ip>)."
     exit 0
 fi
 
-# 3. Cast control port reachable directly (bypasses discovery entirely,
+# 4. Cast control port reachable directly (bypasses discovery entirely,
 # isolates "found via mDNS" from "can actually connect and cast").
 echo
 if timeout 3 bash -c "echo > /dev/tcp/$HOST/8009" 2>/dev/null; then
-    ok "Cast-Port 8009 auf $HOST erreichbar"
+    ok "Cast port 8009 on $HOST reachable"
 else
-    fail "Cast-Port 8009 auf $HOST NICHT erreichbar"
-    hint "Firewall auf diesem Rechner/im Netzwerk prüfen, oder Gerät hängt in einem anderen VLAN"
+    fail "Cast port 8009 on $HOST NOT reachable"
+    hint "check the firewall on this machine/network, or the device is on a different VLAN"
 fi
 
 echo
-echo "Fertig."
+echo "Done."

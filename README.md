@@ -205,10 +205,25 @@ Projector (supports high-quality Chromecast streaming) and a Samsung
 HW-Q935GD 9.1.4-channel Q-Soundbar.
 
 
+## Troubleshooting
+
+Before filing a bug, run the included diagnostic script — it checks catt,
+firewalld rules (mDNS service, Cast-Control port 8009, and the
+45000-47000/tcp range used for casting local files), and device discovery
+against your network directly, independent of the widget:
+
+```bash
+./setup_test.sh
+# or with a device IP, to also check the Cast-Control port directly:
+./setup_test.sh <chromecast-ip>
+```
+
 ## Support
 
 
-- Open an issue in git ...
+- Open an issue in git, and please paste the output of `./setup_test.sh`
+  ([see Troubleshooting](#troubleshooting)) — it rules out most
+  network/firewall causes in one step.
 
 [KCast Issues](https://github.com/Agundur-KDE/KCast/issues)
 
