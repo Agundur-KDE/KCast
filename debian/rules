@@ -17,8 +17,6 @@ override_dh_auto_test:
 
 override_dh_auto_install:
 	dh_auto_install
-	# keine Quelltexte ins Paket:
-	rm -f debian/kfritz/usr/share/plasma/plasmoids/de.agundur.kfritz/plugin/*.{cpp,h,CMakeLists.txt} || true
 
 override_dh_auto_clean:
 	rm -rf obj-* build || true

@@ -1,25 +1,22 @@
 Name:           kcast
-Version:        0.2.14
+Version:        0.3.0
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
-Summary:        Cast media to Chromecast from KDE Plasma (Plasmoid + C++ plugin)
+Summary:        Cast media to Chromecast from KDE Plasma (pure QML plasmoid)
 License:        GPL-3.0-or-later
 Source0: _service
 
 BuildRequires:  cmake
-BuildRequires:  gcc-c++
 BuildRequires:  extra-cmake-modules
 BuildRequires:  qt6-base-devel
-BuildRequires:  qt6-declarative-devel
-BuildRequires:  qt6-tools-devel
 BuildRequires:  kf6-ki18n-devel
 
 Requires:       catt
 Requires:       plasma6-workspace
 
 %description
-KCast is a KDE Plasma 6 applet (plasmoid) with a C++ plugin to cast local/remote media
-to Google Chromecast devices using the `catt` CLI.
+KCast is a KDE Plasma 6 applet (plasmoid), pure QML, that casts local/remote
+media to Google Chromecast devices using the `catt` CLI.
 
 %prep
 
@@ -61,15 +58,25 @@ fi
 %license LICENSE
 %doc README.md
 %{_datadir}/plasma/plasmoids/de.agundur.kcast/
-%dir %{_qt6_qmldir}/de
-%dir %{_qt6_qmldir}/de/agundur
-%{_qt6_qmldir}/de/agundur/kcast/
 %dir %{_datadir}/kio
 %dir %{_datadir}/kio/servicemenus
 %{_datadir}/kio/servicemenus/kcast_stream.desktop
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 30 2026 Alec <info@agundur.de> - 0.3.0-1
+- Removed the C++ plugin entirely (KCastBridge) — KCast is now pure QML,
+  all catt invocation (cast/pause/play/stop/volume/mute/scan/seek) goes
+  through Plasma5Support's executable engine. No more compiled .so, no
+  more Qt6::Quick/DBus build dependency; installs cleanly via a plain
+  kpackagetool6 -i/-u with no CMake build step required.
+- Added playlist support (search/shuffle/repeat, folder & M3U/M3U8 import,
+  drag-and-drop of multiple files).
+- Added a seek bar (-10s/+10s buttons, draggable position slider), backed
+  by polling `catt info -j` for position/duration.
+- %files: dropped the now-nonexistent %{_qt6_qmldir}/de/agundur/kcast/
+  plugin install path.
+
 * Fri Jul 10 2026 Alec <info@agundur.de> - 0.2.14-1
 - Fixed "KCastBridge is not a type" applet load failure: main.qml uses
   KCastBridge directly in compactRepresentation but never imported

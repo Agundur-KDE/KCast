@@ -1,0 +1,55 @@
+name: build-plasmoid
+
+on:
+  push:
+    tags:
+      - 'v*'     # läuft nur bei Tags wie v0.1.0, v1.2.3
+  workflow_dispatch:  # optional: manuell startbar
+
+permissions:
+  contents: write
+
+jobs:
+  plasmoid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: ver
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      # No CMake/compiler needed — the plasmoid is pure QML, so the
+      # .plasmoid archive is just metadata.json + contents/ zipped up
+      # exactly as kpackagetool6 -i/-u expects them (verified locally).
+      - name: Build .plasmoid
+        run: |
+          set -euxo pipefail
+          cd package
+          zip -r "../kcast-${{ steps.ver.outputs.version }}.plasmoid" metadata.json contents
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kcast-plasmoid
+          path: kcast-*.plasmoid
+          if-no-files-found: error
+
+      - name: Create or update GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          gh release upload "$TAG" kcast-*.plasmoid --repo "$GITHUB_REPOSITORY" --clobber

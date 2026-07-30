@@ -10,10 +10,10 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15 as QtControls
 import QtQuick.Dialogs as QtDialogs
 import QtQuick.Layouts 1.15
-import de.agundur.kcast 1.0
 import org.kde.kcmutils as KCM
 import org.kde.kirigami 2.20 as Kirigami
 import org.kde.kquickcontrols 2.0 as KQC
+import org.kde.plasma.plasma5support as Plasma5Support
 
 KCM.SimpleKCM {
     property string cfg_DefaultDevice
@@ -25,23 +25,7 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Search") + " :"
             icon.name: "view-refresh"
             text: i18n("Devices")
-            onClicked: kcast.scanDevicesAsync()
-        }
-
-        Connections {
-            function onDevicesScanned(list) {
-                if (!list || list.length === 0)
-                    return;
-
-                availableDevices = list;
-                // Fallback wenn aktuelles Gerät nicht dabei ist
-                if (!availableDevices.includes(selectedDevice)) {
-                    selectedDevice = availableDevices[0];
-                    cfg_DefaultDevice = selectedDevice;
-                }
-            }
-
-            target: kcast
+            onClicked: scanSource.connectSource("catt scan -j")
         }
 
         QtControls.ComboBox {
@@ -69,8 +53,26 @@ KCM.SimpleKCM {
 
     }
 
-    KCastBridge {
-        id: kcast
+    Plasma5Support.DataSource {
+        id: scanSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            var list = [];
+            try {
+                list = Object.keys(JSON.parse(data["stdout"] || "{}"));
+            } catch (e) {}
+            if (list.length === 0)
+                return;
+
+            availableDevices = list;
+            // Fallback wenn aktuelles Gerät nicht dabei ist
+            if (!availableDevices.includes(selectedDevice)) {
+                selectedDevice = availableDevices[0];
+                cfg_DefaultDevice = selectedDevice;
+            }
+        }
     }
 
 }

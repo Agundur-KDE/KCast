@@ -8,14 +8,38 @@ msgid ""
 msgstr ""
 "Project-Id-Version: kcast\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 12:22+0200\n"
+"POT-Creation-Date: 2026-07-30 12:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: package/contents/ui/PlaylistView.qml:65
+msgid "Playlist (%1)"
+msgstr ""
+
+#: package/contents/ui/PlaylistView.qml:73
+msgid "Shuffle"
+msgstr ""
+
+#: package/contents/ui/PlaylistView.qml:82
+msgid "Repeat: off"
+msgstr ""
+
+#: package/contents/ui/PlaylistView.qml:83
+msgid "Repeat: all"
+msgstr ""
+
+#: package/contents/ui/PlaylistView.qml:84
+msgid "Repeat: one"
+msgstr ""
+
+#: package/contents/ui/PlaylistView.qml:97
+msgid "Search (supports regex)…"
+msgstr ""
 
 #: package/contents/ui/configNetwork.qml:25
 msgid "Search"
@@ -25,100 +49,105 @@ msgstr ""
 msgid "Devices"
 msgstr ""
 
-#: package/contents/ui/configNetwork.qml:52
+#: package/contents/ui/configNetwork.qml:36
 msgid "Default"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:59
-msgid "refreshing"
-msgstr ""
-
-#: package/contents/ui/FullRepresentation.qml:101
-msgid "Plugin not available!"
-msgstr ""
-
-#: package/contents/ui/FullRepresentation.qml:105
+#: package/contents/ui/FullRepresentation.qml:304
 msgid "You need to install 'catt' first!"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:155
-msgid "URL detected: %1"
-msgstr ""
-
-#: package/contents/ui/FullRepresentation.qml:163
+#: package/contents/ui/FullRepresentation.qml:347
 msgid "Not a valid url"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:206
-#: package/contents/ui/main.qml:23
+#: package/contents/ui/FullRepresentation.qml:381
+msgid "URL detected: %1"
+msgstr ""
+
+#: package/contents/ui/FullRepresentation.qml:500
+#: package/contents/ui/main.qml:24
 msgid "KCast"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:214
+#: package/contents/ui/FullRepresentation.qml:508
+msgid "Searching devices…"
+msgstr ""
+
+#: package/contents/ui/FullRepresentation.qml:509
 msgid "Select device:"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:214
+#: package/contents/ui/FullRepresentation.qml:510
 msgid "No device found"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:239
+#: package/contents/ui/FullRepresentation.qml:536
 msgid "search devices"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:254
+#: package/contents/ui/FullRepresentation.qml:551
 msgid "http://... or /path/to/file.mp4"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:282
+#: package/contents/ui/FullRepresentation.qml:566
 msgid "copy"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:288
+#: package/contents/ui/FullRepresentation.qml:572
 msgid "paste"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:293
+#: package/contents/ui/FullRepresentation.qml:577
 msgid "cut"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:299
+#: package/contents/ui/FullRepresentation.qml:583
 msgid "select all"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:310
+#: package/contents/ui/FullRepresentation.qml:594
 msgid "open"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:328
-msgid "Play"
+#: package/contents/ui/FullRepresentation.qml:606
+#: package/contents/ui/FullRepresentation.qml:857
+msgid "Open folder as playlist"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:340
+#: package/contents/ui/FullRepresentation.qml:665
+msgid "-10s"
+msgstr ""
+
+#: package/contents/ui/FullRepresentation.qml:679
 msgid "Pause"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:340
-msgid "Resume"
+#: package/contents/ui/FullRepresentation.qml:679
+msgid "Play"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:355
+#: package/contents/ui/FullRepresentation.qml:702
+msgid "+10s"
+msgstr ""
+
+#: package/contents/ui/FullRepresentation.qml:717
 msgid "Stop"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:389
+#: package/contents/ui/FullRepresentation.qml:754
 msgid "-"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:460
+#: package/contents/ui/FullRepresentation.qml:825
 msgid "Volume in %"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:466
+#: package/contents/ui/FullRepresentation.qml:831
 msgid "+"
 msgstr ""
 
-#: package/contents/ui/FullRepresentation.qml:480
+#: package/contents/ui/FullRepresentation.qml:845
 msgid "Open file"
 msgstr ""
 

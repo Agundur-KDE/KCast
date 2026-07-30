@@ -662,7 +662,7 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: "-10s"
+                text: i18n("-10s")
                 display: PlasmaComponents.Button.TextOnly
                 enabled: controlsEnabled && playState !== "idle"
                 onClicked: catt(["-d", defaultDevice, "rewind", "10"])
@@ -699,7 +699,7 @@ Item {
             }
 
             PlasmaComponents.Button {
-                text: "+10s"
+                text: i18n("+10s")
                 display: PlasmaComponents.Button.TextOnly
                 enabled: controlsEnabled && playState !== "idle"
                 onClicked: catt(["-d", defaultDevice, "ffwd", "10"])

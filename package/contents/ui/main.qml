@@ -1,12 +1,12 @@
 import QtQuick 6.5
 import QtQuick.Controls 6.7
 import QtQuick.Layouts
-import de.agundur.kcast 1.0
 import org.kde.activities as Activities
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.activityswitcher as ActivitySwitcher
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.core as PlasmaCore
+import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.plasma.plasmoid
 
 PlasmoidItem {
@@ -35,24 +35,56 @@ PlasmoidItem {
         id: compact
 
         // Own instance: the compact representation is a separate QML tree
-        // from FullRepresentation.qml (which has its own "kcast" id) and
-        // can't reach into it. Both ultimately just shell out to catt using
-        // the same persisted default device, so two instances don't cause
-        // any state-sync issue for a volumeUp/volumeDown-only use here.
-        KCastBridge {
-            id: kcast
+        // from FullRepresentation.qml and can't reach into its volume
+        // state — reads/writes the same persisted config directly instead
+        // of sharing an object, so the two stay roughly in sync without
+        // any coupling between them.
+        property int volume: 50
+
+        Component.onCompleted: {
+            var device = Plasmoid.configuration.DefaultDevice;
+            try {
+                var vols = JSON.parse(Plasmoid.configuration.deviceVolumes || "{}");
+                if (device && device in vols)
+                    compact.volume = vols[device];
+            } catch (e) {}
+        }
+
+        function adjustVolume(delta) {
+            var device = Plasmoid.configuration.DefaultDevice;
+            if (!device || device === "-") return;
+            compact.volume = Math.max(0, Math.min(100, compact.volume + delta));
+            volumeDebounce.restart();
+        }
+
+        Timer {
+            id: volumeDebounce
+
+            interval: 90
+            repeat: false
+            onTriggered: {
+                var device = Plasmoid.configuration.DefaultDevice;
+                if (!device || device === "-") return;
+                cattSource.connectSource("catt -d '" + device.replace(/'/g, "'\\''") + "' volume " + compact.volume);
+                try {
+                    var vols = JSON.parse(Plasmoid.configuration.deviceVolumes || "{}");
+                    vols[device] = compact.volume;
+                    Plasmoid.configuration.deviceVolumes = JSON.stringify(vols);
+                } catch (e) {}
+            }
+        }
+
+        Plasma5Support.DataSource {
+            id: cattSource
+
+            engine: "executable"
+            onNewData: (sourceName, data) => disconnectSource(sourceName)
         }
 
         WheelHandler {
             acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
             onWheel: (ev) => {
-                const d = ev.angleDelta.y > 0 ? 1 : -1;
-                if (d > 0)
-                    kcast.volumeUp(1);
-
-                if (d < 0)
-                    kcast.volumeDown(1);
-
+                compact.adjustVolume(ev.angleDelta.y > 0 ? 1 : -1);
                 ev.accepted = true;
             }
         }

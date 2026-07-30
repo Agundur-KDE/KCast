@@ -41,7 +41,10 @@ If you’d like to support ongoing development, consider sponsoring the project:
 ##  Features
 
 -  **Chromecast discovery** using Avahi (mDNS)
--  **Media playback controls**: Play, Pause, Resume, Stop
+-  **Media playback controls**: Play, Pause, Resume, Stop, seek
+   (-10s/+10s buttons plus a draggable position slider)
+-  **Playlist**: search (supports regex), shuffle, repeat (off/all/one),
+   drop a folder or an `.m3u`/`.m3u8` file to queue up multiple tracks
 -  **Local media files**, served to the Chromecast via `catt`'s own
    temporary local HTTP server
 -  **YouTube and thousands of other sites**, plus direct HLS (`.m3u8`)
@@ -55,11 +58,36 @@ If you’d like to support ongoing development, consider sponsoring the project:
 
 
 ## Visuals
-![KCast Plasmoid config](KCast3.png)
+![KCast playlist](Kcast_playlist.png) ![KCast seek bar](Kcast_seekbar.png)
 
 ## 🛠️ Installation
 
-### Build
+**KCast is pure QML** — no C++ plugin, no compiler needed to install it.
+
+### Quick install (no build required)
+
+Download the `.plasmoid` file from the [latest
+release](https://github.com/Agundur-KDE/KCast/releases/latest), then either
+drag it onto your desktop / drop it in Plasma's "Add Widgets" → "Install
+Widget From Local File", or from a terminal:
+
+```bash
+kpackagetool6 --type Plasma/Applet --install kcast-*.plasmoid
+# already installed, upgrading to a newer version:
+kpackagetool6 --type Plasma/Applet --upgrade kcast-*.plasmoid
+```
+
+KCast is officially packaged and maintained for openSUSE (RPM) and
+Debian (.deb) only. COPR (Fedora) and AUR (Arch) are no longer
+maintained — both were more than we could keep up to date alongside
+the two supported channels. If you'd like to take over maintaining
+either one, please [open an issue](https://github.com/Agundur-KDE/KCast/issues).
+
+### Build from source (optional)
+
+Only needed if you want the Dolphin service menu integration, translations,
+or a proper distro-tracked install — functionally identical to the
+`.plasmoid` above otherwise, still no compiler involved:
 
 ```bash
 git clone https://github.com/Agundur-KDE/KCast.git
@@ -72,12 +100,6 @@ make
 
 make install (as root) 
 ```
-
-KCast is officially packaged and maintained for openSUSE (RPM) and
-Debian (.deb) only. COPR (Fedora) and AUR (Arch) are no longer
-maintained — both were more than we could keep up to date alongside
-the two supported channels. If you'd like to take over maintaining
-either one, please [open an issue](https://github.com/Agundur-KDE/KCast/issues).
 
 ###  Installing KCast via the openSUSE Build Service Repository
 
