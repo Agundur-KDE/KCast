@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.3.0
+Version:        0.3.1
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (pure QML plasmoid)
@@ -64,6 +64,14 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Thu Jul 30 2026 Alec <info@agundur.de> - 0.3.1-1
+- Fixed drag-and-drop in the full representation: the DropArea had no
+  z-index, so it sat behind the playlist/URL-field content (declared
+  later = in front) and never received drags over any visible control.
+- Fixed a TypeError on drop: dropped URLs are QUrl objects, not JS
+  strings — string ops (.replace()/.split()) crashed silently, visible
+  only in the journal, not the UI.
+
 * Thu Jul 30 2026 Alec <info@agundur.de> - 0.3.0-1
 - Removed the C++ plugin entirely (KCastBridge) — KCast is now pure QML,
   all catt invocation (cast/pause/play/stop/volume/mute/scan/seek) goes

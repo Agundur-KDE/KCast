@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] – 2026-07-30
+
+### Fix
+
+- Drag-and-drop in the full representation didn't work at all: the DropArea
+  had no z-index, so it sat behind the playlist/URL field and never
+  received drags over any visible control.
+- Dropped URLs are QUrl objects, not strings — a follow-up TypeError once
+  the drop actually landed, crashing silently (journal-only, not shown in
+  the UI).
+
+---
+
 ## [0.3.0] – 2025-08-20
 
 ### Added

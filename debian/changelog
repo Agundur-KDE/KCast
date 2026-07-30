@@ -1,3 +1,13 @@
+kcast (0.3.1-1) unstable; urgency=medium
+
+  * Fixed drag-and-drop in the full representation: the DropArea had no
+    z-index, so it sat behind the playlist/URL-field content (declared
+    later = in front) and never received drags over any visible control.
+  * Fixed a TypeError on drop: dropped URLs are QUrl objects, not JS
+    strings — string ops crashed silently, visible only in the journal.
+
+ -- Agundur <info@agundur.de>  Thu, 30 Jul 2026 16:30:00 +0200
+
 kcast (0.3.0-1) unstable; urgency=medium
 
   * Removed the C++ plugin entirely (KCastBridge) — KCast is now pure

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 
 project(KCast)
 
-set(PROJECT_VERSION "0.3.0")
+set(PROJECT_VERSION "0.3.1")
 set(KF6_MIN_VERSION "6.10.0")
 
 find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
