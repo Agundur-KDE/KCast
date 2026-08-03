@@ -183,6 +183,7 @@ class PortalScreenCast:
         pipeline = [
             "gst-launch-1.0", "-e",
             "pipewiresrc", f"fd={self.pw_fd}", f"path={self.node_id}",
+            "do-timestamp=true", "always-copy=true",
             "!", "videoconvert",
             "!", "video/x-raw,format=I420",
             # 4000 kbit/s was fine for the mechanism-proof but produces
@@ -219,14 +220,16 @@ class PortalScreenCast:
             "target-duration=1",  # integer property, 0.5 rejected by hlssink2
             "max-files=6",
             "playlist-length=3",
-            # ponytail: temporarily back to the silent placeholder to
-            # isolate video-only quality/latency from the still-unsolved
-            # dual-pipewiresrc audio bug (see NOTES.md). Swap back to
-            # the real `pipewiresrc target-object={monitor_source}`
-            # branch once that's fixed.
-            "audiotestsrc", "wave=silence", "is-live=true",
+            # Found via github.com/IlyaP358/fluxcast (same problem, same
+            # stack): use pulsesrc, not a second pipewiresrc. PipeWire
+            # exposes a PulseAudio-compatible server, so pulsesrc talks
+            # to that instead of opening a second native PipeWire client
+            # connection in this process — avoiding the dual-pipewiresrc
+            # contention that caused near-silent audio + video stutter.
+            "pulsesrc", f"device={monitor_source}", "do-timestamp=true",
             "!", "audioconvert",
             "!", "audioresample",
+            "!", "audio/x-raw,rate=48000,channels=2",
             "!", "fdkaacenc",
             "!", "aacparse",
             "!", "queue",
