@@ -150,6 +150,20 @@ class PortalScreenCast:
         out_dir = sys.argv[1] if len(sys.argv) > 1 else "/tmp/hls"
         import os
         os.makedirs(out_dir, exist_ok=True)
+        # hlssink2 has request pads named "video"/"audio" (ANY caps) and
+        # muxes to MPEG-TS + segments internally — it wants the raw
+        # parsed h264 elementary stream directly, NOT an already-muxed
+        # mpegtsmux output (that's what the first attempt got wrong,
+        # "mpegtsmux0 konnte nicht mit hlssink2-0 verknüpft werden").
+        # Explicit `sink.video` + `name=sink` because gst-launch can't
+        # auto-pick between the two identically-ANY-typed request pads.
+        # Added after the video-only stream reached the Chromecast
+        # correctly (200 OK on playlist + segments, confirmed via the
+        # server's own access log) but still failed to play — a
+        # neutral audit flagged missing audio as a real, plausible
+        # blocker (Cast/Shaka can be stricter about audio-less content
+        # than ffplay), and it's cheap to rule out: silent AAC track,
+        # not real desktop audio yet.
         pipeline = [
             "gst-launch-1.0", "-e",
             "pipewiresrc", f"fd={self.pw_fd}", f"path={self.node_id}",
@@ -157,13 +171,19 @@ class PortalScreenCast:
             "!", "video/x-raw,format=I420",
             "!", "x264enc", "tune=zerolatency", "speed-preset=ultrafast", "bitrate=4000", "key-int-max=30",
             "!", "h264parse",
-            "!", "mpegtsmux",
-            "!", "hlssink2",
+            "!", "sink.video",
+            "hlssink2", "name=sink",
             f"playlist-location={out_dir}/stream.m3u8",
             f"location={out_dir}/segment%05d.ts",
             "target-duration=2",
             "max-files=6",
             "playlist-length=4",
+            "audiotestsrc", "wave=silence", "is-live=true",
+            "!", "audioconvert",
+            "!", "audioresample",
+            "!", "fdkaacenc",
+            "!", "aacparse",
+            "!", "sink.audio",
         ]
         print("launching:", " ".join(pipeline))
         # pass_fds keeps exactly this fd open across exec in the child —
