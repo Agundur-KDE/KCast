@@ -83,7 +83,15 @@ class HLSHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(chunk)
 
 
+class ReusableTCPServer(socketserver.TCPServer):
+    # plain TCPServer (unlike http.server.HTTPServer) doesn't set this,
+    # so a restart right after killing the old server fails with
+    # "Address already in use" while the Chromecast's closed connections
+    # are still sitting in TIME_WAIT.
+    allow_reuse_address = True
+
+
 if __name__ == "__main__":
-    with socketserver.TCPServer(("0.0.0.0", PORT), HLSHandler) as httpd:
+    with ReusableTCPServer(("0.0.0.0", PORT), HLSHandler) as httpd:
         print(f"serving {DIRECTORY} on 0.0.0.0:{PORT}")
         httpd.serve_forever()

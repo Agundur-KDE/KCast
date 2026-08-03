@@ -61,19 +61,88 @@ makes `catt` itself fail earlier, during its own format-probing, with
 from the Chromecast-side title-then-idle-screen failure. Don't confuse
 the two.
 
-## Next steps (not yet tried as of 2026-08-03)
+## Update 2026-08-03, later same day: video works, audio doesn't
 
-- Does the Chromecast's default media receiver actually advertise HLS
-  support, or does `catt`'s generic `cast -f <url>` path target a
-  receiver that expects DASH/plain-MP4/WebM instead? (pychromecast's
-  `controllers.media`/`quick_play` is the place to check what
-  Cast Application ID + `contentType` actually get sent in the LOAD
-  message for a `.m3u8` URL.)
-- Test the exact same HLS URL in a plain desktop/mobile browser FIRST —
-  cheapest way to isolate "is the HLS stream itself even valid" from
-  "is this a Chromecast/receiver-specific problem."
-- Try `#EXT-X-PLAYLIST-TYPE:EVENT` instead of a plain sliding window.
-- Chromecast-side debug logging if reachable at all.
+Video-only (no audio branch) casts cleanly: correct 4K image, no
+macroblocking, live and smooth. Root causes found and fixed along the
+way:
+
+- **catt's own content-type guessing is wrong for HLS** (falls back to
+  `video/mp4`) — bypassed entirely with a direct `pychromecast`
+  script, `cast_hls.py`, that sets `content_type` explicitly.
+- **Missing CORS + Range support** in `hls_server.py` — Google Cast
+  requires them; curl-based checks never caught it (curl sends no
+  Origin header). Also: `socketserver.TCPServer` (unlike
+  `http.server.HTTPServer`) doesn't set `allow_reuse_address`, so
+  restarting the server right after a Chromecast session leaves it
+  unable to rebind for ~60s (TIME_WAIT) — fixed with a
+  `ReusableTCPServer` subclass.
+- **A completely audio-less stream is silently rejected** by the
+  Default Media Receiver (title flashes, falls back to idle) — fixed
+  first with a silent AAC placeholder track, later with real desktop
+  audio (see below).
+- **4K needs real bitrate**: 4000 kbit/s produced visible macroblocking;
+  18000 kbit/s + `speed-preset=veryfast` (still `tune=zerolatency`)
+  fixed it.
+- **Capture is 60fps, not 30** (confirmed via `ffprobe`) — `key-int-max`
+  should match the segment `target-duration` in frames for clean,
+  evenly-sized segments (ragged 0.98/0.23/0.83s splits appeared with a
+  mismatched GOP).
+- Screen vs. window selection is just the portal's `types` bitmask
+  (1=MONITOR, 2=WINDOW) in `SelectSources` — was hardcoded to
+  monitor-only, now `3` so the consent dialog offers both.
+- `hlssink2`'s `target-duration` is an **unsigned integer** property —
+  `0.5` is rejected outright, not silently truncated.
+
+**Real desktop audio (not just a silent placeholder) is still broken.**
+Added a second `pipewiresrc` targeting the default sink's monitor
+(`pactl get-default-sink` + `.monitor`, via `target-object=`, no portal
+involved — portal ScreenCast is video-only). Confirmed the *capture
+mechanism itself* works: an isolated `pipewiresrc → wavenc → filesink`
+test with the same target while YouTube was actively playing (verified
+un-paused via `pactl list sink-inputs`, `Corked: no`) measured
+mean -45dB / max -34dB — real signal. But inside the combined
+video+audio `gst-launch` pipeline, the same live moment measures
+mean -62dB / max -52dB (near-silence) via `ffprobe`+`ffmpeg
+volumedetect` on the actual served segments — and on the real device,
+audibly silent even at a receiver volume so loud it's "Ohren fliegen
+weg" (ears blown off) on this hardware at 50% (normal KCast usage is
+~5%). Ruled out as an explanation: receiver volume (tested at both 11%
+default and 50%), paused source (checked `Corked` state directly),
+wrong sink target (confirmed via `pactl list sink-inputs` that Firefox's
+YouTube stream really is on the sink we target). The video branch
+appearing choppy ("Häppchen dann Pause") also only started once the
+second live `pipewiresrc` was added — was fine, smooth, with only the
+silent-placeholder `audiotestsrc` audio branch.
+
+**Working hypothesis**: two concurrent `pipewiresrc` GStreamer elements
+in one process don't coexist cleanly on this GStreamer/PipeWire plugin
+version — likely a shared mainloop/thread contention between the two
+independent PipeWire client connections (one via the portal-provided
+fd, one via a plain default-socket connection), causing both dropped/
+attenuated audio buffers AND video stutter once both are live at once.
+Tried and ruled out as the cause: `leaky=downstream,max-size-buffers=2`
+queues before the muxer pads (too small — starved `fdkaacenc`'s
+1024-sample frame accumulation, made audio *worse*, not the root
+cause) — replaced with plain default-sized `queue` elements, stutter
+and quiet-audio persisted regardless.
+
+## Next steps (not yet tried)
+
+- Split video capture and audio capture into **two separate OS
+  processes**, each with its own independent PipeWire connection, and
+  mux their output downstream (e.g. each writes to a named pipe /
+  local socket, a third process or `hlssink2` instance consumes both)
+  — tests directly whether same-process dual-`pipewiresrc` contention
+  is really the cause.
+- If that fixes it: look into whether GStreamer's pipewiresrc supports
+  distinct `client-name`s or explicit separate `pw_context`s that would
+  let both streams coexist in one process after all (cheaper than two
+  processes, if it works).
+- Once audio really works: re-test the tightened HLS window
+  (`target-duration=1`, `playlist-length=3`) for further latency gains
+  — this was working well on the video-only smooth test, no reason to
+  revisit unless the two-process split changes buffering behavior.
 
 A neutral fresh-context audit (Opus, no inherited bias toward the ideas
 above) was dispatched 2026-08-03 to research `catt`/pychromecast's

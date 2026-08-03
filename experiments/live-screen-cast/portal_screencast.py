@@ -102,7 +102,11 @@ class PortalScreenCast:
             self.session_handle,
             {
                 "handle_token": handle_token,
-                "types": dbus.UInt32(1),  # 1 = MONITOR (whole screen), 2 = WINDOW
+                # bitmask: 1 = MONITOR, 2 = WINDOW, 3 = both offered in the
+                # consent dialog (KWin/xdg-desktop-portal-kde supports
+                # per-window PipeWire capture) — user picks screen or a
+                # single window (e.g. just Firefox) in the picker.
+                "types": dbus.UInt32(3),
                 "multiple": False,
                 "cursor_mode": dbus.UInt32(2),  # 2 = embedded (cursor baked into frames)
             },
@@ -146,10 +150,22 @@ class PortalScreenCast:
         print(f"pipewire fd: {self.pw_fd}")
         self.launch_gstreamer()
 
+    def _default_monitor_source(self):
+        # Real desktop audio = the monitor of whatever sink is currently
+        # the default output — same trick as PulseAudio's "Stereo Mix".
+        # No portal involved (ScreenCast is video-only); pipewiresrc's
+        # target-object takes a PipeWire node NAME directly.
+        sink = subprocess.check_output(
+            ["pactl", "get-default-sink"], text=True
+        ).strip()
+        return f"{sink}.monitor"
+
     def launch_gstreamer(self):
         out_dir = sys.argv[1] if len(sys.argv) > 1 else "/tmp/hls"
         import os
         os.makedirs(out_dir, exist_ok=True)
+        monitor_source = self._default_monitor_source()
+        print(f"audio monitor source: {monitor_source}")
         # hlssink2 has request pads named "video"/"audio" (ANY caps) and
         # muxes to MPEG-TS + segments internally — it wants the raw
         # parsed h264 elementary stream directly, NOT an already-muxed
@@ -169,20 +185,51 @@ class PortalScreenCast:
             "pipewiresrc", f"fd={self.pw_fd}", f"path={self.node_id}",
             "!", "videoconvert",
             "!", "video/x-raw,format=I420",
-            "!", "x264enc", "tune=zerolatency", "speed-preset=ultrafast", "bitrate=4000", "key-int-max=30",
+            # 4000 kbit/s was fine for the mechanism-proof but produces
+            # visible macroblocking at real 4K — bumped to a bitrate that
+            # actually holds up at 3840x2160, plus a slower preset that
+            # spends the extra bits more efficiently (still zerolatency
+            # tuned, so no added encoder-side buffering). Capture is
+            # 60fps (confirmed via ffprobe) — key-int-max=30 gives an
+            # exact 0.5s GOP matching target-duration below, so hlssink2
+            # cuts clean, evenly-sized segments instead of the ragged
+            # 0.98/0.23/0.83s splits seen with a mismatched GOP.
+            "!", "x264enc", "tune=zerolatency", "speed-preset=veryfast", "bitrate=18000", "key-int-max=30",
             "!", "h264parse",
+            # Two independent live PipeWire sources (video via the portal
+            # fd, audio via the monitor) feeding one muxer without a
+            # queue is a classic GStreamer footgun: without a thread
+            # boundary here, the audio branch stalling (or vice versa)
+            # blocks the other's streaming thread against hlssink2's two
+            # request pads. Plain default-sized queue (NOT leaky) — a
+            # tiny leaky=downstream,max-size-buffers=2 queue here was too
+            # small for fdkaacenc's internal frame accumulation (AAC
+            # needs 1024-sample chunks) and silently dropped audio
+            # buffers, which is why that attempt played with no sound at
+            # all and rebuffered constantly.
+            "!", "queue",
             "!", "sink.video",
             "hlssink2", "name=sink",
             f"playlist-location={out_dir}/stream.m3u8",
             f"location={out_dir}/segment%05d.ts",
-            "target-duration=2",
+            # Shorter segments + smaller live window trade stability for
+            # latency — most of the lag is the Default Media Receiver's
+            # own prebuffer (HLS spec recommends holding back ~3 segment
+            # durations before first play), not network or encode time.
+            "target-duration=1",  # integer property, 0.5 rejected by hlssink2
             "max-files=6",
-            "playlist-length=4",
+            "playlist-length=3",
+            # ponytail: temporarily back to the silent placeholder to
+            # isolate video-only quality/latency from the still-unsolved
+            # dual-pipewiresrc audio bug (see NOTES.md). Swap back to
+            # the real `pipewiresrc target-object={monitor_source}`
+            # branch once that's fixed.
             "audiotestsrc", "wave=silence", "is-live=true",
             "!", "audioconvert",
             "!", "audioresample",
             "!", "fdkaacenc",
             "!", "aacparse",
+            "!", "queue",
             "!", "sink.audio",
         ]
         print("launching:", " ".join(pipeline))
