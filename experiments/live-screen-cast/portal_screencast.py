@@ -183,7 +183,14 @@ class PortalScreenCast:
         pipeline = [
             "gst-launch-1.0", "-e",
             "pipewiresrc", f"fd={self.pw_fd}", f"path={self.node_id}",
-            "do-timestamp=true", "always-copy=true",
+            "do-timestamp=true",
+            # ponytail: always-copy=true (FluxCast's fix for their GPU/
+            # driver combo) caused massive frame drops here instead —
+            # ~11 fps measured in a segment instead of the real 60fps,
+            # with CPU usage staying low (77%), ruling out a compute
+            # bottleneck and pointing at the forced synchronous copy
+            # itself stalling. Left out; do-timestamp alone is enough
+            # for consistent A/V sync with the pulsesrc audio branch.
             "!", "videoconvert",
             "!", "video/x-raw,format=I420",
             # 4000 kbit/s was fine for the mechanism-proof but produces
