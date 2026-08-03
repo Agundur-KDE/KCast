@@ -127,22 +127,55 @@ queues before the muxer pads (too small — starved `fdkaacenc`'s
 cause) — replaced with plain default-sized `queue` elements, stutter
 and quiet-audio persisted regardless.
 
+## Update 2026-08-03, evening: audio fixed, video+audio work together
+
+Found by comparing against an existing open-source project solving the
+same problem, github.com/IlyaP358/fluxcast (Linux desktop → smart TV
+casting, WFD/Miracast primary + DLNA + experimental Cast fallback,
+same xdg-desktop-portal/PipeWire/GStreamer stack) — its
+`src/capture.py` `_start_capture_portal()` was the answer:
+
+- **Use `pulsesrc`, not a second `pipewiresrc`, for audio.** PipeWire
+  exposes a PulseAudio-compatible server; `pulsesrc device=<sink>.monitor`
+  reaches the same monitor source without opening a second native
+  PipeWire client connection in the process. This was the actual root
+  cause of both the near-silent audio AND the video stutter that
+  appeared whenever real audio capture was added — confirmed by
+  measuring a 440Hz test tone: -91dB (correct silence, nothing
+  playing) vs. -5dB/-1.9dB (strong signal) once actually driving audio
+  through the same sink, and audible + in sync on the real device via
+  HDMI-ARC.
+- `do-timestamp=true` on both the video `pipewiresrc` and the audio
+  `pulsesrc` keeps buffer timing consistent now that the pipeline
+  clock comes from `GstPulseSrcClock` instead of `pipewireclock`.
+- **`always-copy=true`** (also copied from FluxCast, meant to prevent
+  x264enc stalling on DMA-buf download) made things *worse* on this
+  GPU/driver combo: measured via `ffprobe` on live segments, it dropped
+  video from a steady 60fps to a chaotic ~11 frames per ~1s segment
+  with gaps up to 0.35s — while CPU stayed at only 77% (not a compute
+  bottleneck, a stall from the forced synchronous copy itself). Removed
+  it; `do-timestamp=true` alone settled the pipeline at a steady 30fps
+  with no more chaotic gaps. Lesson: a fix that's correct for one
+  project's tested hardware isn't automatically correct on different
+  hardware — verify each borrowed change independently rather than
+  cargo-culting the whole diff.
+
+**Current state**: video smooth, audio audible and in sync, confirmed
+live on the real JMGO N1S Pro 4K + HDMI-ARC soundbar. Remaining
+latency (~5-10s) is the HLS/Default-Media-Receiver structural floor,
+not a bug — see the "Miracast" section below for the actual low-
+latency path, which this machine can't test (no WiFi card).
+
 ## Next steps (not yet tried)
 
-- Split video capture and audio capture into **two separate OS
-  processes**, each with its own independent PipeWire connection, and
-  mux their output downstream (e.g. each writes to a named pipe /
-  local socket, a third process or `hlssink2` instance consumes both)
-  — tests directly whether same-process dual-`pipewiresrc` contention
-  is really the cause.
-- If that fixes it: look into whether GStreamer's pipewiresrc supports
-  distinct `client-name`s or explicit separate `pw_context`s that would
-  let both streams coexist in one process after all (cheaper than two
-  processes, if it works).
-- Once audio really works: re-test the tightened HLS window
-  (`target-duration=1`, `playlist-length=3`) for further latency gains
-  — this was working well on the video-only smooth test, no reason to
-  revisit unless the two-process split changes buffering behavior.
+- Frame rate settled at 30fps instead of the source's real 60fps —
+  not investigated further since 30fps already looked smooth on the
+  real device; revisit only if more headroom is wanted.
+- Test `gnome-network-displays` or FluxCast's own WFD path on a WiFi-
+  capable machine (confirmed: JMGO N1S Pro 4K supports Miracast per
+  its spec sheet) for genuinely low (<1s) latency — orthogonal to this
+  HLS/Chromecast path, needs a different machine (this one, "Skynet",
+  is Ethernet-only, no WiFi-Direct possible).
 
 A neutral fresh-context audit (Opus, no inherited bias toward the ideas
 above) was dispatched 2026-08-03 to research `catt`/pychromecast's
