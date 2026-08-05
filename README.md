@@ -1,5 +1,11 @@
 
-> 📊 **Help shape KCast's future!** Vote in our current poll: [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22) — should KCast get full desktop-casting next, and which approach (instant & simple vs. best quality)?
+<div align="center">
+
+[![Help shape KCast's future — vote in our current poll](poll_banner.png)](https://github.com/Agundur-KDE/KCast/discussions/22)
+
+📊 **Help shape KCast's future!** Vote in our current poll: [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22) — should KCast get full desktop-casting next, and which approach (instant & simple vs. best quality)?
+
+</div>
 
 <div align="center">
 
