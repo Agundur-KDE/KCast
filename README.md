@@ -1,4 +1,6 @@
 
+> 📊 **Help shape KCast's future!** Vote in our current poll: [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22) — should KCast get full desktop-casting next, and which approach (instant & simple vs. best quality)?
+
 <div align="center">
 
 <img src="/package/contents/icons/Logo.png" width="80" alt="KCast Logo" />
