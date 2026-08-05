@@ -5,7 +5,7 @@
 
 [![Help shape KCast's future — vote in our current poll](poll_banner.png)](https://github.com/Agundur-KDE/KCast/discussions/22)
 
-📊 **Help shape KCast's future!** Vote in our current poll: [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22) — should KCast get full desktop-casting next, and which approach (instant & simple vs. best quality)?
+📊 **New feature proposal: casting your whole desktop.** KCast currently casts video files and YouTube URLs only — full desktop-casting isn't built yet. We tested two possible approaches and want your input on which one to build first. Vote in [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22): instant & simple vs. best quality.
 
 </div>
 
