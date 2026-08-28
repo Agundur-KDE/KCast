@@ -5,7 +5,7 @@
 
 [![Help shape KCast's future — vote in our current poll](poll_banner.png)](https://github.com/Agundur-KDE/KCast/discussions/22)
 
-📊 **New feature proposal: casting your whole desktop.** KCast currently casts video files and YouTube URLs only — full desktop-casting isn't built yet. We tested two possible approaches and want your input on which one to build first. Vote in [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22): instant & simple vs. best quality.
+📊 **New feature proposal: casting your whole desktop.** KCast currently casts video files and YouTube URLs only — full desktop-casting isn't built yet. We tested two possible approaches and want your input on which one to build first. Vote in [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22): instant & simple vs. best quality. Full write-up on the low-latency path: [Sunshine/Moonlight on Linux](https://www.agundur.de/projects/sunshine-moonlight-linux-kde-desktop-streaming.html).
 
 </div>
 
@@ -38,6 +38,8 @@ It supports device discovery, local media playback (served via `catt`'s own temp
 ## Homepage
 
  [https://www.agundur.de/](https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html)
+
+**Related article:** [Sunshine/Moonlight on Linux — Stream Your KDE Desktop to a TV with Low Latency](https://www.agundur.de/projects/sunshine-moonlight-linux-kde-desktop-streaming.html)
 
 ##  Features
 
