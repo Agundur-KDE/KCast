@@ -62,6 +62,7 @@ fi
 %dir %{_datadir}/kio/servicemenus
 %{_datadir}/kio/servicemenus/kcast_stream.desktop
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
+%{_datadir}/icons/hicolor/scalable/apps/de.agundur.kcast.svg
 
 %changelog
 * Thu Jul 30 2026 Alec <info@agundur.de> - 0.3.1-1

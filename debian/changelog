@@ -1,3 +1,16 @@
+kcast (0.4.1-1) unstable; urgency=medium
+
+  * Added manual device entry to the cast target picker (config page and
+    widget popup), as a fallback for when `catt scan` doesn't find a
+    reachable device.
+  * Fixed the config page's Apply/OK not saving a manually typed device,
+    and an already-open widget popup not picking up a device Applied
+    from the config page live.
+  * Fixed the panel/taskbar icon showing a generic placeholder instead
+    of the actual KCast logo.
+
+ -- Agundur <info@agundur.de>  Sun, 30 Aug 2026 13:15:00 +0200
+
 kcast (0.3.1-1) unstable; urgency=medium
 
   * Fixed drag-and-drop in the full representation: the DropArea had no
