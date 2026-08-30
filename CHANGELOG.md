@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] – 2026-08-30
+
+### Fix
+
+- v0.4.1's OBS/RPM build failed silently on the release side (new icon
+  file not listed in the RPM spec's %files), and `build-deb` had been
+  uploading a stale-versioned .deb (still 0.3.1-1, from an outdated
+  debian/changelog) under that release without erroring. Both fixed;
+  no functional changes over 0.4.1.
+
 ## [0.4.1] – 2026-08-30
 
 ### Fix

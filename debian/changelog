@@ -1,3 +1,9 @@
+kcast (0.4.2-1) unstable; urgency=medium
+
+  * Packaging-only fix: no functional changes over 0.4.1.
+
+ -- Agundur <info@agundur.de>  Sun, 30 Aug 2026 13:30:00 +0200
+
 kcast (0.4.1-1) unstable; urgency=medium
 
   * Added manual device entry to the cast target picker (config page and
