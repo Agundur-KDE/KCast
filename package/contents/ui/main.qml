@@ -146,9 +146,25 @@ PlasmoidItem {
             }
         }
 
-        Kirigami.Icon {
-            source: Plasmoid.icon
+        Image {
+            // Plain Image, not Kirigami.Icon: Kirigami.Icon's automatic
+            // isMask heuristic (guessMonochrome(), based on the
+            // rasterized image's color saturation/brightness) misjudges
+            // this multi-color logo as symbolic/monochrome and renders
+            // it as a solid-color mask instead of its real colors. Image
+            // has no such masking logic — same approach already used
+            // successfully for this icon in FullRepresentation.qml.
+            //
+            // Plasmoid.icon can be metadata.json's package-relative
+            // "/icons/foo.svg" notation (leading slash = relative to
+            // contents/) — resolve it manually since Image doesn't
+            // understand that notation either (verified against KDE bug
+            // 509896: only some Plasma-native surfaces resolve it
+            // themselves).
+            source: Plasmoid.icon.startsWith("/") ? Qt.resolvedUrl(".." + Plasmoid.icon) : Plasmoid.icon
             anchors.fill: parent
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
     }
