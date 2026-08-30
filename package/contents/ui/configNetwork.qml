@@ -36,18 +36,30 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: i18n("Default") + " :"
             Layout.fillWidth: true
             model: availableDevices
+            // Editierbar, damit ein Gerät auch manuell per Name oder IP
+            // eingetragen werden kann, wenn `catt scan` es nicht findet
+            // (z.B. bekannter catt-Discovery-Bug, siehe KCast#23) —
+            // `catt -d` akzeptiert beides.
+            editable: true
             Component.onCompleted: {
                 const idx = availableDevices.indexOf(cfg_DefaultDevice);
                 if (idx !== -1)
                     deviceCombo.currentIndex = idx;
                 else
                     deviceCombo.currentIndex = -1;
+                deviceCombo.editText = cfg_DefaultDevice;
             }
             // Wenn Auswahl geändert wird, speichere neuen Wert in kcfg_ → "Anwenden" wird aktiv
             onCurrentIndexChanged: {
                 if (currentIndex >= 0)
                     cfg_DefaultDevice = availableDevices[currentIndex];
 
+            }
+            // Manuell eingetippter Name/IP, der nicht (mehr) in der
+            // gescannten Liste steht — z.B. weil die Discovery leer blieb.
+            onEditTextChanged: {
+                if (currentIndex < 0)
+                    cfg_DefaultDevice = editText;
             }
         }
 
