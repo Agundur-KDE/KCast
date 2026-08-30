@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] – 2026-08-30
+
+### Added
+
+- Manual device entry in the cast target picker: the device field now
+  accepts a typed name or IP as a fallback for when `catt scan` doesn't
+  find a reachable device (a known `catt` discovery issue, see #23/#24).
+
 ## [0.3.1] – 2026-07-30
 
 ### Fix
