@@ -20,7 +20,14 @@ import "playlistparser.js" as Parser
 Item {
     id: fullRep
 
-    property string defaultDevice: Plasmoid.configuration.DefaultDevice
+    // `Plasmoid.configuration` is a KConfigPropertyMap (QQmlPropertyMap
+    // subclass) — it has no per-key NOTIFY signal like
+    // `DefaultDeviceChanged`, only a generic `valueChanged(key, value)`.
+    // Keeping this a `readonly` direct binding (never assigned to
+    // imperatively — see setDefaultDevice() below) is what makes an
+    // already-open popup pick up a value Applied from the config KCM
+    // live, in the same running session.
+    readonly property string defaultDevice: Plasmoid.configuration.DefaultDevice || ""
     property var devices: []
     property bool scanning: false
     property int volumeStepBig: 5
@@ -78,7 +85,9 @@ Item {
     }
 
     function setDefaultDevice(name) {
-        defaultDevice = name;
+        // Write only to the config — `defaultDevice` stays a live
+        // binding to it (see property declaration above), so this
+        // alone is enough to update everything that reads defaultDevice.
         Plasmoid.configuration.DefaultDevice = name;
         if (devices.indexOf(name) === -1)
             devices = devices.concat([name]);
@@ -544,10 +553,21 @@ Item {
 
                 Layout.fillWidth: true
                 model: deviceListModel
+                // Editable so a device name/IP can be typed in directly
+                // when scanning doesn't find it (e.g. a broken `catt
+                // scan`, see KCast#23/#24) — `catt -d` accepts either.
+                editable: true
+                Component.onCompleted: editText = defaultDevice || ""
                 onActivated: (i) => {
                     if (i >= 0 && i < model.length) {
                         setDefaultDevice(model[i]);
                         loadVolumeForDevice(model[i]);
+                    }
+                }
+                onAccepted: {
+                    if (editText.length > 0 && editText !== defaultDevice) {
+                        setDefaultDevice(editText);
+                        loadVolumeForDevice(editText);
                     }
                 }
             }

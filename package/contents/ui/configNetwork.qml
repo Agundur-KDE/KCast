@@ -55,11 +55,13 @@ KCM.SimpleKCM {
                     cfg_DefaultDevice = availableDevices[currentIndex];
 
             }
-            // Manuell eingetippter Name/IP, der nicht (mehr) in der
-            // gescannten Liste steht — z.B. weil die Discovery leer blieb.
+            // Jede Texteingabe direkt übernehmen — unabhängig von
+            // currentIndex, das bei editierbaren ComboBoxen nicht
+            // zuverlässig auf -1 springt, sobald man manuell tippt.
+            // Ohne das bleibt cfg_DefaultDevice unverändert und weder
+            // "Apply" noch "OK" übernehmen den getippten Wert.
             onEditTextChanged: {
-                if (currentIndex < 0)
-                    cfg_DefaultDevice = editText;
+                cfg_DefaultDevice = editText;
             }
         }
 
