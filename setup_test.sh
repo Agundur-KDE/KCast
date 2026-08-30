@@ -66,19 +66,35 @@ fi
 
 # 3. mDNS/Zeroconf discovery actually finds a device — the real
 # end-to-end check, catches firewall/multicast/VLAN issues in one go.
+#
+# `catt scan -j` can also just crash (seen in the wild: a catt/pychromecast
+# version mismatch made `d._asdict()` raise AttributeError on every scan).
+# That used to look identical to "no device found" here because stderr was
+# discarded — a crash got silently misreported as a network problem, see
+# [[feedback_setup_test_single_cause_hint]]. Capture stderr/exit code
+# separately so a crash is reported as what it is, not as "not found".
 echo
 echo "Scanning network (catt scan, ~5s)…"
-SCAN_JSON=$(timeout 10 catt scan -j 2>/dev/null)
+SCAN_STDERR=$(mktemp)
+SCAN_JSON=$(timeout 10 catt scan -j 2>"$SCAN_STDERR")
+SCAN_EXIT=$?
 DEVICE_COUNT=$(echo "$SCAN_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d))" 2>/dev/null || echo 0)
 
 if [[ "$DEVICE_COUNT" -gt 0 ]]; then
     NAMES=$(echo "$SCAN_JSON" | python3 -c "import json,sys; print(', '.join(json.load(sys.stdin).keys()))" 2>/dev/null)
     ok "$DEVICE_COUNT device(s) found: $NAMES"
+elif [[ "$SCAN_EXIT" -ne 0 || -s "$SCAN_STDERR" ]]; then
+    fail "catt scan -j crashed instead of finding nothing"
+    hint "this is a catt/pychromecast bug, not a network problem — plain 'catt scan' (no -j) may still work"
+    hint "raw error (last lines):"
+    sed 's/^/        /' "$SCAN_STDERR" | tail -5
+    hint "please report this at https://github.com/skorokithakis/catt/issues with the full traceback above"
 else
     fail "No Chromecast found via mDNS"
     hint "mDNS/UDP 5353 is often blocked by firewalls/VLANs — device and PC must be on the same broadcast segment"
     hint "check systemctl status avahi-daemon if Zeroconf isn't running locally"
 fi
+rm -f "$SCAN_STDERR"
 
 if [[ -z "$HOST" ]]; then
     echo
