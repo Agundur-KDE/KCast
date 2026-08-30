@@ -40,4 +40,13 @@ ki18n_install(translate
 install(FILES package/metadata.json DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast)
 install(DIRECTORY package/contents/ DESTINATION ${KDE_INSTALL_DATADIR}/plasma/plasmoids/de.agundur.kcast/contents)
 
+# Registers the real KCast logo in the system icon theme so the panel/
+# systray representation (metadata.json "Icon") shows it instead of a
+# generic stand-in icon name — the bundled contents/icons/ files alone
+# are only reachable from QML (Qt.resolvedUrl), not via KIconLoader/the
+# system icon theme lookup that "Icon" in metadata.json goes through.
+install(FILES package/contents/icons/kcast_icon.svg
+        DESTINATION ${KDE_INSTALL_ICONDIR}/hicolor/scalable/apps
+        RENAME de.agundur.kcast.svg)
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
