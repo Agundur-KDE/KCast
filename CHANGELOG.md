@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] – 2026-08-30
+
+### Fix
+
+- Manual device entry (0.4.0) didn't actually work: the config page's
+  editable field never marked the config as changed, so Apply/OK
+  silently did nothing. Typing a device also didn't show up in an
+  already-open widget popup, since the popup's internal `defaultDevice`
+  had permanently lost its live binding to the config the first time a
+  device was ever selected.
+- The panel/taskbar icon showed a generic placeholder ("beamer") icon
+  instead of the actual KCast logo — the bundled logo was never
+  registered in the system icon theme.
+
 ## [0.4.0] – 2026-08-30
 
 ### Added
