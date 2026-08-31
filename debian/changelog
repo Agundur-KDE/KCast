@@ -1,3 +1,14 @@
+kcast (0.4.3-1) unstable; urgency=medium
+
+  * Fixed the panel/taskbar icon disappearing again after the 0.4.2
+    packaging fix (#26) — switched to KPackage's package-relative icon
+    notation, which works for plain .plasmoid installs too, not just
+    RPM/deb. Also fixed Kirigami.Icon misrendering the multi-color logo
+    as a solid mask, and the wrong (solid-black) icon asset being
+    referenced.
+
+ -- Agundur <info@agundur.de>  Mon, 31 Aug 2026 12:00:00 +0200
+
 kcast (0.4.2-1) unstable; urgency=medium
 
   * Packaging-only fix: no functional changes over 0.4.1.

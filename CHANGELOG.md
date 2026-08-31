@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] – 2026-08-31
+
+### Fix
+
+- Panel/taskbar icon disappeared again after the 0.4.2 packaging fix
+  (#26) — the 0.4.1 fix relied on registering the icon in the system
+  icon theme via CMake, which only works for RPM/deb installs; a plain
+  `.plasmoid` install (KDE Store, `kpackagetool6 -i`) never touches the
+  system icon theme, so the panel icon rendered blank/generic there.
+  Switched to KPackage's package-relative icon notation
+  (`/icons/<file>`), which works regardless of install method.
+  Two follow-on fixes found while testing this: `Kirigami.Icon` doesn't
+  resolve that package-relative notation itself (only some Plasma-native
+  surfaces do — resolved manually via `Qt.resolvedUrl()`), and
+  `Kirigami.Icon`'s automatic monochrome-icon heuristic misjudged the
+  multi-color logo and rendered it as a solid-color mask — switched to a
+  plain `Image` element instead. Also fixed the wrong icon asset being
+  referenced (a solid-black, unused SVG instead of the real PNG).
+  Removes the now-unnecessary system-icon-theme install from CMake/spec.
+
 ## [0.4.2] – 2026-08-30
 
 ### Fix
