@@ -97,18 +97,33 @@ jobs:
         run: osc api -X POST "/source/home:Agundur/kcast?cmd=runservice"
 
       - name: Wait for OBS build to settle
+        # `osc results` marks a per-arch line with a trailing "*" when the
+        # published result is dirty — i.e. it's still showing the PREVIOUS
+        # build because the scheduler hasn't picked up the new source rev
+        # yet. That state matched none of the active-build keywords below
+        # (no "scheduled"/"building" etc. shown while it's queued-but-not-
+        # dispatched-yet), so the loop broke immediately, downloaded the
+        # stale binaries, and uploaded them under the new release tag
+        # (v0.4.3: real-world incident, kcast-0.4.2-*.x86_64.rpm shipped
+        # under the v0.4.3 GitHub release). Match on any trailing "*" too,
+        # not just the "finished*" keyword, so a dirty-but-not-yet-building
+        # result keeps the loop waiting.
         run: |
           set -euo pipefail
           cd obs-pkg
           for i in $(seq 1 60); do
             out="$(osc results)"
             echo "$out"
-            if ! grep -qE "broken|blocked|scheduled|building|dispatching|signing|finished\*" <<<"$out"; then
+            if ! grep -qE "broken|blocked|scheduled|building|dispatching|signing|\*" <<<"$out"; then
               break
             fi
             sleep 20
           done
           echo "$out"
+          if grep -q '\*' <<<"$out"; then
+            echo "OBS build still dirty after waiting, aborting instead of shipping a stale binary" >&2
+            exit 1
+          fi
           if grep -qE "failed|broken|unresolvable" <<<"$out"; then
             echo "OBS build did not succeed, see log above" >&2
             exit 1
