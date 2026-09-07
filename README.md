@@ -9,6 +9,8 @@
 
 Full write-up on the low-latency path: [Sunshine/Moonlight on Linux](https://www.agundur.de/projects/sunshine-moonlight-linux-kde-desktop-streaming.html).
 
+Until desktop-casting lands in KCast itself: [Moonbeam](https://github.com/Agundur-KDE/Moonbeam) is our companion app for exactly that — share your whole KDE Plasma desktop wirelessly with any Moonlight device, one click and a PIN.
+
 </div>
 
 <div align="center">
