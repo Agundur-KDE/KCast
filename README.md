@@ -1,15 +1,9 @@
 
 <div align="center">
 
-## Poll
+## Sharing your whole desktop?
 
-[![Help shape KCast's future — vote in our current poll](poll_banner.png)](https://github.com/Agundur-KDE/KCast/discussions/22)
-
-📊 **New feature proposal: casting your whole desktop.** KCast currently casts video files and YouTube URLs only — full desktop-casting isn't built yet. We tested two possible approaches and want your input on which one to build first. Vote in [Discussion #22](https://github.com/Agundur-KDE/KCast/discussions/22): instant & simple vs. best quality.
-
-Full write-up on the low-latency path: [Sunshine/Moonlight on Linux](https://www.agundur.de/projects/sunshine-moonlight-linux-kde-desktop-streaming.html).
-
-Until desktop-casting lands in KCast itself: [Moonbeam](https://github.com/Agundur-KDE/Moonbeam) is our companion app for exactly that — share your whole KDE Plasma desktop wirelessly with any Moonlight device, one click and a PIN.
+KCast casts video files and YouTube URLs — for the whole **desktop**, there's [Moonbeam](https://github.com/Agundur-KDE/Moonbeam), our companion app for exactly that: share your whole KDE Plasma desktop wirelessly with any Moonlight device, one click and a PIN.
 
 </div>
 
