@@ -1,14 +1,6 @@
 
 <div align="center">
 
-## Sharing your whole desktop?
-
-KCast casts video files and YouTube URLs — for the whole **desktop**, there's [Moonbeam](https://github.com/Agundur-KDE/Moonbeam), our companion app for exactly that: share your whole KDE Plasma desktop wirelessly with any Moonlight device, one click and a PIN.
-
-</div>
-
-<div align="center">
-
 <img src="/package/contents/icons/Logo.png" width="80" alt="KCast Logo" />
   <h1>KCast</h1>
   <a href="https://kde.org/de/">
@@ -38,6 +30,10 @@ It supports device discovery, local media playback (served via `catt`'s own temp
  [https://www.agundur.de/](https://www.agundur.de/projects/kde_cast_video-files_to_a_chromecast-device.html)
 
 **Related article:** [Sunshine/Moonlight on Linux — Stream Your KDE Desktop to a TV with Low Latency](https://www.agundur.de/projects/sunshine-moonlight-linux-kde-desktop-streaming.html)
+
+## Sharing your whole desktop?
+
+KCast casts video files and YouTube URLs — for the whole **desktop**, there's [Moonbeam](https://github.com/Agundur-KDE/Moonbeam), our companion app for exactly that: share your whole KDE Plasma desktop wirelessly with any Moonlight device, one click and a PIN.
 
 ##  Features
 
