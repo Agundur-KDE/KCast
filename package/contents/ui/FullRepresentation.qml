@@ -30,6 +30,7 @@ Item {
     readonly property string defaultDevice: Plasmoid.configuration.DefaultDevice || ""
     property var devices: []
     property bool scanning: false
+    property bool moonbeamAvailable: false
     property int volumeStepBig: 5
     property int volumeStepSmall: 1
     property int currentVolume: 5
@@ -215,6 +216,7 @@ Item {
 
     Component.onCompleted: {
         cattCheckSource.connectSource("command -v catt");
+        moonbeamCheckSource.connectSource("command -v moonbeam");
 
         if (defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
             setDefaultDevice(defaultDevice);
@@ -312,6 +314,29 @@ Item {
             if ((data["exit code"] || 0) !== 0)
                 console.warn(i18n("You need to install 'catt' first!"));
         }
+    }
+
+    // Moonbeam is an optional companion app (whole-desktop sharing via
+    // Sunshine/Moonlight, not something KCast does itself) — the Desktop
+    // button below only lights up if it's actually installed, same
+    // "command -v" detection pattern as the catt check above.
+    Plasma5Support.DataSource {
+        id: moonbeamCheckSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => {
+            disconnectSource(sourceName);
+            moonbeamAvailable = (data["exit code"] || 0) === 0;
+        }
+    }
+
+    // Fire-and-forget: launches Moonbeam detached from KCast's own
+    // process so it keeps running after this DataSource disconnects.
+    Plasma5Support.DataSource {
+        id: moonbeamLaunchSource
+
+        engine: "executable"
+        onNewData: (sourceName, data) => disconnectSource(sourceName)
     }
 
     // `catt scan -j` prints one JSON object (keyed by device name) after
@@ -529,6 +554,18 @@ Item {
                 text: i18n("KCast")
                 level: 2
                 Layout.fillWidth: true
+            }
+
+            PlasmaComponents.Button {
+                text: i18n("Desktop")
+                icon.name: "video-display"
+                enabled: moonbeamAvailable
+                ToolTip.delay: 500
+                ToolTip.visible: hovered
+                ToolTip.text: moonbeamAvailable
+                    ? i18n("Share your whole desktop via Moonbeam")
+                    : i18n("Install Moonbeam to share your whole desktop")
+                onClicked: moonbeamLaunchSource.connectSource("nohup moonbeam >/dev/null 2>&1 &")
             }
 
         }
