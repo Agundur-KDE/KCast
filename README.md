@@ -23,6 +23,8 @@
 **KCast** is a KDE Plasma 6 widget that lets you cast video files or YouTube URLs to a Chromecast device in your local network.
 It supports device discovery, local media playback (served via `catt`'s own temporary HTTP server), and drag-and-drop integration with browsers and file managers like Dolphin.
 
+If KCast is useful to you, [support continued KDE/Linux development through GitHub Sponsors](https://github.com/sponsors/Agundur-KDE).
+
 **Caution!** starting with version 0.0.2 we need [catt](https://github.com/skorokithakis/catt) installed.
 
 ## Homepage
