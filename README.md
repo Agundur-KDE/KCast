@@ -20,7 +20,9 @@
 
 ## Video
 
-[Cast or Stream KDE Plasma to a Big Screen: 4 Ways Compared](https://www.youtube.com/watch?v=CU3DDhRTpgw) — a practical comparison of Chromium casting, KCast, Miracast, and Sunshine + Moonlight.
+[![Cast or Stream KDE Plasma to a Big Screen: 4 Ways Compared](https://i.ytimg.com/vi/CU3DDhRTpgw/maxresdefault.jpg)](https://www.youtube.com/watch?v=CU3DDhRTpgw)
+
+A practical comparison of Chromium casting, KCast, Miracast, and Sunshine + Moonlight.
 
 
 ## Description
