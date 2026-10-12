@@ -18,8 +18,33 @@ function baseName(url) {
 
 // Inspect only the address, without fetching it or rewriting signed query
 // parameters. Remote HLS manifests are streams, not local playlist files.
-function classifyMediaUrl(input) {
+function isRemotePlaylist(value) {
+    return /^https?:\/\//i.test(value) && /\.m3u8?$/i.test(value.split(/[?#]/)[0]);
+}
+
+function mediaUrlForCasting(input) {
     var value = typeof input === "string" ? input.trim() : "";
+    // Preserve direct signed stream URLs byte-for-byte, including percent
+    // escapes and literal '+' signs. Decode only an enclosing copied value.
+    if (isRemotePlaylist(value) || /^blob:/i.test(value)) return value;
+    var parameter = value.match(/(?:^|[?&])mu=([^&#]*)/i);
+    if (parameter) {
+        try {
+            var media = decodeURIComponent(parameter[1]);
+            if (isRemotePlaylist(media)) return media;
+        } catch (e) { /* malformed escape: retain the original input */ }
+    }
+    if (/^https?%3a%2f%2f/i.test(value)) {
+        try {
+            var decoded = decodeURIComponent(value);
+            if (isRemotePlaylist(decoded)) return decoded;
+        } catch (e) { /* malformed escape */ }
+    }
+    return value;
+}
+
+function classifyMediaUrl(input) {
+    var value = mediaUrlForCasting(input);
     if (!value) return "empty";
     if (/^blob:/i.test(value)) return "blob";
     var playlistPath = /\.m3u8?$/i.test(value.split(/[?#]/)[0]);
@@ -81,4 +106,4 @@ function parseM3U(text) {
 
 // Node-testability guard: harmless in QML, where `module` is undefined.
 if (typeof module !== "undefined")
-    module.exports = { parseM3U: parseM3U, formatDuration: formatDuration, baseName: baseName, classifyMediaUrl: classifyMediaUrl };
+    module.exports = { parseM3U: parseM3U, formatDuration: formatDuration, baseName: baseName, classifyMediaUrl: classifyMediaUrl, mediaUrlForCasting: mediaUrlForCasting };

@@ -123,11 +123,11 @@ Item {
     // catt's own cast command wants a plain local path, not a file://
     // URL (matches the previous C++ normalizeUrlForCasting behavior).
     function normalizeUrlForCasting(input) {
-        return input.replace(/^file:\/\//, "");
+        return Parser.mediaUrlForCasting(String(input)).replace(/^file:\/\//, "");
     }
 
     function castUrl(url) {
-        url = String(url).trim();
+        url = Parser.mediaUrlForCasting(String(url));
         // An object URL is usable only in its originating browser context.
         // Reject it before stopping existing playback or invoking catt.
         if (!url || Parser.classifyMediaUrl(url) === "blob") return;
@@ -403,7 +403,7 @@ Item {
     // for the directory case, `echo` as the single-file fallback, so both
     // cases come back through the one onNewData handler.
     function resolveAndHandlePath(path) {
-        path = String(path).trim();
+        path = Parser.mediaUrlForCasting(String(path));
         if (/^(https?:|blob:)/i.test(path)) {
             handleIncomingUrl(path);
             return;
@@ -417,7 +417,7 @@ Item {
 
     // Shared by drag&drop and the Dolphin service-menu file handoff below.
     function handleIncomingUrl(url) {
-        url = String(url).trim();
+        url = Parser.mediaUrlForCasting(String(url));
         // Signed stream URLs can contain access tokens: do not log them.
 
         if (Parser.classifyMediaUrl(url) === "playlist") {
@@ -600,6 +600,7 @@ Item {
 
                 Layout.fillWidth: true
                 placeholderText: i18n("Video/audio URL, HLS stream (.m3u8) or local file")
+                onEditingFinished: text = Parser.mediaUrlForCasting(text)
 
                 MouseArea {
                     anchors.fill: parent
@@ -752,7 +753,7 @@ Item {
                     } else if (playlistIndex >= 0) {
                         playPlaylistEntry(playlistIndex);
                     } else {
-                        var url = mediaUrl.text.replace(/^file:\/\//, "");
+                        var url = normalizeUrlForCasting(mediaUrl.text);
                         mediaUrl.text = url;
                         castUrl(url);
                     }

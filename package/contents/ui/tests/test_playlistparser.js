@@ -1,6 +1,6 @@
 // Run: node package/contents/ui/tests/test_playlistparser.js
 const assert = require("assert");
-const { parseM3U, formatDuration, baseName, classifyMediaUrl } = require("../playlistparser.js");
+const { parseM3U, formatDuration, baseName, classifyMediaUrl, mediaUrlForCasting } = require("../playlistparser.js");
 
 // Real playlist: #EXTINF entries -> a queue of tracks
 {
@@ -65,5 +65,21 @@ assert.strictEqual(classifyMediaUrl("/home/user/Music/song.mp3"), "file");
 assert.strictEqual(classifyMediaUrl("blob:https://example.com/browser-object"), "blob");
 assert.strictEqual(classifyMediaUrl("  "), "empty");
 assert.strictEqual(classifyMediaUrl(null), "empty");
+
+// Player parameter lists sometimes contain the real stream as encoded mu=.
+// Use synthetic tokens: real copied stream credentials must not enter Git.
+const stream = "https://cdn.example.com/hls/master.m3u8?token=a+b/c==&escaped=%2B";
+const encodedStream = encodeURIComponent(stream);
+const parameters = "https%3A%2F%2Fexample.com%2Fembed%2Fvideo&pv=8&mu=" + encodedStream + "&pd=2";
+assert.strictEqual(mediaUrlForCasting(parameters), stream);
+assert.strictEqual(classifyMediaUrl(parameters), "hls");
+assert.strictEqual(mediaUrlForCasting("https://example.com/player?mu=" + encodedStream + "&width=1920"), stream);
+assert.strictEqual(mediaUrlForCasting("mu=" + encodedStream), stream);
+assert.strictEqual(mediaUrlForCasting(encodedStream), stream);
+assert.strictEqual(mediaUrlForCasting(stream), stream);
+assert.strictEqual(mediaUrlForCasting(stream + "&mu=" + encodedStream), stream + "&mu=" + encodedStream);
+assert.strictEqual(mediaUrlForCasting("mu=https%3A%2F%2Fexample.com%2Fnot-video.html"), "mu=https%3A%2F%2Fexample.com%2Fnot-video.html");
+assert.strictEqual(mediaUrlForCasting("mu=https%3A%2F%2Fexample.com%2Fmaster.m3u8%XX"), "mu=https%3A%2F%2Fexample.com%2Fmaster.m3u8%XX");
+assert.strictEqual(mediaUrlForCasting("mu=javascript%3Aalert(1)"), "mu=javascript%3Aalert(1)");
 
 console.log("playlistparser: all assertions passed");

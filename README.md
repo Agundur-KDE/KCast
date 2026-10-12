@@ -67,6 +67,10 @@ including signed URLs with query parameters. The field identifies these as an
 HLS stream. Prefer the master playlist when available, since it describes the
 available quality variants; a variant playlist selects one specific stream.
 Remote HLS URLs are passed directly to `catt`, not parsed as local track queues.
+If copied player parameters contain a URL-encoded HLS address in `mu=`, KCast
+extracts that address. A fully URL-encoded HLS address is accepted as well.
+The field shows the extracted address when editing finishes or Play is pressed;
+direct signed HLS URLs retain their query parameters and percent escapes.
 Temporary stream URLs may expire and may require the source site's access context.
 
 A literal `blob:https://…` address only refers to an object inside its originating
