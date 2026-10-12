@@ -155,3 +155,12 @@ msgstr ""
 msgctxt "@title"
 msgid "Network"
 msgstr ""
+
+msgid "Video/audio URL, HLS stream (.m3u8) or local file"
+msgstr ""
+
+msgid "HLS video stream · Master and variant playlists are supported"
+msgstr ""
+
+msgid "This browser-only blob link cannot be cast directly. Paste the video's HTTPS stream URL (.m3u8) instead."
+msgstr ""

@@ -16,6 +16,18 @@ function baseName(url) {
     return decodeURIComponent(parts[parts.length - 1] || url);
 }
 
+// Inspect only the address, without fetching it or rewriting signed query
+// parameters. Remote HLS manifests are streams, not local playlist files.
+function classifyMediaUrl(input) {
+    var value = typeof input === "string" ? input.trim() : "";
+    if (!value) return "empty";
+    if (/^blob:/i.test(value)) return "blob";
+    var playlistPath = /\.m3u8?$/i.test(value.split(/[?#]/)[0]);
+    if (/^https?:\/\//i.test(value))
+        return playlistPath ? "hls" : "remote";
+    return playlistPath ? "playlist" : "file";
+}
+
 // Distinguishes a real M3U/M3U8 *playlist* (list of media entries, #EXTINF
 // tags) from an HLS *stream manifest* (#EXT-X-STREAM-INF / #EXT-X-TARGETDURATION),
 // which despite the same file extension is a single stream URL, not a queue.
@@ -69,4 +81,4 @@ function parseM3U(text) {
 
 // Node-testability guard: harmless in QML, where `module` is undefined.
 if (typeof module !== "undefined")
-    module.exports = { parseM3U: parseM3U, formatDuration: formatDuration, baseName: baseName };
+    module.exports = { parseM3U: parseM3U, formatDuration: formatDuration, baseName: baseName, classifyMediaUrl: classifyMediaUrl };

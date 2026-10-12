@@ -61,6 +61,19 @@ It supports device discovery, local media playback (served via `catt`'s own temp
    through normal updates)
 -  **Drag & Drop** from Firefox, Chrome, or Dolphin
 
+Paste a direct HLS URL into the same field used for files and YouTube links.
+Both `master.m3u8` and a variant such as `index-v1-a1.m3u8` are supported,
+including signed URLs with query parameters. The field identifies these as an
+HLS stream. Prefer the master playlist when available, since it describes the
+available quality variants; a variant playlist selects one specific stream.
+Remote HLS URLs are passed directly to `catt`, not parsed as local track queues.
+Temporary stream URLs may expire and may require the source site's access context.
+
+A literal `blob:https://…` address only refers to an object inside its originating
+browser. KCast displays a hint to use the video's HTTPS stream URL instead and
+does not try to cast the object URL. Automatic browser-source extraction is not
+part of this change.
+
 
 ## Visuals
 ![KCast playlist](Kcast_playlist.png) ![KCast seek bar](Kcast_seekbar.png)

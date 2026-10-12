@@ -48,6 +48,7 @@ Item {
     readonly property bool deviceReady: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool controlsEnabled: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
+    readonly property string mediaKind: Parser.classifyMediaUrl(mediaUrl.text)
     property var deviceListModel: {
         var def = defaultDevice || "";
         var list = (def.length > 0 && def !== "-") ? [def] : [];
@@ -59,7 +60,7 @@ Item {
     // Editing the URL / dropping something new no longer requires an
     // explicit Stop first — casting just replaces whatever the device
     // is currently playing, so Play can stay enabled regardless of playState.
-    readonly property bool canPlay: controlsEnabled && hasMedia
+    readonly property bool canPlay: controlsEnabled && hasMedia && mediaKind !== "blob"
 
     property var playlist: []
     property int playlistIndex: -1
@@ -126,6 +127,10 @@ Item {
     }
 
     function castUrl(url) {
+        url = String(url).trim();
+        // An object URL is usable only in its originating browser context.
+        // Reject it before stopping existing playback or invoking catt.
+        if (!url || Parser.classifyMediaUrl(url) === "blob") return;
         if (!defaultDevice || defaultDevice === "-") {
             console.warn("[KCast] No device available for cast");
             return;
@@ -398,6 +403,11 @@ Item {
     // for the directory case, `echo` as the single-file fallback, so both
     // cases come back through the one onNewData handler.
     function resolveAndHandlePath(path) {
+        path = String(path).trim();
+        if (/^(https?:|blob:)/i.test(path)) {
+            handleIncomingUrl(path);
+            return;
+        }
         var localPath = path.replace(/^file:\/\//, "");
         var mediaExts = ["mp4", "mkv", "webm", "avi", "m4v", "mp3", "flac", "wav", "ogg"];
         var findExpr = mediaExts.map((ext) => "-iname " + shellQuote("*." + ext)).join(" -o ");
@@ -407,9 +417,10 @@ Item {
 
     // Shared by drag&drop and the Dolphin service-menu file handoff below.
     function handleIncomingUrl(url) {
-        console.log(i18n("URL detected: %1").arg(url));
+        url = String(url).trim();
+        // Signed stream URLs can contain access tokens: do not log them.
 
-        if (/\.m3u8?$/i.test(url)) {
+        if (Parser.classifyMediaUrl(url) === "playlist") {
             loadPlaylistFromM3U(url);
             return;
         }
@@ -588,7 +599,7 @@ Item {
                 id: mediaUrl
 
                 Layout.fillWidth: true
-                placeholderText: i18n("http://... or /path/to/file.mp4")
+                placeholderText: i18n("Video/audio URL, HLS stream (.m3u8) or local file")
 
                 MouseArea {
                     anchors.fill: parent
@@ -650,6 +661,16 @@ Item {
                 }
             }
 
+        }
+
+        PlasmaComponents.Label {
+            Layout.fillWidth: true
+            visible: mediaKind === "hls" || mediaKind === "blob"
+            text: mediaKind === "blob"
+                ? i18n("This browser-only blob link cannot be cast directly. Paste the video's HTTPS stream URL (.m3u8) instead.")
+                : i18n("HLS video stream · Master and variant playlists are supported")
+            color: mediaKind === "blob" ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
+            wrapMode: Text.WordWrap
         }
 
         RowLayout {
