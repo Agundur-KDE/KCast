@@ -49,6 +49,7 @@ Item {
     readonly property bool deviceReady: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool controlsEnabled: !!(defaultDevice && defaultDevice.length > 0 && defaultDevice !== "-")
     readonly property bool hasMedia: typeof mediaUrl.text === "string" && mediaUrl.text.trim().length > 0
+    readonly property string mediaKind: Parser.classifyMediaUrl(mediaUrl.text)
     property var deviceListModel: {
         var def = defaultDevice || "";
         var list = (def.length > 0 && def !== "-") ? [def] : [];
@@ -60,7 +61,7 @@ Item {
     // Editing the URL / dropping something new no longer requires an
     // explicit Stop first — casting just replaces whatever the device
     // is currently playing, so Play can stay enabled regardless of playState.
-    readonly property bool canPlay: controlsEnabled && hasMedia
+    readonly property bool canPlay: controlsEnabled && hasMedia && mediaKind !== "blob"
 
     property var playlist: []
     property int playlistIndex: -1
@@ -123,10 +124,14 @@ Item {
     // catt's own cast command wants a plain local path, not a file://
     // URL (matches the previous C++ normalizeUrlForCasting behavior).
     function normalizeUrlForCasting(input) {
-        return input.replace(/^file:\/\//, "");
+        return Parser.mediaUrlForCasting(String(input)).replace(/^file:\/\//, "");
     }
 
     function castUrl(url) {
+        url = Parser.mediaUrlForCasting(String(url));
+        // An object URL is usable only in its originating browser context.
+        // Reject it before stopping existing playback or invoking catt.
+        if (!url || Parser.classifyMediaUrl(url) === "blob") return;
         if (!defaultDevice || defaultDevice === "-") {
             console.warn("[KCast] No device available for cast");
             return;
@@ -423,6 +428,11 @@ Item {
     // for the directory case, `echo` as the single-file fallback, so both
     // cases come back through the one onNewData handler.
     function resolveAndHandlePath(path) {
+        path = Parser.mediaUrlForCasting(String(path));
+        if (/^(https?:|blob:)/i.test(path)) {
+            handleIncomingUrl(path);
+            return;
+        }
         var localPath = path.replace(/^file:\/\//, "");
         var mediaExts = ["mp4", "mkv", "webm", "avi", "m4v", "mp3", "flac", "wav", "ogg"];
         var findExpr = mediaExts.map((ext) => "-iname " + shellQuote("*." + ext)).join(" -o ");
@@ -432,9 +442,10 @@ Item {
 
     // Shared by drag&drop and the Dolphin service-menu file handoff below.
     function handleIncomingUrl(url) {
-        console.log(i18n("URL detected: %1").arg(url));
+        url = Parser.mediaUrlForCasting(String(url));
+        // Signed stream URLs can contain access tokens: do not log them.
 
-        if (/\.m3u8?$/i.test(url)) {
+        if (Parser.classifyMediaUrl(url) === "playlist") {
             loadPlaylistFromM3U(url);
             return;
         }
@@ -621,11 +632,13 @@ Item {
         }
 
         RowLayout {
-            TextField {
+            PlasmaComponents.TextField {
                 id: mediaUrl
 
                 Layout.fillWidth: true
-                placeholderText: i18n("http://... or /path/to/file.mp4")
+                clearButtonShown: true
+                placeholderText: i18n("Video/audio URL, HLS stream (.m3u8) or local file")
+                onEditingFinished: text = Parser.mediaUrlForCasting(text)
 
                 MouseArea {
                     anchors.fill: parent
@@ -687,6 +700,14 @@ Item {
                 }
             }
 
+        }
+
+        PlasmaComponents.Label {
+            Layout.fillWidth: true
+            visible: mediaKind === "blob"
+            text: i18n("This browser-only blob link cannot be cast directly. Paste the video's HTTPS stream URL (.m3u8) instead.")
+            color: Kirigami.Theme.negativeTextColor
+            wrapMode: Text.WordWrap
         }
 
         RowLayout {
@@ -768,7 +789,7 @@ Item {
                     } else if (playlistIndex >= 0) {
                         playPlaylistEntry(playlistIndex);
                     } else {
-                        var url = mediaUrl.text.replace(/^file:\/\//, "");
+                        var url = normalizeUrlForCasting(mediaUrl.text);
                         mediaUrl.text = url;
                         castUrl(url);
                     }

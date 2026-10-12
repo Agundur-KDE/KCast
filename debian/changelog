@@ -1,3 +1,11 @@
+kcast (0.5.0-1) unstable; urgency=medium
+
+  * Handle remote HLS playlists as streams in the media field and URL drops.
+  * Extract HLS URLs from copied player parameters and URL-encoded links.
+  * Add a clear button inside the media URL field.
+
+ -- Agundur <info@agundur.de>  Mon, 12 Oct 2026 15:00:00 +0200
+
 kcast (0.4.3-1) unstable; urgency=medium
 
   * Fixed the panel/taskbar icon disappearing again after the 0.4.2

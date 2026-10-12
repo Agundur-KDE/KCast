@@ -1,5 +1,5 @@
 Name:           kcast
-Version:        0.3.1
+Version:        0.5.0
 Release:        1%{?dist}
 URL:            https://github.com/Agundur-KDE/KCast
 Summary:        Cast media to Chromecast from KDE Plasma (pure QML plasmoid)
@@ -64,6 +64,11 @@ fi
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_*.agundur.kcast.mo
 
 %changelog
+* Mon Oct 12 2026 Alec <info@agundur.de> - 0.5.0-1
+- Handle remote HLS playlists as streams in the media field and URL drops.
+- Extract HLS URLs from copied player parameters and URL-encoded links.
+- Add a clear button inside the media URL field.
+
 * Thu Jul 30 2026 Alec <info@agundur.de> - 0.3.1-1
 - Fixed drag-and-drop in the full representation: the DropArea had no
   z-index, so it sat behind the playlist/URL-field content (declared
