@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Desktop button to launch Moonbeam for desktop sharing when installed.
 - Automatically extract HLS stream URLs from copied player parameters
   (`mu=`) and URL-encoded HLS links.
 - Clear button inside the media URL field.
