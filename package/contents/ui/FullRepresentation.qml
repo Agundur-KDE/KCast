@@ -595,10 +595,11 @@ Item {
         }
 
         RowLayout {
-            TextField {
+            PlasmaComponents.TextField {
                 id: mediaUrl
 
                 Layout.fillWidth: true
+                clearButtonShown: true
                 placeholderText: i18n("Video/audio URL, HLS stream (.m3u8) or local file")
                 onEditingFinished: text = Parser.mediaUrlForCasting(text)
 
@@ -666,11 +667,9 @@ Item {
 
         PlasmaComponents.Label {
             Layout.fillWidth: true
-            visible: mediaKind === "hls" || mediaKind === "blob"
-            text: mediaKind === "blob"
-                ? i18n("This browser-only blob link cannot be cast directly. Paste the video's HTTPS stream URL (.m3u8) instead.")
-                : i18n("HLS video stream · Master and variant playlists are supported")
-            color: mediaKind === "blob" ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.textColor
+            visible: mediaKind === "blob"
+            text: i18n("This browser-only blob link cannot be cast directly. Paste the video's HTTPS stream URL (.m3u8) instead.")
+            color: Kirigami.Theme.negativeTextColor
             wrapMode: Text.WordWrap
         }
 
