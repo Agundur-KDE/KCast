@@ -1,0 +1,69 @@
+name: pychromecast-refresh
+
+# External upstream; we maintain only the Leap RPM packaging.
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Submit tested sources to OBS (otherwise dry run)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pychromecast-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install tools and test updater
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends osc
+          python -m pip install 'packaging>=24,<27'
+          python -m unittest discover -s tests -p 'test_pychromecast_refresh.py'
+      - name: Configure existing OBS credentials
+        env:
+          OBS_USER: ${{ secrets.OBS_USER }}
+          OBS_PASSWORD: ${{ secrets.OBS_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$OBS_USER" && test -n "$OBS_PASSWORD"
+          mkdir -p ~/.config/osc
+          cat > ~/.config/osc/oscrc <<OSCRC
+          [general]
+          apiurl = https://api.opensuse.org
+
+          [https://api.opensuse.org]
+          user = ${OBS_USER}
+          pass = ${OBS_PASSWORD}
+          credentials_mgr_class = osc.credentials.PlaintextConfigFileCredentialsManager
+          OSCRC
+          chmod 600 ~/.config/osc/oscrc
+      - name: Test release RPM on Leap and update OBS
+        env:
+          APPLY: ${{ github.event_name == 'schedule' || inputs.apply }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ "$APPLY" == true ]]; then args+=(--apply); fi
+          python scripts/refresh_pychromecast.py "${args[@]}" 2>&1 | tee pychromecast-refresh.log
+      - name: Preserve update log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pychromecast-refresh-log
+          path: pychromecast-refresh.log
+          if-no-files-found: ignore
