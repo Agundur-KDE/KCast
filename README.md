@@ -127,19 +127,21 @@ make install (as root)
 
 [![build result](https://build.opensuse.org/projects/home:Agundur/packages/kcast/badge.svg?type=default)](https://build.opensuse.org/package/show/home:Agundur/kcast)
 
-For openSUSE Tumbleweed (and compatible systems):
+Choose the repository for your installed distribution. Add it only once; the same repository provides the other Agundur packages too.
+
+**openSUSE Tumbleweed:**
 
 ```bash
-# Add the repository
 sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/openSUSE_Tumbleweed/home:Agundur.repo
-
-# Automatically import GPG key (required once)
 sudo zypper --gpg-auto-import-keys ref
+sudo zypper in kcast
+```
 
-# Refresh repository metadata
-sudo zypper ref
+**openSUSE Leap 16.0:**
 
-# Install KCast
+```bash
+sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/16.0/home:Agundur.repo
+sudo zypper --gpg-auto-import-keys ref
 sudo zypper in kcast
 ```
 
