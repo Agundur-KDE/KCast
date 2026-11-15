@@ -137,10 +137,26 @@ sudo zypper --gpg-auto-import-keys ref
 sudo zypper in kcast
 ```
 
+**openSUSE Leap 16.1:**
+
+```bash
+sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/16.1/home:Agundur.repo
+sudo zypper --gpg-auto-import-keys ref
+sudo zypper in kcast
+```
+
 **openSUSE Leap 16.0:**
 
 ```bash
 sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/16.0/home:Agundur.repo
+sudo zypper --gpg-auto-import-keys ref
+sudo zypper in kcast
+```
+
+**openSUSE Slowroll (x86_64):**
+
+```bash
+sudo zypper ar -f https://download.opensuse.org/repositories/home:/Agundur/openSUSE_Slowroll/home:Agundur.repo
 sudo zypper --gpg-auto-import-keys ref
 sudo zypper in kcast
 ```
