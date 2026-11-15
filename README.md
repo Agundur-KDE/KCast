@@ -149,7 +149,7 @@ sudo zypper in kcast
 automatically as a dependency — no extra step needed.
 
 Maintainers: [OBS dependency RPM maintenance](docs/obs-dependencies.md) describes
-the automated catt refresh and release-based PyChromecast updates for Leap 16.0.
+the automated catt refresh and release-based PyChromecast updates for Leap 16.0 and 16.1.
 
 Firewall (firewalld, default on openSUSE):
 

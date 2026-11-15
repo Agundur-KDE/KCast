@@ -7,7 +7,7 @@ their upstream application or library code.
   Git source service for `home:Agundur/catt`.
 - `pychromecast-refresh.yml` checks PyPI daily at 04:23 UTC for a newer stable,
   non-yanked PyChromecast source release. It updates
-  `home:Agundur/python-PyChromecast`, enabled exclusively for Leap 16.0.
+  `home:Agundur/python-PyChromecast`, enabled exclusively for Leap 16.0 and 16.1.
   Tumbleweed continues to use its distribution package.
 
 The PyChromecast job verifies the source archive against its PyPI SHA-256 and
@@ -17,15 +17,15 @@ conditional requirements or complex version constraints stop the job for
 packaging review.
 
 Before submitting anything, the job builds the actual candidate RPM inside a
-fresh Leap 16.0 x86_64 container. It installs `catt` from our repository, installs
+fresh x86_64 containers for both Leap 16.0 and 16.1. It installs `catt` from our repository, installs
 the candidate RPM, checks Python dependencies, runs `catt --version` and
 `catt --help`, and imports the controller APIs. Repository dependencies use
 normal signature checks; the locally built candidate is unsigned.
 These are installation and CLI/API smoke checks, not device playback tests.
 
 Only after successful checks does the job commit the sources to OBS. It then
-waits for the submitted source checksum to build and publish on both Leap
-architectures, checking the resulting RPM version. Failed checks or unresolved
+waits for the submitted source checksum to build and publish on both architectures
+for both Leap versions, checking the resulting RPM version. Failed checks or unresolved
 builds fail the workflow, and its log is retained as a GitHub Actions artifact.
 OBS publication follows its normal per-architecture process; a subsequent
 failure does not automatically roll back an already submitted or published RPM.

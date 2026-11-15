@@ -1,8 +1,9 @@
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+import xml.etree.ElementTree as ET
 
-from scripts.refresh_pychromecast import candidate_release, update_spec, submit_after_validation
+from scripts.refresh_pychromecast import candidate_release, update_spec, submit_after_validation, validate_build_scope
 
 
 SPEC = '''Name: python-PyChromecast
@@ -17,6 +18,15 @@ Requires: python-zeroconf >= 0.25.1
 
 
 class RefreshTests(unittest.TestCase):
+    def test_only_both_supported_leap_repositories_are_enabled(self):
+        def metadata(extra=''):
+            return ET.fromstring('<package><build><disable/><enable repository="16.0"/>'
+                                 '<enable repository="16.1"/>' + extra + '</build></package>')
+        validate_build_scope(metadata())
+        with self.assertRaises(ValueError):
+            validate_build_scope(metadata('<enable repository="openSUSE_Tumbleweed"/>'))
+        with self.assertRaises(ValueError):
+            validate_build_scope(ET.fromstring('<package><build><enable/></build></package>'))
     def metadata(self, version='14.1.1', **archive):
         return {'info': {'version': version}, 'urls': [
             dict(packagetype='sdist', yanked=False, filename='pychromecast-14.1.1.tar.gz', **archive)]}

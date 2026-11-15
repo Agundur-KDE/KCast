@@ -21,6 +21,7 @@ from packaging.version import Version
 
 PROJECT = 'home:Agundur'
 PACKAGE = 'python-PyChromecast'
+REPOSITORIES = ('16.0', '16.1')
 DEPENDENCIES = {'casttube', 'protobuf', 'zeroconf', 'requests'}
 
 
@@ -106,11 +107,19 @@ def prepare_sources(directory, release, archive, data):
     return target
 
 
+def validate_build_scope(metadata):
+    build = metadata.find('build')
+    if (build is None or [e.attrib for e in build.findall('disable')] != [{}]
+            or sorted(tuple(sorted(e.attrib.items())) for e in build.findall('enable'))
+            != sorted((('repository', repo),) for repo in REPOSITORIES)):
+        raise ValueError('Expected package builds enabled exclusively for Leap 16.0 and 16.1')
+
+
 def validate(directory):
     """Build/install the actual RPM, using only Leap/OBS RPM dependencies."""
     script = r'''
 set -eu
-zypper --non-interactive ar -f https://download.opensuse.org/repositories/home:/Agundur/16.0/home:Agundur.repo
+zypper --non-interactive ar -f https://download.opensuse.org/repositories/home:/Agundur/LEAP_VERSION/home:Agundur.repo
 zypper --non-interactive --gpg-auto-import-keys refresh
 zypper --non-interactive install --no-recommends rpm-build python-rpm-macros fdupes python313-pip python313-setuptools python313-wheel catt
 mkdir -p /tmp/rpmbuild/SOURCES
@@ -126,7 +135,11 @@ catt --help
 python3.13 -c 'from pychromecast import Chromecast, get_listed_chromecasts; from pychromecast.controllers.media import MediaController; from pychromecast.controllers.youtube import YouTubeController; from catt.controllers import CastController; print("catt and PyChromecast API imports: OK")'
 rpm -q python313-PyChromecast catt
 '''
-    run('docker', 'run', '--rm', '-v', f'{directory}:/candidate:ro', 'opensuse/leap:16.0', 'sh', '-c', script)
+    for repo in REPOSITORIES:
+        run('docker', 'pull', f'opensuse/leap:{repo}')
+        print(f'Testing candidate RPM with catt on Leap {repo}', flush=True)
+        run('docker', 'run', '--rm', '-v', f'{directory}:/candidate:ro',
+            f'opensuse/leap:{repo}', 'sh', '-c', script.replace('LEAP_VERSION', repo))
 
 
 def submit_after_validation(directory, target, release, apply):
@@ -136,7 +149,7 @@ def submit_after_validation(directory, target, release, apply):
         return
     run('osc', 'add', target.name, cwd=directory)
     run('osc', 'commit', '-m', f'Update PyChromecast to tested upstream release {release} for Leap 16', cwd=directory)
-    print('Sources submitted. Waiting for both Leap architectures to publish.', flush=True)
+    print('Sources submitted. Waiting for both architectures on Leap 16.0 and 16.1.', flush=True)
     wait_for_publication(release)
 
 
@@ -151,31 +164,32 @@ def wait_for_publication(release):
     deadline = time.monotonic() + 1200
     previous = None
     while time.monotonic() < deadline:
-        results = obs_xml(f'/build/{PROJECT}/_result?repository=16.0&package={PACKAGE}')
+        results = obs_xml(f'/build/{PROJECT}/_result?package={PACKAGE}')
         rows = []
         good = set()
         for result in results.findall('result'):
+            repo = result.get('repository')
             arch = result.get('arch')
             status = result.find('status')
-            if arch not in {'x86_64', 'aarch64'} or status is None:
+            if repo not in REPOSITORIES or arch not in {'x86_64', 'aarch64'} or status is None:
                 continue
-            rows.append(f'{arch}: {status.get("code")} ({result.get("state")})')
-            info = obs_xml(f'/build/{PROJECT}/16.0/{arch}/{PACKAGE}/_buildinfo')
+            rows.append(f'{repo}/{arch}: {status.get("code")} ({result.get("state")})')
+            info = obs_xml(f'/build/{PROJECT}/{repo}/{arch}/{PACKAGE}/_buildinfo')
             if info.findtext('srcmd5') != source or result.get('dirty') == 'true':
                 continue
             if status.get('code') in {'failed', 'broken', 'unresolvable'}:
                 raise RuntimeError(f'OBS {arch}: {ET.tostring(status, encoding="unicode")}')
             if status.get('code') == 'succeeded' and result.get('state') == 'published':
-                binaries = obs_xml(f'/build/{PROJECT}/16.0/{arch}/{PACKAGE}')
+                binaries = obs_xml(f'/build/{PROJECT}/{repo}/{arch}/{PACKAGE}')
                 if any(b.get('filename', '').startswith(f'python313-PyChromecast-{release}-')
                        and b.get('filename', '').endswith('.noarch.rpm') for b in binaries):
-                    good.add(arch)
+                    good.add((repo, arch))
         summary = '; '.join(rows)
         if summary != previous:
             print(summary, flush=True)
             previous = summary
-        if good == {'x86_64', 'aarch64'}:
-            print(f'PyChromecast {release} published for both Leap architectures.', flush=True)
+        if good == {(repo, arch) for repo in REPOSITORIES for arch in ('x86_64', 'aarch64')}:
+            print(f'PyChromecast {release} published for both architectures on Leap 16.0 and 16.1.', flush=True)
             return
         time.sleep(20)
     raise TimeoutError('OBS publication still pending after 20 minutes; inspect OBS build results')
@@ -191,9 +205,7 @@ def main():
         spec = (directory / 'python-PyChromecast.spec').read_text()
         installed = re.search(r'^Version:\s+(\S+)', spec, re.M).group(1)
         metadata = ET.fromstring(subprocess.check_output(['osc', 'api', f'/source/{PROJECT}/{PACKAGE}/_meta']))
-        build = metadata.find('build')
-        if build is None or [e.attrib for e in build.findall('disable')] != [{}] or [e.attrib for e in build.findall('enable')] != [{'repository': '16.0'}]:
-            raise ValueError('Expected package builds enabled exclusively for Leap 16.0')
+        validate_build_scope(metadata)
         with urllib.request.urlopen('https://pypi.org/pypi/PyChromecast/json', timeout=60) as response:
             data = json.load(response)
         candidate = candidate_release(data, installed)
@@ -201,14 +213,13 @@ def main():
             print(f'No newer stable source release (OBS: {installed}).', flush=True)
             return
         release, archive = candidate
-        print(f'Testing PyChromecast {installed} -> {release} for Leap 16.0', flush=True)
+        print(f'Testing PyChromecast {installed} -> {release} for Leap 16.0 and 16.1', flush=True)
         original_archives = list(directory.glob('*.tar.gz'))
         target = prepare_sources(directory, release, archive, data)
         # Only the candidate archive belongs in the RPM build context.
         for old in original_archives:
             if old != target:
                 run('osc', 'delete', old.name, cwd=directory)
-        run('docker', 'pull', 'opensuse/leap:16.0')
         submit_after_validation(directory, target, release, args.apply)
 
 
